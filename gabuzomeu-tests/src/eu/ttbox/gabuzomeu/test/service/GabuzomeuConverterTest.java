@@ -1,4 +1,4 @@
-package eu.ttbox.gabuzomeu.test;
+package eu.ttbox.gabuzomeu.test.service;
 
 import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 import android.test.AndroidTestCase;

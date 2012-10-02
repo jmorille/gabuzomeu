@@ -13,6 +13,8 @@ public class GabuzomeuConverter {
         Log.d(TAG, String.format("Nombre %s  =>  %s  => %s", base10, converted, shadok));
         return shadok;
     }
+    
+    
 
     public static Integer decodeTobase10(String shadok) { 
             String base4 = shadok.replaceAll("GA", "0").replaceAll("BU", "1").replaceAll("ZO", "2").replaceAll("MEU", "3").replaceAll(" ", "");

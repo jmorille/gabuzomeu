@@ -40,6 +40,17 @@ import android.widget.PopupMenu.OnMenuItemClickListener;
 
 public class Calculator extends Activity implements PanelSwitcher.Listener, Logic.Listener,
         OnClickListener, OnMenuItemClickListener {
+  
+    static final int BASIC_PANEL    = 0;
+    static final int ADVANCED_PANEL = 1;
+
+    private static final String LOG_TAG = "Calculator";
+    private static final boolean DEBUG  = false;
+    private static final boolean LOG_ENABLED = false;
+    private static final String STATE_CURRENT_VIEW = "state-current-view";
+
+
+    
     EventListener mListener = new EventListener();
     private CalculatorDisplay mDisplay;
     private Persist mPersist;
@@ -49,14 +60,6 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
     private View mClearButton;
     private View mBackspaceButton;
     private View mOverflowMenuButton;
-
-    static final int BASIC_PANEL    = 0;
-    static final int ADVANCED_PANEL = 1;
-
-    private static final String LOG_TAG = "Calculator";
-    private static final boolean DEBUG  = false;
-    private static final boolean LOG_ENABLED = false;
-    private static final String STATE_CURRENT_VIEW = "state-current-view";
 
     @Override
     public void onCreate(Bundle state) {
