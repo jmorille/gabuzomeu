@@ -37,9 +37,14 @@
 			<artifactId>compatibility-v13</artifactId>
 			<version>r10</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.javia.arity</groupId>
+			<artifactId>arity</artifactId>
+			<version>2.1.2</version>
+		</dependency> 
 
  
-
 	</dependencies>
 	<!-- <modules> <module>tests</module> </modules> -->
 	<build>
