@@ -1,0 +1,9 @@
+.DS_Store
+target
+bin
+gen
+.project
+.settings
+.classpath
+.checkstyle
+lint.xml
