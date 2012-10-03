@@ -30,5 +30,7 @@ public class GabuzomeuConverterTest extends AndroidTestCase {
             Log.d(TAG, String.format("Shadok %s  =>  %s", nb, base4 ));
         }
     }
+    
+//    public void testEncodeO() {
 
 }

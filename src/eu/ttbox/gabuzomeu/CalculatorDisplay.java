@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ViewSwitcher;
+import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay;
 
 /**
  * Provides vertical scrolling for the input/result EditText.
@@ -83,7 +84,7 @@ public class CalculatorDisplay extends ViewSwitcher {
 
         Editable.Factory factory = new CalculatorEditable.Factory(logic);
         for (int i = 0; i < 2; ++i) {
-            EditText text = (EditText) getChildAt(i);
+            CalculatorConverterDisplay text = (CalculatorConverterDisplay) getChildAt(i);
             text.setBackgroundDrawable(null);
             text.setEditableFactory(factory);
             text.setKeyListener(calculatorKeyListener);
@@ -111,17 +112,17 @@ public class CalculatorDisplay extends ViewSwitcher {
     }
 
     void insert(String delta) {
-        EditText editor = (EditText) getCurrentView();
-        int cursor = editor.getSelectionStart();
-        editor.getText().insert(cursor, delta);
+        CalculatorConverterDisplay editor = (CalculatorConverterDisplay) getCurrentView();
+        editor.insert(  delta);
+        
     }
 
-    EditText getEditText() {
-        return (EditText) getCurrentView();
+    CalculatorConverterDisplay getEditText() {
+        return (CalculatorConverterDisplay) getCurrentView();
     }
 
     Editable getText() {
-        EditText text = (EditText) getCurrentView();
+        CalculatorConverterDisplay text = (CalculatorConverterDisplay) getCurrentView();
         return text.getText();
     }
 
@@ -141,7 +142,7 @@ public class CalculatorDisplay extends ViewSwitcher {
             setOutAnimation(null);
         }
 
-        EditText editText = (EditText) getNextView();
+        CalculatorConverterDisplay editText = (CalculatorConverterDisplay) getNextView();
         editText.setText(text);
         //Calculator.log("selection to " + text.length() + "; " + text);
         editText.setSelection(text.length());
@@ -149,7 +150,7 @@ public class CalculatorDisplay extends ViewSwitcher {
     }
 
     int getSelectionStart() {
-        EditText text = (EditText) getCurrentView();
+        CalculatorConverterDisplay text = (CalculatorConverterDisplay) getCurrentView();
         return text.getSelectionStart();
     }
 

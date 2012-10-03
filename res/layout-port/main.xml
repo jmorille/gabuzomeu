@@ -39,9 +39,9 @@
              android:layout_weight="1"
              maxDigits="@integer/max_digits">
 
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
 
         </eu.ttbox.gabuzomeu.CalculatorDisplay>

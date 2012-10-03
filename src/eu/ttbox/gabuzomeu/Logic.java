@@ -16,14 +16,6 @@
 
 package eu.ttbox.gabuzomeu;
 
-import eu.ttbox.gabuzomeu.CalculatorDisplay.Scroll;
-
-import android.text.TextUtils;
-import android.view.KeyEvent;
-import android.widget.EditText;
-import android.content.Context;
-import android.content.res.Resources;
-
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map.Entry;
@@ -31,6 +23,13 @@ import java.util.Set;
 
 import org.javia.arity.Symbols;
 import org.javia.arity.SyntaxException;
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.text.TextUtils;
+import android.view.KeyEvent;
+import eu.ttbox.gabuzomeu.CalculatorDisplay.Scroll;
+import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay;
 
 class Logic {
     private CalculatorDisplay mDisplay;
@@ -94,7 +93,7 @@ class Logic {
     }
 
     boolean eatHorizontalMove(boolean toLeft) {
-        EditText editText = mDisplay.getEditText();
+        CalculatorConverterDisplay editText = mDisplay.getEditText();
         int cursorPos = editText.getSelectionStart();
         return toLeft ? cursorPos == 0 : cursorPos >= editText.length();
     }
