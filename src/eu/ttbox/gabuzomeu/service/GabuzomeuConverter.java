@@ -1,11 +1,13 @@
 package eu.ttbox.gabuzomeu.service;
 
-import eu.ttbox.gabuzomeu.R;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
+import eu.ttbox.gabuzomeu.R;
 
 public class GabuzomeuConverter {
 
@@ -34,12 +36,12 @@ public class GabuzomeuConverter {
     }
 
     public String convertBase10NumberToShadokDigit(String base10String, SparseArray<String> shadokCode) {
-        Integer base10 = Integer.valueOf(base10String);
-        return convertBase10NumberToShadokDigit(base10, shadokCode);
+        Long base10 = Long.valueOf(base10String);
+         return convertBase10NumberToShadokDigit(base10, shadokCode);
     }
 
-    public String convertBase10NumberToShadokDigit(Integer base10, SparseArray<String> shadokCode) {
-        String base4 = Integer.toString(base10, 4);
+    public String convertBase10NumberToShadokDigit(Long base10, SparseArray<String> shadokCode) {
+        String base4 = Long.toString(base10, 4);
         return convertBase4NumberToShadokDigit(base4, shadokCode);
     }
 
