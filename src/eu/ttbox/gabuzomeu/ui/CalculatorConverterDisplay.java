@@ -14,6 +14,8 @@ import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 
 public class CalculatorConverterDisplay extends LinearLayout {
 
+    private  GabuzomeuConverter converter;
+    
     private CalculatorEditText calculatorEditText;
     private CalculatorEditText converterEditText;
 
@@ -32,6 +34,7 @@ public class CalculatorConverterDisplay extends LinearLayout {
         final LayoutInflater inflater = LayoutInflater.from(context);
         inflater.inflate(R.layout.converter_display, this, true);
 
+        converter = new GabuzomeuConverter(context);
         calculatorEditText = (CalculatorEditText) findViewById(R.id.display_calculator_EditText);
         converterEditText = (CalculatorEditText) findViewById(R.id.display_converter_EditText);
     }
@@ -44,7 +47,7 @@ public class CalculatorConverterDisplay extends LinearLayout {
     private void converterToShadok(CharSequence text) {
         CharSequence shadok = text;
         if (text.length() > 0) {
-            shadok = GabuzomeuConverter.encodeTobase4(Integer.valueOf(text.toString()));
+            shadok = converter.encodeEquationToShadokCode( text, converter.shadokDigitName );
         }
         converterEditText.setText(shadok);
     }

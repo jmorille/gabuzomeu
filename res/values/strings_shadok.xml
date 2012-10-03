@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2007 The Android Open Source Project
+<!--
+     Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,14 +15,20 @@
      limitations under the License.
 -->
 
-<resources> 
-<!--     http://www.fileformat.info/info/unicode/category/So/list.htm -->
-<!-- http://www.fileformat.info/info/unicode/block/geometric_shapes/images.htm -->
-<!-- http://www.fileformat.info/info/unicode/category/Sm/list.htm -->
+<resources>
 
-      <string name="ga">\u25EF</string>
-      <string name="bu">\u23D0</string>  
-      <string name="zo">\u2143</string>
-      <string name="meu">\u25FF</string>
-      
+    <!-- http://www.fileformat.info/info/unicode/category/So/list.htm -->
+    <!-- http://www.fileformat.info/info/unicode/block/geometric_shapes/images.htm -->
+    <!-- http://www.fileformat.info/info/unicode/category/Sm/list.htm -->
+
+    <string name="digitGa">\u25EF</string>
+    <string name="digitBu">\u23D0</string>
+    <string name="digitZo">\u2143</string>
+    <string name="digitMeu">\u25FF</string>
+    
+    <string name="digitNameGa">Ga</string>
+    <string name="digitNameBu">Bu</string>
+    <string name="digitNameZo">Zo</string>
+    <string name="digitNameMeu">Meu</string>
+
 </resources>

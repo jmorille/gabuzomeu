@@ -27,10 +27,25 @@ public class GabuzomeuConverterTest extends AndroidTestCase {
         };
         for (String nb : numbers) {
             Integer base4 = GabuzomeuConverter.decodeTobase10(nb);
-            Log.d(TAG, String.format("Shadok %s  =>  %s", nb, base4 ));
+            Log.d(TAG, String.format("Shadok %s  =>  %s", nb, base4));
         }
     }
-    
-//    public void testEncodeO() {
 
+    public void testEncodeEquationTobase4() {
+        GabuzomeuConverter converter = new GabuzomeuConverter(getContext());
+        String[] equations = new String[] { //
+        "0", "1", "2", "3", "4", "5", "42", "73"//
+                , "1+1", "2+3" //
+                , "1+", "32+" //
+                , "123+4355"//
+        };
+        for (String equa : equations) {
+            String shadok = converter.encodeEquationToShadokCode(equa, converter.shadokDigit);
+            Log.d(TAG, String.format("Equation %s  =>  %s", equa, shadok)); 
+        }
+        for (String equa : equations) { 
+            String shadokName = converter.encodeEquationToShadokCode(equa, converter.shadokDigitName);
+            Log.d(TAG, String.format("Equation %s  =>  %s", equa, shadokName));
+        }
+    }
 }
