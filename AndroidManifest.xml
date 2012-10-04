@@ -32,6 +32,22 @@
             </intent-filter>
         </activity>
         
+        <receiver
+            android:name=".Widget"
+            android:description="@string/widget_description"
+            android:label="@string/widget_label" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget" />
+        </receiver>
+        
+        <service android:name=".widgets.clock.ClockService" />
+        <service android:name=".ClockProvider$UpdateService" />
+        
     </application>
 
 </manifest>
