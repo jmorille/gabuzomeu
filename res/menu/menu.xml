@@ -17,21 +17,28 @@
  */
 -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <item android:id="@+id/clear_history"
-        android:showAsAction="ifRoom|withText"
+    <item
+        android:id="@+id/clear_history"
         android:icon="@drawable/clear_history"
+        android:showAsAction="ifRoom|withText"
         android:title="@string/clear_history"/>
-
-    <item android:id="@+id/advanced"
-        android:showAsAction="ifRoom|withText"
+    <item
+        android:id="@+id/advanced"
         android:icon="@drawable/advanced"
-        android:title="@string/advanced"/>
-
-    <item android:id="@+id/basic"
         android:showAsAction="ifRoom|withText"
+        android:title="@string/advanced"/>
+    <item
+        android:id="@+id/shadok"
+        android:icon="@drawable/advanced"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/shadok"/>
+ 
+    <item
+        android:id="@+id/basic"
         android:icon="@drawable/simple"
+        android:showAsAction="ifRoom|withText"
         android:title="@string/basic"/>
 
 </menu>

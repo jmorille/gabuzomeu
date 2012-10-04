@@ -43,6 +43,7 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
   
     static final int BASIC_PANEL    = 0;
     static final int ADVANCED_PANEL = 1;
+    static final int SHADOK_PANEL = 2;
 
     private static final String LOG_TAG = "Calculator";
     private static final boolean DEBUG  = false;
@@ -151,6 +152,7 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.basic).setVisible(!getBasicVisibility());
         menu.findItem(R.id.advanced).setVisible(!getAdvancedVisibility());
+        menu.findItem(R.id.shadok).setVisible(!getShadokVisibility());
         return true;
     }
 
@@ -198,6 +200,11 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         return mPager != null && mPager.getCurrentItem() == ADVANCED_PANEL;
     }
 
+    private boolean getShadokVisibility() {
+        return mPager != null && mPager.getCurrentItem() == SHADOK_PANEL;
+    }
+
+    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -217,6 +224,14 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
                     mPager.setCurrentItem(ADVANCED_PANEL, true);
                 }
                 break;
+
+
+            case R.id.shadok:
+                if (!getShadokVisibility() && mPager != null) {
+                    mPager.setCurrentItem(SHADOK_PANEL, true);
+                }
+                break;
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -267,14 +282,17 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
     class PageAdapter extends PagerAdapter {
         private View mSimplePage;
         private View mAdvancedPage;
+        private View mShadokPage;
 
         public PageAdapter(ViewPager parent) {
             final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             final View simplePage = inflater.inflate(R.layout.simple_pad, parent, false);
             final View advancedPage = inflater.inflate(R.layout.advanced_pad, parent, false);
+            final View shadokPage = inflater.inflate(R.layout.shadok_pad, parent, false);
             mSimplePage = simplePage;
             mAdvancedPage = advancedPage;
-
+            mShadokPage = shadokPage;
+            
             final Resources res = getResources();
             final TypedArray simpleButtons = res.obtainTypedArray(R.array.simple_buttons);
             for (int i = 0; i < simpleButtons.length(); i++) {
@@ -288,6 +306,13 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
             }
             advancedButtons.recycle();
 
+            final TypedArray shadokButtons = res.obtainTypedArray(R.array.shadok_buttons);
+            for (int i = 0; i < shadokButtons.length(); i++) {
+                setOnClickListener(shadokPage, shadokButtons.getResourceId(i, 0));
+            }
+            shadokButtons.recycle();
+
+            
             final View clearButton = simplePage.findViewById(R.id.clear);
             if (clearButton != null) {
                 mClearButton = clearButton;
@@ -301,7 +326,7 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -310,7 +335,8 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
 
         @Override
         public Object instantiateItem(View container, int position) {
-            final View page = position == 0 ? mSimplePage : mAdvancedPage;
+        	Log.w(LOG_TAG, "InstantiateItem Position : " + position);
+            final View page = position == 0 ? mSimplePage : (position == 1? mAdvancedPage: mShadokPage) ;
             ((ViewGroup) container).addView(page);
             return page;
         }

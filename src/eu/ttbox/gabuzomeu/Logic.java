@@ -107,6 +107,11 @@ class Logic {
         setDeleteMode(DELETE_MODE_BACKSPACE);
     }
 
+	public void insertGaBuZoMeu(String delta) {
+		 mDisplay.insertGaBuZoMeu(delta);
+	    setDeleteMode(DELETE_MODE_BACKSPACE);
+	}
+	
     public void onTextChanged() {
         setDeleteMode(DELETE_MODE_BACKSPACE);
     }
@@ -329,4 +334,6 @@ class Logic {
         //plus minus times div
         return "+\u2212\u00d7\u00f7/*".indexOf(c) != -1;
     }
+
+
 }

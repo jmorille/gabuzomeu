@@ -113,9 +113,14 @@ public class CalculatorDisplay extends ViewSwitcher {
 
     void insert(String delta) {
         CalculatorConverterDisplay editor = (CalculatorConverterDisplay) getCurrentView();
-        editor.insert(  delta);
-        
+        editor.insert(  delta); 
     }
+    
+	public void insertGaBuZoMeu(String delta) {
+		   CalculatorConverterDisplay editor = (CalculatorConverterDisplay) getCurrentView();
+	        editor.insertGaBuZoMeu(  delta); 
+	}
+	
 
     CalculatorConverterDisplay getEditText() {
         return (CalculatorConverterDisplay) getCurrentView();
@@ -161,4 +166,6 @@ public class CalculatorDisplay extends ViewSwitcher {
             requestFocus();
         }
     }
+
+
 }

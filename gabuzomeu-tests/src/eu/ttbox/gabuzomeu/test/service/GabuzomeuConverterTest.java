@@ -34,17 +34,19 @@ public class GabuzomeuConverterTest extends AndroidTestCase {
     public void testEncodeEquationTobase4() {
         GabuzomeuConverter converter = new GabuzomeuConverter(getContext());
         String[] equations = new String[] { //
-        "0", "1", "2", "3", "4", "5", "42", "73"//
-                , "1+1", "2+3" //
-                , "1+", "32+" //
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "42", "73", "37", "48", "77" //
+                , "1+1", "0+1+2+3" , "0+1+2+3+4+5"//
+                , "1+", "0+1+2+" , "0+1+2+3+4+"//
                 , "123+4355"//
         };
         for (String equa : equations) {
-            String shadok = converter.encodeEquationToShadokCode(equa, converter.shadokDigit);
+        	StringBuilder shadok = new StringBuilder(equa.length()*4);
+        	converter.encodeEquationToShadokCode(equa,shadok, null);
             Log.d(TAG, String.format("Equation %s  =>  %s", equa, shadok)); 
         }
         for (String equa : equations) { 
-            String shadokName = converter.encodeEquationToShadokCode(equa, converter.shadokDigitName);
+        	StringBuilder shadokName = new StringBuilder(equa.length()*4);
+             converter.encodeEquationToShadokCode(equa,null, shadokName);
             Log.d(TAG, String.format("Equation %s  =>  %s", equa, shadokName));
         }
     }

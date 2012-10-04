@@ -36,10 +36,11 @@
              android:layout_height="match_parent"
              maxDigits="@integer/max_digits">
 
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
+
 
         </eu.ttbox.gabuzomeu.CalculatorDisplay>
         <ImageButton android:id="@+id/overflow_menu"

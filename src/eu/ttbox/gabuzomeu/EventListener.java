@@ -47,7 +47,13 @@ class EventListener implements View.OnKeyListener,
         case R.id.equal:
             mHandler.onEnter();
             break;
-
+        case R.id.digitGa:
+        case R.id.digitBu:
+        case R.id.digitZo:
+        case R.id.digitMeu:
+        	   String textButton = ((Button) view).getText().toString();
+        	   mHandler.insertGaBuZoMeu(textButton);
+        	   break;
         default:
             if (view instanceof Button) {
                 String text = ((Button) view).getText().toString();
@@ -58,7 +64,7 @@ class EventListener implements View.OnKeyListener,
                 mHandler.insert(text);
                 if (mPager != null && mPager.getCurrentItem() == Calculator.ADVANCED_PANEL) {
                     mPager.setCurrentItem(Calculator.BASIC_PANEL);
-                }
+                }  
             }
         }
     }

@@ -17,14 +17,17 @@
 
 <resources>
 
+    
+    <string name="shadok">Shadok</string>
+    
     <!-- http://www.fileformat.info/info/unicode/category/So/list.htm -->
     <!-- http://www.fileformat.info/info/unicode/block/geometric_shapes/images.htm -->
     <!-- http://www.fileformat.info/info/unicode/category/Sm/list.htm -->
 
     <string name="digitGa">\u25EF</string>
-    <string name="digitBu">\u23D0</string>
+    <string name="digitBu">_</string> <!-- \u23D0 -->
     <string name="digitZo">\u2143</string>
-    <string name="digitMeu">\u25FF</string>
+    <string name="digitMeu">\u25B3</string> <!-- \u25B7, \u25FF -->
     
     <string name="digitNameGa">Ga</string>
     <string name="digitNameBu">Bu</string>

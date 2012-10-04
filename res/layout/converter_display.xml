@@ -12,4 +12,9 @@
         android:id="@+id/display_converter_EditText"
         style="@style/display_style" />
 
+    <eu.ttbox.gabuzomeu.CalculatorEditText
+        android:id="@+id/display_converter_name_EditText"
+        android:textSize="@dimen/display_small_text_size"
+        style="@style/display_style"  />
+
 </LinearLayout>
