@@ -9,7 +9,9 @@ import android.text.method.NumberKeyListener;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.LinearLayout;
+import eu.ttbox.gabuzomeu.Calculator;
 import eu.ttbox.gabuzomeu.CalculatorEditText;
 import eu.ttbox.gabuzomeu.R;
 import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
@@ -18,8 +20,8 @@ public class CalculatorConverterDisplay extends LinearLayout {
 
     private static final String TAG = "CalculatorConverterDisplay";
 
-    public static final int FIELD_FOCUS_NUMBER = 0;
-    public static final int FIELD_FOCUS_SHADOK = 1;
+    public static final int FIELD_FOCUS_NUMBER = Calculator.BASIC_PANEL;
+    public static final int FIELD_FOCUS_SHADOK = Calculator.SHADOK_PANEL;
 
     private GabuzomeuConverter converter;
 
@@ -27,16 +29,14 @@ public class CalculatorConverterDisplay extends LinearLayout {
     private CalculatorEditText converterEditText;
     private CalculatorEditText converterSmallEditText;
 
-    // public CalculatorConverterDisplay(Context context, AttributeSet attrs,
-    // int defStyle) {
-    // super(context, attrs, defStyle);
-    // }
-    //
-    // public CalculatorConverterDisplay(Context context, AttributeSet attrs) {
-    // super(context, attrs);
-    // }
+    private OnFocusPanelListener onFocusPanelListener;
 
-    public CalculatorConverterDisplay(Context context, AttributeSet attrs) {
+    public interface OnFocusPanelListener {
+        void onFocusChangeTo(int panelfocus);
+
+    }
+
+    public CalculatorConverterDisplay(final Context context, AttributeSet attrs) {
         super(context, attrs);
 
         final LayoutInflater inflater = LayoutInflater.from(context);
@@ -46,15 +46,52 @@ public class CalculatorConverterDisplay extends LinearLayout {
         calculatorEditText = (CalculatorEditText) findViewById(R.id.display_calculator_EditText);
         converterEditText = (CalculatorEditText) findViewById(R.id.display_converter_EditText);
         converterSmallEditText = (CalculatorEditText) findViewById(R.id.display_converter_name_EditText);
+
+        // Font
+        Typeface font = GabuzomeuConverter.getSymbolFont(getContext());
+        converterEditText.setTypeface(font);
+
+        // Listener
+        calculatorEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus && onFocusPanelListener != null) {
+                    onFocusPanelListener.onFocusChangeTo(FIELD_FOCUS_NUMBER);
+                }
+            }
+        });
+        converterEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus && onFocusPanelListener != null) {
+                    onFocusPanelListener.onFocusChangeTo(FIELD_FOCUS_SHADOK);
+                }
+            }
+        });
+        converterSmallEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus && onFocusPanelListener != null) {
+                    onFocusPanelListener.onFocusChangeTo(FIELD_FOCUS_SHADOK);
+                }
+            }
+        });
+    }
+
+    public void setOnFocusPanelListener(OnFocusPanelListener onFocusPanelListener) {
+        this.onFocusPanelListener = onFocusPanelListener;
     }
 
     public int getFocusFieldCode() {
         return converterEditText.hasFocus() ? FIELD_FOCUS_NUMBER : FIELD_FOCUS_SHADOK;
     }
 
-    private CalculatorEditText getFocusField() {
-        return converterEditText.hasFocus() ? converterEditText : calculatorEditText;
-    }
+//    private CalculatorEditText getFocusField() {
+//        return converterEditText.hasFocus() ? converterEditText : calculatorEditText;
+//    }
 
     public final void setText(CharSequence text) {
         calculatorEditText.setText(text);
@@ -154,9 +191,6 @@ public class CalculatorConverterDisplay extends LinearLayout {
         calculatorEditText.setBackgroundDrawable(d);
         converterEditText.setBackgroundDrawable(d);
         converterSmallEditText.setBackgroundDrawable(d);
-        // Font
-        Typeface font = GabuzomeuConverter.getSymbolFont(getContext());
-        converterEditText.setTypeface(font);
     }
 
 }

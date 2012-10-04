@@ -52,6 +52,7 @@ public class GabuzomeuConverterTest extends AndroidTestCase {
 				, "1+", "0+1+2+", "0+1+2+3+4+"//
 				, "123+4355"//
 		};
+		// Encode
 		String[] shadokEquation = new String[equations.length];
 		int i = 0;
 		for (String equa : equations) {

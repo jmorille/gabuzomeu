@@ -18,6 +18,8 @@ package eu.ttbox.gabuzomeu;
 
 import eu.ttbox.gabuzomeu.R;
 import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
+import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay;
+import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay.OnFocusPanelListener;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
@@ -26,6 +28,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -42,11 +45,11 @@ import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
 
-public class Calculator extends Activity implements PanelSwitcher.Listener, Logic.Listener, OnClickListener, OnMenuItemClickListener {
+public class Calculator extends FragmentActivity implements PanelSwitcher.Listener, Logic.Listener, OnClickListener, OnMenuItemClickListener {
 
-    static final int BASIC_PANEL = 0;
-    static final int ADVANCED_PANEL = 1;
-    static final int SHADOK_PANEL = 2;
+    public static final int BASIC_PANEL = 0;
+    public static final int ADVANCED_PANEL = 1;
+    public static final int SHADOK_PANEL = 2;
 
     private static final String LOG_TAG = "Calculator";
     private static final boolean DEBUG = false;
@@ -101,8 +104,16 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         mHistory = mPersist.history;
 
         mDisplay = (CalculatorDisplay) findViewById(R.id.display);
+        OnFocusPanelListener focusPanelListener =  new  OnFocusPanelListener() {
 
-        mLogic = new Logic(this, mHistory, mDisplay);
+            @Override
+            public void onFocusChangeTo(int panelfocus) {
+                mPager.setCurrentItem(panelfocus, true);
+            }
+            
+        };
+        
+        mLogic = new Logic(this, mHistory, mDisplay, focusPanelListener);
         mLogic.setListener(this);
 
         mLogic.setDeleteMode(mPersist.getDeleteMode());
@@ -126,6 +137,8 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         mLogic.resumeWithHistory();
         updateDeleteMode();
     }
+
+  
 
     private void updateDeleteMode() {
         if (mLogic.getDeleteMode() == Logic.DELETE_MODE_BACKSPACE) {
@@ -168,7 +181,7 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
+        switch (v.getId()) { 
         case R.id.overflow_menu:
             PopupMenu menu = constructPopupMenu();
             if (menu != null) {

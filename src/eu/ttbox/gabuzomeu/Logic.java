@@ -30,6 +30,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import eu.ttbox.gabuzomeu.CalculatorDisplay.Scroll;
 import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay;
+import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay.OnFocusPanelListener;
 
 class Logic {
     private CalculatorDisplay mDisplay;
@@ -65,12 +66,12 @@ class Logic {
     private Context mContext;
     private Set<Entry<String, String>> mTranslationsSet;
 
-    Logic(Context context, History history, CalculatorDisplay display) {
+    Logic(Context context, History history, CalculatorDisplay display, OnFocusPanelListener l) {
         mContext = context;
         mErrorString = mContext.getResources().getString(R.string.error);
         mHistory = history;
         mDisplay = display;
-        mDisplay.setLogic(this);
+        mDisplay.setLogic(this, l);
     }
 
     public void setListener(Listener listener) {

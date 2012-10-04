@@ -24,9 +24,9 @@ import android.text.Spanned;
 import android.text.method.NumberKeyListener;
 import android.util.AttributeSet;
 import android.view.animation.TranslateAnimation;
-import android.widget.EditText;
 import android.widget.ViewSwitcher;
 import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay;
+import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay.OnFocusPanelListener;
 
 /**
  * Provides vertical scrolling for the input/result EditText.
@@ -60,7 +60,7 @@ public class CalculatorDisplay extends ViewSwitcher {
         return mMaxDigits;
     }
 
-    protected void setLogic(Logic logic) {
+    protected void setLogic(Logic logic, OnFocusPanelListener l) {
         NumberKeyListener calculatorKeyListener =
             new NumberKeyListener() {
                 public int getInputType() {
@@ -89,6 +89,7 @@ public class CalculatorDisplay extends ViewSwitcher {
             text.setEditableFactory(factory);
             text.setKeyListener(calculatorKeyListener);
             text.setSingleLine();
+            text.setOnFocusPanelListener(l);
         }
     }
 

@@ -52,6 +52,7 @@ public class Widget extends AppWidgetProvider {
 
 		// Converter
 		GabuzomeuConverter converter = new GabuzomeuConverter(context);
+		// TODO http://stackoverflow.com/questions/4318572/how-to-use-a-custom-typeface-in-a-widget ?
 //	TODO	Typeface font = GabuzomeuConverter.getSymbolFont(context);
 		// Do Converter
 		String hourMinute = String.format("%1$tH:%1$tM", System.currentTimeMillis());
