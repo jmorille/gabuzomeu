@@ -49,13 +49,13 @@ public class CalculatorConverterDisplay extends LinearLayout {
     }
 
     public int getFocusFieldCode() {
-        return converterEditText.hasFocus() ? FIELD_FOCUS_NUMBER : FIELD_FOCUS_SHADOK; 
+        return converterEditText.hasFocus() ? FIELD_FOCUS_NUMBER : FIELD_FOCUS_SHADOK;
     }
 
     private CalculatorEditText getFocusField() {
-        return converterEditText.hasFocus() ? converterEditText : calculatorEditText; 
+        return converterEditText.hasFocus() ? converterEditText : calculatorEditText;
     }
-    
+
     public final void setText(CharSequence text) {
         calculatorEditText.setText(text);
         converterToShadok(text);
@@ -84,13 +84,14 @@ public class CalculatorConverterDisplay extends LinearLayout {
         int textSize = text == null ? 0 : text.length();
         if (textSize > 0) {
             StringBuilder convertDigit = new StringBuilder(textSize);
-            // StringBuilder convertDigitName = new StringBuilder(textSize *4);
-            converter.decodeShadokDigitEquationToBase10Code(text, convertDigit);
+            StringBuilder convertDigitName = new StringBuilder(textSize * 4);
+            converter.decodeShadokDigitEquationToBase10Code(text, convertDigit, convertDigitName);
             numberDigit = convertDigit.toString();
-            // shadokDigitName = convertDigitName.toString();
+            shadokDigitName = convertDigitName.toString();
         }
         calculatorEditText.setText(numberDigit);
         calculatorEditText.setSelection(numberDigit.length());
+        converterSmallEditText.setText(shadokDigitName);
     }
 
     public void insert(String delta) {

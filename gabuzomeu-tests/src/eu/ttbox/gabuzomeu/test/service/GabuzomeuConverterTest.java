@@ -69,9 +69,11 @@ public class GabuzomeuConverterTest extends AndroidTestCase {
 		int j = 0;
 		for (String shadokEqua : shadokEquation) {
 			StringBuilder digitName = new StringBuilder(shadokEqua.length());
+			StringBuilder digitShadokName = new StringBuilder(shadokEqua.length());
 			Log.i(TAG, String.format("Shadok Equation to resolved : %s  (expected %s)", shadokEqua, equations[j]));
-			converter.decodeShadokDigitEquationToBase10Code(shadokEqua, digitName);
-			Log.i(TAG, String.format("Shadok Equation %s  =  %s", shadokEqua, digitName));
+			converter.decodeShadokDigitEquationToBase10Code(shadokEqua, digitName, digitShadokName);
+			Log.i(TAG, String.format("Shadok Equation %s  =  %s / name = %s", shadokEqua, digitName, digitShadokName)); 
+			
 			assertEquals(equations[j], digitName.toString());
 			j++;
 		}

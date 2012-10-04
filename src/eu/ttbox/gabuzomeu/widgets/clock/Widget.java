@@ -67,7 +67,7 @@ public class Widget extends AppWidgetProvider {
 		// if (c.get(Calendar.HOUR_OF_DAY) < 10)
 		// text = "0" + text;
 		views.setTextViewText(R.id.time, shadokDigitName.toString());
-	 
+		
 		views.setTextViewText(R.id.weekday,
 				dayNames[c.get(Calendar.DAY_OF_WEEK)].toUpperCase());
 		views.setTextViewText(R.id.day,
