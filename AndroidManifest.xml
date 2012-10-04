@@ -33,7 +33,7 @@
         </activity>
         
         <receiver
-            android:name=".Widget"
+            android:name=".widgets.clock.Widget"
             android:description="@string/widget_description"
             android:label="@string/widget_label" >
             <intent-filter>
