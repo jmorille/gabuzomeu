@@ -16,125 +16,146 @@ import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 
 public class CalculatorConverterDisplay extends LinearLayout {
 
-	private static final String TAG = "CalculatorConverterDisplay";
+    private static final String TAG = "CalculatorConverterDisplay";
 
-	
-	private GabuzomeuConverter converter;
+    public static final int FIELD_FOCUS_NUMBER = 0;
+    public static final int FIELD_FOCUS_SHADOK = 1;
 
-	private CalculatorEditText calculatorEditText;
-	private CalculatorEditText converterEditText;
-	private CalculatorEditText converterSmallEditText;
+    private GabuzomeuConverter converter;
 
-	// public CalculatorConverterDisplay(Context context, AttributeSet attrs,
-	// int defStyle) {
-	// super(context, attrs, defStyle);
-	// }
-	//
-	// public CalculatorConverterDisplay(Context context, AttributeSet attrs) {
-	// super(context, attrs);
-	// }
+    private CalculatorEditText calculatorEditText;
+    private CalculatorEditText converterEditText;
+    private CalculatorEditText converterSmallEditText;
 
-	public CalculatorConverterDisplay(Context context, AttributeSet attrs) {
-		super(context, attrs);
+    // public CalculatorConverterDisplay(Context context, AttributeSet attrs,
+    // int defStyle) {
+    // super(context, attrs, defStyle);
+    // }
+    //
+    // public CalculatorConverterDisplay(Context context, AttributeSet attrs) {
+    // super(context, attrs);
+    // }
 
-		final LayoutInflater inflater = LayoutInflater.from(context);
-		inflater.inflate(R.layout.converter_display, this, true);
+    public CalculatorConverterDisplay(Context context, AttributeSet attrs) {
+        super(context, attrs);
 
-		converter = new GabuzomeuConverter(context);
-		calculatorEditText = (CalculatorEditText) findViewById(R.id.display_calculator_EditText);
-		converterEditText = (CalculatorEditText) findViewById(R.id.display_converter_EditText);
-		converterSmallEditText = (CalculatorEditText) findViewById(R.id.display_converter_name_EditText);
-	}
+        final LayoutInflater inflater = LayoutInflater.from(context);
+        inflater.inflate(R.layout.converter_display, this, true);
 
-	public final void setText(CharSequence text) {
-		calculatorEditText.setText(text);
-		converterToShadok(text);
-	}
+        converter = new GabuzomeuConverter(context);
+        calculatorEditText = (CalculatorEditText) findViewById(R.id.display_calculator_EditText);
+        converterEditText = (CalculatorEditText) findViewById(R.id.display_converter_EditText);
+        converterSmallEditText = (CalculatorEditText) findViewById(R.id.display_converter_name_EditText);
+    }
 
-	private void converterToShadok(CharSequence text) {
-		CharSequence shadokDigit = text;
-		CharSequence shadokDigitName = text;
-		int textSize = text == null ? 0 : text.length();
-		if (textSize > 0) {
-			StringBuilder convertDigit = new StringBuilder(textSize * 2);
-			StringBuilder convertDigitName = new StringBuilder(textSize * 8);
-			converter.encodeEquationToShadokCode(text, convertDigit, convertDigitName);
-			shadokDigit = convertDigit.toString();
-			shadokDigitName = convertDigitName.toString();
-		}
-		converterEditText.setText(shadokDigit);
-		converterSmallEditText.setText(shadokDigitName);
-	}
+    public int getFocusFieldCode() {
+        return converterEditText.hasFocus() ? FIELD_FOCUS_NUMBER : FIELD_FOCUS_SHADOK; 
+    }
 
-	private void converterToBase10(CharSequence text) {
-		Log.w(TAG, "converterToBase10  : " + text);
-		CharSequence numberDigit = text;
-		CharSequence shadokDigitName = text;
-		int textSize = text == null ? 0 : text.length();
-		if (textSize > 0) {
-			StringBuilder convertDigit = new StringBuilder(textSize  );
-//			StringBuilder convertDigitName = new StringBuilder(textSize *4);
-			converter.decodeShadokDigitEquationToBase10Code(text,  convertDigit);
-			numberDigit = convertDigit.toString();
-//			shadokDigitName = convertDigitName.toString();
-		}
-		calculatorEditText.setText(numberDigit);
-	}
-	public void insert(String delta) {
-		// editor
-		int cursor = calculatorEditText.getSelectionStart();
-		calculatorEditText.getText().insert(cursor, delta);
-		// Converter
-		converterToShadok(calculatorEditText.getText().toString());
-	}
+    private CalculatorEditText getFocusField() {
+        return converterEditText.hasFocus() ? converterEditText : calculatorEditText; 
+    }
+    
+    public final void setText(CharSequence text) {
+        calculatorEditText.setText(text);
+        converterToShadok(text);
+    }
 
-	public void insertGaBuZoMeu(String delta) {
-		int cursor = converterEditText.getSelectionStart();
-		converterEditText.getText().insert(cursor, delta);
-		// TODO Recompute the tow other
-		converterToBase10(converterEditText.getText().toString());
-	}
-	
-	public void setSelection(int length) {
-		calculatorEditText.setSelection(length);
-	}
+    private void converterToShadok(CharSequence text) {
+        CharSequence shadokDigit = text;
+        CharSequence shadokDigitName = text;
+        int textSize = text == null ? 0 : text.length();
+        if (textSize > 0) {
+            StringBuilder convertDigit = new StringBuilder(textSize * 2);
+            StringBuilder convertDigitName = new StringBuilder(textSize * 8);
+            converter.encodeEquationToShadokCode(text, convertDigit, convertDigitName);
+            shadokDigit = convertDigit.toString();
+            shadokDigitName = convertDigitName.toString();
+        }
+        converterEditText.setText(shadokDigit);
+        converterEditText.setSelection(shadokDigit.length());
+        converterSmallEditText.setText(shadokDigitName);
+    }
 
-	public Editable getText() {
-		return calculatorEditText.getText();
-	}
+    private void converterToBase10(CharSequence text) {
+        Log.w(TAG, "converterToBase10  : " + text);
+        CharSequence numberDigit = text;
+        CharSequence shadokDigitName = text;
+        int textSize = text == null ? 0 : text.length();
+        if (textSize > 0) {
+            StringBuilder convertDigit = new StringBuilder(textSize);
+            // StringBuilder convertDigitName = new StringBuilder(textSize *4);
+            converter.decodeShadokDigitEquationToBase10Code(text, convertDigit);
+            numberDigit = convertDigit.toString();
+            // shadokDigitName = convertDigitName.toString();
+        }
+        calculatorEditText.setText(numberDigit);
+        calculatorEditText.setSelection(numberDigit.length());
+    }
 
-	public int getSelectionStart() {
-		return calculatorEditText.getSelectionStart();
-	}
+    public void insert(String delta) {
+        // editor
+        int cursor = calculatorEditText.getSelectionStart();
+        boolean hasFocus = calculatorEditText.hasFocus();
+        if (!hasFocus) {
+            cursor = calculatorEditText.getText().length();
+        }
+        Log.w(TAG, String.format("Insert delta : %s at position %s with focus %s of size %s", delta, cursor, hasFocus, calculatorEditText.getText().length()));
+        calculatorEditText.getText().insert(cursor, delta);
+        // Converter
+        converterToShadok(calculatorEditText.getText().toString());
+    }
 
-	public int length() {
-		return calculatorEditText.length();
-	}
+    public void insertGaBuZoMeu(String delta) {
+        int cursor = converterEditText.getSelectionStart();
+        boolean hasFocus = converterEditText.hasFocus();
+        if (!hasFocus) {
+            cursor = converterEditText.getText().length();
+        }
+        Log.w(TAG, String.format("insertGaBuZoMeu delta : %s at position %s with focus %s of size %s", delta, cursor, hasFocus, converterEditText.getText().length()));
+        converterEditText.getText().insert(cursor, delta);
+        // TODO Recompute the tow other
+        converterToBase10(converterEditText.getText().toString());
+    }
 
-	public void setEditableFactory(Factory factory) {
-		calculatorEditText.setEditableFactory(factory);
-	}
+    public void setSelection(int length) {
+        calculatorEditText.setSelection(length);
+    }
 
-	public void setKeyListener(NumberKeyListener calculatorKeyListener) {
-		calculatorEditText.setKeyListener(calculatorKeyListener);
-		// converterEditText.setKeyListener(calculatorKeyListener);
-	}
+    public Editable getText() {
+        return calculatorEditText.getText();
+    }
 
-	public void setSingleLine() {
-		calculatorEditText.setSingleLine();
-		converterEditText.setSingleLine();
-		converterSmallEditText.setSingleLine();
-	}
+    public int getSelectionStart() {
+        return calculatorEditText.getSelectionStart();
+    }
 
-	public void setBackgroundDrawable(Drawable d) {
-		calculatorEditText.setBackgroundDrawable(d);
-		converterEditText.setBackgroundDrawable(d);
-		converterSmallEditText.setBackgroundDrawable(d);
-		// Font 
-		Typeface font = GabuzomeuConverter.getSymbolFont(getContext());
-		converterEditText.setTypeface(font);
-	}
+    public int length() {
+        return calculatorEditText.length();
+    }
 
+    public void setEditableFactory(Factory factory) {
+        calculatorEditText.setEditableFactory(factory);
+    }
 
+    public void setKeyListener(NumberKeyListener calculatorKeyListener) {
+        calculatorEditText.setKeyListener(calculatorKeyListener);
+        // converterEditText.setKeyListener(calculatorKeyListener);
+    }
+
+    public void setSingleLine() {
+        calculatorEditText.setSingleLine();
+        converterEditText.setSingleLine();
+        converterSmallEditText.setSingleLine();
+    }
+
+    public void setBackgroundDrawable(Drawable d) {
+        calculatorEditText.setBackgroundDrawable(d);
+        converterEditText.setBackgroundDrawable(d);
+        converterSmallEditText.setBackgroundDrawable(d);
+        // Font
+        Typeface font = GabuzomeuConverter.getSymbolFont(getContext());
+        converterEditText.setTypeface(font);
+    }
 
 }

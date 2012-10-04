@@ -18,10 +18,12 @@ package eu.ttbox.gabuzomeu;
 
 import java.util.HashMap;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -48,9 +50,12 @@ public class CalculatorEditText extends EditText {
     private HashMap<String, String> sReplacementTable;
     private String[] sOperators;
 
+    @SuppressLint("NewApi")
     public CalculatorEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setCustomSelectionActionModeCallback(new NoTextSelectionMode());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+          setCustomSelectionActionModeCallback(new NoTextSelectionMode());
+        }
         setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
     }
 
@@ -71,6 +76,7 @@ public class CalculatorEditText extends EditText {
         return true;
     }
 
+    @SuppressLint("NewApi")
     @Override
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
         super.onInitializeAccessibilityEvent(event);
@@ -83,6 +89,7 @@ public class CalculatorEditText extends EditText {
         }
     }
 
+    @SuppressLint("NewApi")
     @Override
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         super.onInitializeAccessibilityNodeInfo(info);
@@ -224,6 +231,7 @@ public class CalculatorEditText extends EditText {
         return canPaste;
     }
 
+    @SuppressLint("NewApi")
     class NoTextSelectionMode implements ActionMode.Callback {
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {

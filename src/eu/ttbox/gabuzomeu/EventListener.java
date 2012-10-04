@@ -38,8 +38,7 @@ class EventListener implements View.OnKeyListener,
         switch (id) {
         case R.id.del:
             mHandler.onDelete();
-            break;
-
+            break; 
         case R.id.clear:
             mHandler.onClear();
             break;

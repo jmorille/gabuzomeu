@@ -41,12 +41,13 @@
             maxDigits="@integer/max_digits"
             android:layout_alignParentTop="true"
             >
-
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+ 
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
 
+            
         </eu.ttbox.gabuzomeu.CalculatorDisplay>
 
         <FrameLayout

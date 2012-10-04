@@ -42,12 +42,12 @@
             android:layout_gravity="bottom"
             >
 
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
-            <eu.ttbox.gabuzomeu.CalculatorEditText
+            <eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay 
                 style="@style/display_style" />
 
-        </eu.ttbox.gabuzomeu.CalculatorDisplay>
+            </eu.ttbox.gabuzomeu.CalculatorDisplay>
 
         <FrameLayout
             android:layout_width="wrap_content"

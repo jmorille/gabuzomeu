@@ -16,13 +16,14 @@
 
 package eu.ttbox.gabuzomeu;
 
- 
 import eu.ttbox.gabuzomeu.R;
 import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -41,20 +42,17 @@ import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
 
-public class Calculator extends Activity implements PanelSwitcher.Listener, Logic.Listener,
-        OnClickListener, OnMenuItemClickListener {
-  
-    static final int BASIC_PANEL    = 0;
+public class Calculator extends Activity implements PanelSwitcher.Listener, Logic.Listener, OnClickListener, OnMenuItemClickListener {
+
+    static final int BASIC_PANEL = 0;
     static final int ADVANCED_PANEL = 1;
     static final int SHADOK_PANEL = 2;
 
     private static final String LOG_TAG = "Calculator";
-    private static final boolean DEBUG  = false;
+    private static final boolean DEBUG = false;
     private static final boolean LOG_ENABLED = false;
     private static final String STATE_CURRENT_VIEW = "state-current-view";
 
-
-    
     EventListener mListener = new EventListener();
     private CalculatorDisplay mDisplay;
     private Persist mPersist;
@@ -65,13 +63,13 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
     private View mBackspaceButton;
     private View mOverflowMenuButton;
 
+    @SuppressLint("NewApi")
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
 
         // Disable IME for this application
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM,
-                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
         setContentView(R.layout.main);
         mPager = (ViewPager) findViewById(R.id.panelswitch);
@@ -120,10 +118,11 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         mListener.setHandler(mLogic, mPager);
         mDisplay.setOnKeyListener(mListener);
 
-        if (!ViewConfiguration.get(this).hasPermanentMenuKey()) {
-            createFakeMenu();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) { 
+            if (!ViewConfiguration.get(this).hasPermanentMenuKey()) {
+                createFakeMenu();
+            }
         }
-
         mLogic.resumeWithHistory();
         updateDeleteMode();
     }
@@ -159,7 +158,6 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         return true;
     }
 
-
     private void createFakeMenu() {
         mOverflowMenuButton = findViewById(R.id.overflow_menu);
         if (mOverflowMenuButton != null) {
@@ -171,12 +169,12 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.overflow_menu:
-                PopupMenu menu = constructPopupMenu();
-                if (menu != null) {
-                    menu.show();
-                }
-                break;
+        case R.id.overflow_menu:
+            PopupMenu menu = constructPopupMenu();
+            if (menu != null) {
+                menu.show();
+            }
+            break;
         }
     }
 
@@ -188,7 +186,6 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         onPrepareOptionsMenu(menu);
         return popupMenu;
     }
-
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
@@ -207,33 +204,31 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         return mPager != null && mPager.getCurrentItem() == SHADOK_PANEL;
     }
 
-    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.clear_history:
-                mHistory.clear();
-                mLogic.onClear();
-                break;
+        case R.id.clear_history:
+            mHistory.clear();
+            mLogic.onClear();
+            break;
 
-            case R.id.basic:
-                if (!getBasicVisibility() && mPager != null) {
-                    mPager.setCurrentItem(BASIC_PANEL, true);
-                }
-                break;
+        case R.id.basic:
+            if (!getBasicVisibility() && mPager != null) {
+                mPager.setCurrentItem(BASIC_PANEL, true);
+            }
+            break;
 
-            case R.id.advanced:
-                if (!getAdvancedVisibility() && mPager != null) {
-                    mPager.setCurrentItem(ADVANCED_PANEL, true);
-                }
-                break;
+        case R.id.advanced:
+            if (!getAdvancedVisibility() && mPager != null) {
+                mPager.setCurrentItem(ADVANCED_PANEL, true);
+            }
+            break;
 
-
-            case R.id.shadok:
-                if (!getShadokVisibility() && mPager != null) {
-                    mPager.setCurrentItem(SHADOK_PANEL, true);
-                }
-                break;
+        case R.id.shadok:
+            if (!getShadokVisibility() && mPager != null) {
+                mPager.setCurrentItem(SHADOK_PANEL, true);
+            }
+            break;
 
         }
         return super.onOptionsItemSelected(item);
@@ -257,8 +252,7 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && getAdvancedVisibility()
-                && mPager != null) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && getAdvancedVisibility() && mPager != null) {
             mPager.setCurrentItem(BASIC_PANEL);
             return true;
         } else {
@@ -295,7 +289,7 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
             mSimplePage = simplePage;
             mAdvancedPage = advancedPage;
             mShadokPage = shadokPage;
-            
+
             final Resources res = getResources();
             final TypedArray simpleButtons = res.obtainTypedArray(R.array.simple_buttons);
             for (int i = 0; i < simpleButtons.length(); i++) {
@@ -310,25 +304,24 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
             advancedButtons.recycle();
 
             // Custom Font
-            Button btGa = (Button) shadokPage.findViewById( R.id.digitGa);
-            Button btBu = (Button) shadokPage.findViewById( R.id.digitBu);
-            Button btZo = (Button) shadokPage.findViewById( R.id.digitZo);
-            Button btMeu = (Button) shadokPage.findViewById( R.id.digitMeu);
-            Typeface font =GabuzomeuConverter.getSymbolFont(Calculator.this);
+            Button btGa = (Button) shadokPage.findViewById(R.id.digitGa);
+            Button btBu = (Button) shadokPage.findViewById(R.id.digitBu);
+            Button btZo = (Button) shadokPage.findViewById(R.id.digitZo);
+            Button btMeu = (Button) shadokPage.findViewById(R.id.digitMeu);
+            Typeface font = GabuzomeuConverter.getSymbolFont(Calculator.this);
             btGa.setTypeface(font);
             btBu.setTypeface(font);
             btZo.setTypeface(font);
             btMeu.setTypeface(font);
-            // Event 
+            // Event
             final TypedArray shadokButtons = res.obtainTypedArray(R.array.shadok_buttons);
-        
-            for (int i = 0; i < shadokButtons.length(); i++) { 
-            	int resourceId= shadokButtons.getResourceId(i, 0);
-                setOnClickListener(shadokPage, resourceId);  
+
+            for (int i = 0; i < shadokButtons.length(); i++) {
+                int resourceId = shadokButtons.getResourceId(i, 0);
+                setOnClickListener(shadokPage, resourceId);
             }
             shadokButtons.recycle();
 
-            
             final View clearButton = simplePage.findViewById(R.id.clear);
             if (clearButton != null) {
                 mClearButton = clearButton;
@@ -351,8 +344,8 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
 
         @Override
         public Object instantiateItem(View container, int position) {
-        	Log.w(LOG_TAG, "InstantiateItem Position : " + position);
-            final View page = position == 0 ? mSimplePage : (position == 1? mAdvancedPage: mShadokPage) ;
+            Log.w(LOG_TAG, "InstantiateItem Position : " + position);
+            final View page = position == 0 ? mSimplePage : (position == 1 ? mAdvancedPage : mShadokPage);
             ((ViewGroup) container).addView(page);
             return page;
         }

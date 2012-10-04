@@ -11,8 +11,10 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.widget.RemoteViews;
 import eu.ttbox.gabuzomeu.R;
+import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 
 @TargetApi(3)
 public class Widget extends AppWidgetProvider {
@@ -48,14 +50,24 @@ public class Widget extends AppWidgetProvider {
 		RemoteViews views = new RemoteViews(context.getPackageName(),
 				R.layout.widget);
 
-		String text;
-		Date time = c.getTime();
-		String hour = toGaBuZoMeu(c.get(Calendar.HOUR_OF_DAY));
-		String minute = toGaBuZoMeu(c.get(Calendar.MINUTE));
+		// Converter
+		GabuzomeuConverter converter = new GabuzomeuConverter(context);
+//	TODO	Typeface font = GabuzomeuConverter.getSymbolFont(context);
+		// Do Converter
+		String hourMinute = String.format("%1$tH:%1$tM", System.currentTimeMillis());
+		StringBuilder shadokDigit= new StringBuilder(); // For Symbole
+        StringBuilder shadokDigitName = new StringBuilder();
+		converter.encodeEquationToShadokCode(hourMinute, shadokDigit, shadokDigitName);
+		
+//		String text;
+//		Date time = c.getTime();
+//		String hour = toGaBuZoMeu(c.get(Calendar.HOUR_OF_DAY));
+//		String minute = toGaBuZoMeu(c.get(Calendar.MINUTE));
 		// text = DateFormat.getTimeInstance(DateFormat.SHORT).format(time);
 		// if (c.get(Calendar.HOUR_OF_DAY) < 10)
 		// text = "0" + text;
-		views.setTextViewText(R.id.time, hour + ":" + minute);
+		views.setTextViewText(R.id.time, shadokDigitName.toString());
+	 
 		views.setTextViewText(R.id.weekday,
 				dayNames[c.get(Calendar.DAY_OF_WEEK)].toUpperCase());
 		views.setTextViewText(R.id.day,

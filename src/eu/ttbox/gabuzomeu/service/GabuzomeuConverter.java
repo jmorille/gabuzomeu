@@ -87,7 +87,7 @@ public class GabuzomeuConverter {
 		// Convert To 0123 format
 		StringBuilder sb = new StringBuilder(shadokStringSize);
 		for (char c : shadokString.toCharArray()) {
-			Log.d(TAG, String.format("Want convert shadok [%s] with map %s", c, SHADOK_DIGIT_TO_BASE10 ));
+//			Log.d(TAG, String.format("Want convert shadok [%s] with map %s", c, SHADOK_DIGIT_TO_BASE10 ));
 			char base10Digit = SHADOK_DIGIT_TO_BASE10.get( c);
 //			Log.d(TAG, String.format("Want convert shadok [%s] ==> [%s]", c, base10Digit));
 			sb.append(base10Digit);
@@ -96,7 +96,7 @@ public class GabuzomeuConverter {
 		
 //		Integer	base10 = Integer.valueOf(sb.toString(), 4); 
 		BigInteger base10 = new BigInteger(sb.toString(), 4);
-		Log.d(TAG, String.format("Convert Shadok %s ==>  %s", sb.toString(), base10));
+//		Log.d(TAG, String.format("Convert Shadok %s ==>  %s", sb.toString(), base10));
 		base10DigitDest.append(base10.toString());
 	}
 
