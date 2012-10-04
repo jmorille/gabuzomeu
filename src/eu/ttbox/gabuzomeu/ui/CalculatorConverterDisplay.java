@@ -1,6 +1,7 @@
 package eu.ttbox.gabuzomeu.ui;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Editable.Factory;
@@ -109,6 +110,9 @@ public class CalculatorConverterDisplay extends LinearLayout {
 		calculatorEditText.setBackgroundDrawable(d);
 		converterEditText.setBackgroundDrawable(d);
 		converterSmallEditText.setBackgroundDrawable(d);
+		// Font 
+		Typeface font = Typeface.createFromAsset( getContext().getAssets(), "dejavu_serif.ttf");
+		converterEditText.setTypeface(font);
 	}
 
 

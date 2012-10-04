@@ -33,13 +33,13 @@
         >
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitMeu"
-            android:text="@string/digitNameMeu"
+            android:text="@string/digitZo"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameMeu"
             />
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitZo"
-            android:text="@string/digitNameZo"
+            android:text="@string/digitMeu"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameZo"
             />
@@ -58,13 +58,13 @@
         >
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitGa"
-            android:text="@string/digitNameGa"
+            android:text="@string/digitGa"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameGa"
             />
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitBu"
-            android:text="@string/digitNameBu"
+            android:text="@string/digitBu"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameBu"
             />

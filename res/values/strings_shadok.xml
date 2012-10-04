@@ -27,7 +27,7 @@
     <string name="digitGa">\u25EF</string>
     <string name="digitBu">_</string> <!-- \u23D0 -->
     <string name="digitZo">\u2143</string>
-    <string name="digitMeu">\u25B3</string> <!-- \u25B7, \u25FF -->
+    <string name="digitMeu">\u25FF</string> <!-- 25C1,   \u25FF -->
     
     <string name="digitNameGa">Ga</string>
     <string name="digitNameBu">Bu</string>

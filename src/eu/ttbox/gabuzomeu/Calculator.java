@@ -21,6 +21,7 @@ import eu.ttbox.gabuzomeu.R;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -35,6 +36,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
 
@@ -306,9 +308,22 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
             }
             advancedButtons.recycle();
 
+            // Custom Font
+        	Typeface font = Typeface.createFromAsset(  getAssets(), "dejavu_serif.ttf");
+            Button btGa = (Button) shadokPage.findViewById( R.id.digitGa);
+            Button btBu = (Button) shadokPage.findViewById( R.id.digitBu);
+            Button btZo = (Button) shadokPage.findViewById( R.id.digitZo);
+            Button btMeu = (Button) shadokPage.findViewById( R.id.digitMeu);
+            btGa.setTypeface(font);
+            btBu.setTypeface(font);
+            btZo.setTypeface(font);
+            btMeu.setTypeface(font);
+            // Event 
             final TypedArray shadokButtons = res.obtainTypedArray(R.array.shadok_buttons);
-            for (int i = 0; i < shadokButtons.length(); i++) {
-                setOnClickListener(shadokPage, shadokButtons.getResourceId(i, 0));
+        
+            for (int i = 0; i < shadokButtons.length(); i++) { 
+            	int resourceId= shadokButtons.getResourceId(i, 0);
+                setOnClickListener(shadokPage, resourceId);  
             }
             shadokButtons.recycle();
 
