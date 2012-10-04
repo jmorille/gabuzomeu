@@ -25,7 +25,7 @@
     <!-- http://www.fileformat.info/info/unicode/category/Sm/list.htm -->
 
     <string name="digitGa">\u25EF</string>
-    <string name="digitBu">_</string> <!-- \u23D0 -->
+    <string name="digitBu">\u005F</string> <!-- \u23D0 -->
     <string name="digitZo">\u2143</string>
     <string name="digitMeu">\u25FF</string> <!-- 25C1,   \u25FF -->
     

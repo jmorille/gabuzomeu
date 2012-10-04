@@ -7,6 +7,7 @@ import android.text.Editable;
 import android.text.Editable.Factory;
 import android.text.method.NumberKeyListener;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import eu.ttbox.gabuzomeu.CalculatorEditText;
@@ -15,6 +16,9 @@ import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 
 public class CalculatorConverterDisplay extends LinearLayout {
 
+	private static final String TAG = "CalculatorConverterDisplay";
+
+	
 	private GabuzomeuConverter converter;
 
 	private CalculatorEditText calculatorEditText;
@@ -62,6 +66,20 @@ public class CalculatorConverterDisplay extends LinearLayout {
 		converterSmallEditText.setText(shadokDigitName);
 	}
 
+	private void converterToBase10(CharSequence text) {
+		Log.w(TAG, "converterToBase10  : " + text);
+		CharSequence numberDigit = text;
+		CharSequence shadokDigitName = text;
+		int textSize = text == null ? 0 : text.length();
+		if (textSize > 0) {
+			StringBuilder convertDigit = new StringBuilder(textSize  );
+//			StringBuilder convertDigitName = new StringBuilder(textSize *4);
+			converter.decodeShadokDigitEquationToBase10Code(text,  convertDigit);
+			numberDigit = convertDigit.toString();
+//			shadokDigitName = convertDigitName.toString();
+		}
+		calculatorEditText.setText(numberDigit);
+	}
 	public void insert(String delta) {
 		// editor
 		int cursor = calculatorEditText.getSelectionStart();
@@ -74,6 +92,7 @@ public class CalculatorConverterDisplay extends LinearLayout {
 		int cursor = converterEditText.getSelectionStart();
 		converterEditText.getText().insert(cursor, delta);
 		// TODO Recompute the tow other
+		converterToBase10(converterEditText.getText().toString());
 	}
 	
 	public void setSelection(int length) {

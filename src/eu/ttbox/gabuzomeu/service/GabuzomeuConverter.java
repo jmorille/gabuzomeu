@@ -1,6 +1,7 @@
 package eu.ttbox.gabuzomeu.service;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -16,42 +17,54 @@ public class GabuzomeuConverter {
 	private static boolean isInitShadokDigit = false;
 
 	private Context mContext;
-	private static SparseArray<String> SHADOK_DIGIT;
+	private static SparseArray<Character> BASE10_TO_SHADOK_DIGIT;
+	private   SparseArray<Character> SHADOK_DIGIT_TO_BASE10;
 	private static SparseArray<String> SHADOK_DIGIT_NAME;
 
 	private static String IS_SHADOK_DIGIT;
-	
+
 	public final static boolean isNumberPartKey(char c) {
 		return (c >= '0' && c <= '9');// || c == '.';
 	}
 
-
-
 	public GabuzomeuConverter(Context mContext) {
 		super();
 		this.mContext = mContext;
-		intitShadokDigit(mContext); 
+		intitShadokDigit(mContext);
 	}
 
 	private void intitShadokDigit(Context mContext) {
 		if (!isInitShadokDigit) {
 			Resources res = mContext.getResources();
 			// Digit
-			String digitGa = res.getString(R.string.digitGa);
-			String digitBu = res.getString(R.string.digitBu);
-			String digitZo = res.getString(R.string.digitZo);
-			String digitMeu = res.getString(R.string.digitMeu);
+//			String digitGa = res.getString(R.string.digitGa);
+//			String digitBu = res.getString(R.string.digitBu);
+//			String digitZo = res.getString(R.string.digitZo);
+//			String digitMeu = res.getString(R.string.digitMeu);
+			
+			char digitGa = res.getString(R.string.digitGa).charAt(0);
+			char digitBu = res.getString(R.string.digitBu).charAt(0);
+			char digitZo = res.getString(R.string.digitZo).charAt(0);
+			char digitMeu = res.getString(R.string.digitMeu).charAt(0);
 			// is Shadow digit
 			StringBuilder isDigitBuilder = new StringBuilder();
 			isDigitBuilder.append(digitGa).append(digitBu).append(digitZo).append(digitMeu);
 			IS_SHADOK_DIGIT = isDigitBuilder.toString();
 			// Digit Map
-			SparseArray<String> shadokDigit = new SparseArray<String>(4);
+			SparseArray<Character> shadokDigit = new SparseArray<Character>(4);
 			shadokDigit.put('0', digitGa);
 			shadokDigit.put('1', digitBu);
 			shadokDigit.put('2', digitZo);
 			shadokDigit.put('3', digitMeu);
-			SHADOK_DIGIT = shadokDigit;
+			BASE10_TO_SHADOK_DIGIT = shadokDigit;
+
+			SparseArray<Character> nbToshadokDigit = new SparseArray<Character>(4);
+			nbToshadokDigit.put(digitGa, '0');
+			nbToshadokDigit.put(digitBu, '1');
+			nbToshadokDigit.put(digitZo, '2');
+			nbToshadokDigit.put(digitMeu, '3');
+			SHADOK_DIGIT_TO_BASE10 = nbToshadokDigit;
+			
 			// Digit Name Map
 			SparseArray<String> shadokDigitName = new SparseArray<String>(4);
 			shadokDigitName.put('0', res.getString(R.string.digitNameGa));
@@ -69,10 +82,28 @@ public class GabuzomeuConverter {
 		convertBase4NumberToShadokDigit(base4, shadokDigit, shadokDigitName);
 	}
 
+	public void convertShadokDigitToBase10Digit(String shadokString, StringBuilder base10DigitDest) {
+		int shadokStringSize = shadokString.length();
+		// Convert To 0123 format
+		StringBuilder sb = new StringBuilder(shadokStringSize);
+		for (char c : shadokString.toCharArray()) {
+//			Log.d(TAG, String.format("Want convert shadok [%s] with map %s", c, SHADOK_DIGIT_TO_BASE10 ));
+			char base10Digit = SHADOK_DIGIT_TO_BASE10.get( c);
+//			Log.d(TAG, String.format("Want convert shadok [%s] ==> [%s]", c, base10Digit));
+			sb.append(base10Digit);
+		}
+		// Chnaging to Base4
+		
+//		Integer	base10 = Integer.valueOf(sb.toString(), 4); 
+		BigInteger base10 = new BigInteger(sb.toString(), 4);
+		Log.d(TAG, String.format("Convert Shadok %s ==>  %s", sb.toString(), base10));
+		base10DigitDest.append(base10.toString());
+	}
+
 	public void convertBase4NumberToShadokDigit(String text, StringBuilder shadokDigitDest, StringBuilder shadokDigitNameDest) {
 		for (char c : text.toCharArray()) {
 			if (shadokDigitDest != null) {
-				String shadDigit = SHADOK_DIGIT.get(c);
+				char shadDigit = BASE10_TO_SHADOK_DIGIT.get(c);
 				shadokDigitDest.append(shadDigit);
 			}
 			if (shadokDigitNameDest != null) {
@@ -110,22 +141,39 @@ public class GabuzomeuConverter {
 			convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
 		}
 	}
-	
-	public void decodeShadokEquationToBase10Code(CharSequence base4, StringBuilder base10Digit) {
-		
+
+	public void decodeShadokDigitEquationToBase10Code(CharSequence base4, StringBuilder base10Digit) {
+		int baseSize = base4.length();
+		StringBuilder current = new StringBuilder(baseSize);
+		for (int i = 0; i < baseSize; i++) {
+			char c = base4.charAt(i);
+			if (isNumberShadokKey(c)) {
+				current.append(c); 
+			} else {
+				int currentSize = current.length();
+				if (currentSize > 0) {
+					convertShadokDigitToBase10Digit(current.toString(), base10Digit);
+					current.delete(0, currentSize);
+				}  
+				base10Digit.append(c); 
+			} 
+		}
+		// Clear Cache
+		if (current.length() > 0) {
+			convertShadokDigitToBase10Digit(current.toString(), base10Digit);
+		} 
 	}
-	
-	public final  boolean isNumberShadokKey(char c) {
-		return IS_SHADOK_DIGIT.indexOf(c)>-1;
+
+	public final boolean isNumberShadokKey(char c) {
+		return IS_SHADOK_DIGIT.indexOf(c) > -1;
 	}
-	
-	public final  String getShadokKey(char c) {
-		return SHADOK_DIGIT.get(c);
+
+	public final char getShadokKey(char c) {
+		return BASE10_TO_SHADOK_DIGIT.get(c);
 	}
-	
-	
+
 	public static Typeface getSymbolFont(Context context) {
-		Typeface font = Typeface.createFromAsset( context.getAssets(), "dejavu_serif.ttf");
+		Typeface font = Typeface.createFromAsset(context.getAssets(), "dejavu_serif.ttf");
 		return font;
 	}
 
