@@ -71,8 +71,9 @@ public class CalculatorConverterDisplay extends LinearLayout {
 	}
 
 	public void insertGaBuZoMeu(String delta) {
-		// TODO An Another Insert Method
-		insert(delta);
+		int cursor = converterEditText.getSelectionStart();
+		converterEditText.getText().insert(cursor, delta);
+		// TODO Recompute the tow other
 	}
 	
 	public void setSelection(int length) {
@@ -111,7 +112,7 @@ public class CalculatorConverterDisplay extends LinearLayout {
 		converterEditText.setBackgroundDrawable(d);
 		converterSmallEditText.setBackgroundDrawable(d);
 		// Font 
-		Typeface font = Typeface.createFromAsset( getContext().getAssets(), "dejavu_serif.ttf");
+		Typeface font = GabuzomeuConverter.getSymbolFont(getContext());
 		converterEditText.setTypeface(font);
 	}
 

@@ -18,6 +18,7 @@ package eu.ttbox.gabuzomeu;
 
  
 import eu.ttbox.gabuzomeu.R;
+import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -309,11 +310,11 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
             advancedButtons.recycle();
 
             // Custom Font
-        	Typeface font = Typeface.createFromAsset(  getAssets(), "dejavu_serif.ttf");
             Button btGa = (Button) shadokPage.findViewById( R.id.digitGa);
             Button btBu = (Button) shadokPage.findViewById( R.id.digitBu);
             Button btZo = (Button) shadokPage.findViewById( R.id.digitZo);
             Button btMeu = (Button) shadokPage.findViewById( R.id.digitMeu);
+            Typeface font =GabuzomeuConverter.getSymbolFont(Calculator.this);
             btGa.setTypeface(font);
             btBu.setTypeface(font);
             btZo.setTypeface(font);

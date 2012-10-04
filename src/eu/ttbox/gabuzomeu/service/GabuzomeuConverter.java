@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.util.SparseArray;
 import eu.ttbox.gabuzomeu.R;
@@ -18,15 +19,18 @@ public class GabuzomeuConverter {
 	private static SparseArray<String> SHADOK_DIGIT;
 	private static SparseArray<String> SHADOK_DIGIT_NAME;
 
+	private static String IS_SHADOK_DIGIT;
+	
 	public final static boolean isNumberPartKey(char c) {
 		return (c >= '0' && c <= '9');// || c == '.';
 	}
 
+
+
 	public GabuzomeuConverter(Context mContext) {
 		super();
 		this.mContext = mContext;
-		intitShadokDigit(mContext);
-
+		intitShadokDigit(mContext); 
 	}
 
 	private void intitShadokDigit(Context mContext) {
@@ -37,6 +41,10 @@ public class GabuzomeuConverter {
 			String digitBu = res.getString(R.string.digitBu);
 			String digitZo = res.getString(R.string.digitZo);
 			String digitMeu = res.getString(R.string.digitMeu);
+			// is Shadow digit
+			StringBuilder isDigitBuilder = new StringBuilder();
+			isDigitBuilder.append(digitGa).append(digitBu).append(digitZo).append(digitMeu);
+			IS_SHADOK_DIGIT = isDigitBuilder.toString();
 			// Digit Map
 			SparseArray<String> shadokDigit = new SparseArray<String>(4);
 			shadokDigit.put('0', digitGa);
@@ -101,6 +109,24 @@ public class GabuzomeuConverter {
 		if (current.length() > 0) {
 			convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
 		}
+	}
+	
+	public void decodeShadokEquationToBase10Code(CharSequence base4, StringBuilder base10Digit) {
+		
+	}
+	
+	public final  boolean isNumberShadokKey(char c) {
+		return IS_SHADOK_DIGIT.indexOf(c)>-1;
+	}
+	
+	public final  String getShadokKey(char c) {
+		return SHADOK_DIGIT.get(c);
+	}
+	
+	
+	public static Typeface getSymbolFont(Context context) {
+		Typeface font = Typeface.createFromAsset( context.getAssets(), "dejavu_serif.ttf");
+		return font;
 	}
 
 	// @Deprecated

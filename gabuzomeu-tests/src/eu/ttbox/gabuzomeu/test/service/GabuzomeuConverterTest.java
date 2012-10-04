@@ -33,21 +33,29 @@ public class GabuzomeuConverterTest extends AndroidTestCase {
 
     public void testEncodeEquationTobase4() {
         GabuzomeuConverter converter = new GabuzomeuConverter(getContext());
+        // Encode
         String[] equations = new String[] { //
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "42", "73", "37", "48", "77" //
                 , "1+1", "0+1+2+3" , "0+1+2+3+4+5"//
                 , "1+", "0+1+2+" , "0+1+2+3+4+"//
                 , "123+4355"//
         };
+        String[]  shadokEquation = new String[equations.length];
+        int i = 0;
         for (String equa : equations) {
         	StringBuilder shadok = new StringBuilder(equa.length()*4);
         	converter.encodeEquationToShadokCode(equa,shadok, null);
+        	shadokEquation[i++ ] = shadok.toString();
             Log.d(TAG, String.format("Equation %s  =>  %s", equa, shadok)); 
         }
         for (String equa : equations) { 
         	StringBuilder shadokName = new StringBuilder(equa.length()*4);
-             converter.encodeEquationToShadokCode(equa,null, shadokName);
+            converter.encodeEquationToShadokCode(equa,null, shadokName);
             Log.d(TAG, String.format("Equation %s  =>  %s", equa, shadokName));
+        }
+        // Decode
+        for (String shadok : shadokEquation) {
+        	
         }
     }
 }
