@@ -18,7 +18,7 @@ public class GabuzomeuConverter {
 
 	private Context mContext;
 	private static SparseArray<Character> BASE10_TO_SHADOK_DIGIT;
-	private   SparseArray<Character> SHADOK_DIGIT_TO_BASE10;
+	private static  SparseArray<Character> SHADOK_DIGIT_TO_BASE10;
 	private static SparseArray<String> SHADOK_DIGIT_NAME;
 
 	private static String IS_SHADOK_DIGIT;
@@ -87,7 +87,7 @@ public class GabuzomeuConverter {
 		// Convert To 0123 format
 		StringBuilder sb = new StringBuilder(shadokStringSize);
 		for (char c : shadokString.toCharArray()) {
-//			Log.d(TAG, String.format("Want convert shadok [%s] with map %s", c, SHADOK_DIGIT_TO_BASE10 ));
+			Log.d(TAG, String.format("Want convert shadok [%s] with map %s", c, SHADOK_DIGIT_TO_BASE10 ));
 			char base10Digit = SHADOK_DIGIT_TO_BASE10.get( c);
 //			Log.d(TAG, String.format("Want convert shadok [%s] ==> [%s]", c, base10Digit));
 			sb.append(base10Digit);
