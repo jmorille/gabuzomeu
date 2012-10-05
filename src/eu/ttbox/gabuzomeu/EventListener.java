@@ -17,6 +17,7 @@
 package eu.ttbox.gabuzomeu;
 
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +25,10 @@ import android.widget.Button;
 class EventListener implements View.OnKeyListener,
                                View.OnClickListener,
                                View.OnLongClickListener {
+	
+	private static final String TAG = "EventListener";
+	
+	
     Logic mHandler;
     ViewPager mPager;
 
@@ -37,9 +42,11 @@ class EventListener implements View.OnKeyListener,
         int id = view.getId();
         switch (id) {
         case R.id.del:
+//        	Log.w(TAG, "onDelete");
             mHandler.onDelete();
             break; 
         case R.id.clear:
+//        	Log.w(TAG, "onClear");
             mHandler.onClear();
             break;
 

@@ -61,33 +61,13 @@ public class CalculatorDisplay extends ViewSwitcher {
     }
 
     protected void setLogic(Logic logic, OnFocusPanelListener l) {
-        NumberKeyListener calculatorKeyListener =
-            new NumberKeyListener() {
-                public int getInputType() {
-                    return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-                }
-
-                @Override
-                protected char[] getAcceptedChars() {
-                    return ACCEPTED_CHARS;
-                }
-
-                @Override
-                public CharSequence filter(CharSequence source, int start, int end,
-                                           Spanned dest, int dstart, int dend) {
-                    /* the EditText should still accept letters (eg. 'sin')
-                       coming from the on-screen touch buttons, so don't filter anything.
-                    */
-                    return null;
-                }
-            };
+ 
 
         Editable.Factory factory = new CalculatorEditable.Factory(logic);
         for (int i = 0; i < 2; ++i) {
             CalculatorConverterDisplay text = (CalculatorConverterDisplay) getChildAt(i);
             text.setBackgroundDrawable(null);
-            text.setEditableFactory(factory);
-            text.setKeyListener(calculatorKeyListener);
+            text.setEditableFactory(factory); 
             text.setSingleLine();
             text.setOnFocusPanelListener(l);
         }
