@@ -2,44 +2,40 @@ package eu.ttbox.gabuzomeu.widgets.clock;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 
-import android.annotation.TargetApi;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.widget.RemoteViews;
 import eu.ttbox.gabuzomeu.R;
 import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 
-@TargetApi(3)
 public class Widget extends AppWidgetProvider {
-	public final static String CLOCK_START = "TypographicClock.ClockStart";
-	public final static String CLOCK_STOP = "TypographicClock.ClockStop";
+	public final static String CLOCK_START = "ClockStart";
+	public final static String CLOCK_STOP = "ClockStop";
 
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-		UpdateTime(context);
-		Intent i = new Intent();
-		i.setClass(context, ClockService.class);
-		i.setAction(CLOCK_START);
-		context.startService(i);
+		updateTime(context);
+		Intent intent = new Intent();
+		intent.setClass(context, ClockService.class);
+		intent.setAction(CLOCK_START);
+		context.startService(intent);
 	}
 
 	@Override
 	public void onDisabled(Context context) {
-		Intent i = new Intent();
-		i.setClass(context, ClockService.class);
-		i.setAction(CLOCK_STOP);
-		context.startService(i);
+		Intent intent = new Intent();
+		intent.setClass(context, ClockService.class);
+		intent.setAction(CLOCK_STOP);
+		context.startService(intent);
 	}
 
-	static public void UpdateTime(Context context) {
+	static public void updateTime(Context context) {
 		ComponentName thisWidget = new ComponentName(context, Widget.class);
 		AppWidgetManager manager = AppWidgetManager.getInstance(context);
 
@@ -78,20 +74,5 @@ public class Widget extends AppWidgetProvider {
 		views.setTextViewText(R.id.year, Integer.toString(c.get(Calendar.YEAR)));
 
 		manager.updateAppWidget(thisWidget, views);
-	}
-
-	static private String toGaBuZoMeu(int n) {
-
-		return Integer.toString(n, 4).replaceAll("0", "GA")
-				.replaceAll("1", "BU").replaceAll("2", "ZO")
-				.replaceAll("3", "MEU");
-
-	}
-
-	static private int toBase10(String s) {
-		String ss = s.replaceAll("GA", "0").replaceAll("BU", "1")
-				.replaceAll("ZO", "2").replaceAll("MEU", "3");
-		return Integer.valueOf(ss, 4);
-
 	}
 }

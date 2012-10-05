@@ -32,7 +32,6 @@
         </receiver>
         
         <service android:name=".widgets.clock.ClockService"/>
-        <service android:name=".ClockProvider$UpdateService"/>
         
     </application>
 
