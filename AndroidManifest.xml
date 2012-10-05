@@ -30,9 +30,7 @@
 
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget"/>
         </receiver>
-        
-        <service android:name=".widgets.clock.ClockService"/>
-        
+                
     </application>
 
 </manifest>
