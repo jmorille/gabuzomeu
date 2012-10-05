@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
 /*
 * Copyright (C) 2011, The Android Open Source Project
@@ -19,110 +18,106 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/advancedPad"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:layout_gravity="center"
-              >
+    android:id="@+id/shadokPad"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:orientation="vertical" >
 
     <LinearLayout
-        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        >
+        android:layout_weight="1" >
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitMeu"
-            android:text="@string/digitZo"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameMeu"
-            />
+            android:text="@string/digitZo" />
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitZo"
-            android:text="@string/digitMeu"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameZo"
-            />
+            android:text="@string/digitMeu" />
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/div"
-            android:text="@string/div"
             style="@style/button_style"
             android:contentDescription="@string/divDesc"
-            />
+            android:text="@string/div" />
     </LinearLayout>
 
     <LinearLayout
-        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        >
+        android:layout_weight="1" >
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitGa"
-            android:text="@string/digitGa"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameGa"
-            />
+            android:text="@string/digitGa" />
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitBu"
-            android:text="@string/digitBu"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameBu"
-            />
+            android:text="@string/digitBu" />
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/mul"
-            android:text="@string/mul"
             style="@style/button_style"
             android:contentDescription="@string/mulDesc"
-            />
+            android:text="@string/mul" />
     </LinearLayout>
 
     <LinearLayout
-        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        >
+        android:layout_weight="1" >
+
         <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/pi"
-            android:text="@string/pi"
+            android:id="@+id/leftParen"
             style="@style/button_style"
-            android:contentDescription="@string/piDesc"
-            />
+            android:contentDescription="@string/leftParenDesc"
+            android:text="@string/leftParen" />
+
         <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/e"
-            android:text="@string/e"
+            android:id="@+id/rightParen"
             style="@style/button_style"
-            android:contentDescription="@string/eDesc"
-            />
+            android:contentDescription="@string/rightParenDesc"
+            android:text="@string/rightParen" />
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/minus"
-            android:text="@string/minus"
             style="@style/button_style"
             android:contentDescription="@string/minusDesc"
-            />
+            android:text="@string/minus" />
     </LinearLayout>
 
     <LinearLayout
-        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        >
+        android:layout_weight="1" >
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/dot"
-            android:text="@string/dot"
             style="@style/digit_button_style"
             android:contentDescription="@string/dotDesc"
-            />
+            android:text="@string/dot" />
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/equal"
-            android:text="@string/equal"
             style="@style/button_style"
             android:contentDescription="@string/equalDesc"
-            />
+            android:text="@string/equal" />
+
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/plus"
-            android:text="@string/plus"
             style="@style/button_style"
             android:contentDescription="@string/plusDesc"
-            />
+            android:text="@string/plus" />
     </LinearLayout>
+
 </LinearLayout>

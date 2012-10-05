@@ -115,7 +115,7 @@ public class CalculatorConverterDisplay extends LinearLayout {
     }
 
     private void converterToBase10(CharSequence text) {
-        Log.w(TAG, "converterToBase10  : " + text);
+//        Log.w(TAG, "converterToBase10  : " + text);
         CharSequence numberDigit = text;
         CharSequence shadokDigitName = text;
         int textSize = text == null ? 0 : text.length();
@@ -138,7 +138,7 @@ public class CalculatorConverterDisplay extends LinearLayout {
         if (!hasFocus) {
             cursor = calculatorEditText.getText().length();
         }
-        Log.w(TAG, String.format("Insert delta : %s at position %s with focus %s of size %s", delta, cursor, hasFocus, calculatorEditText.getText().length()));
+//        Log.w(TAG, String.format("Insert delta : %s at position %s with focus %s of size %s", delta, cursor, hasFocus, calculatorEditText.getText().length()));
         calculatorEditText.getText().insert(cursor, delta);
         // Converter
         converterToShadok(calculatorEditText.getText().toString());
@@ -150,7 +150,7 @@ public class CalculatorConverterDisplay extends LinearLayout {
         if (!hasFocus) {
             cursor = converterEditText.getText().length();
         }
-        Log.w(TAG, String.format("insertGaBuZoMeu delta : %s at position %s with focus %s of size %s", delta, cursor, hasFocus, converterEditText.getText().length()));
+//        Log.w(TAG, String.format("insertGaBuZoMeu delta : %s at position %s with focus %s of size %s", delta, cursor, hasFocus, converterEditText.getText().length()));
         converterEditText.getText().insert(cursor, delta);
         // TODO Recompute the tow other
         converterToBase10(converterEditText.getText().toString());
