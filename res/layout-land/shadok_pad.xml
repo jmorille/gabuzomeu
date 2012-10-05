@@ -22,6 +22,7 @@
               android:id="@+id/shadokPad"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:layout_weight="1"
               android:orientation="vertical"
               android:layout_gravity="center"
               >
@@ -32,22 +33,34 @@
         android:layout_height="0dp"
         >
         <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/digitMeu"
-            android:text="@string/digitZo"
-            style="@style/button_small_style"
-            android:contentDescription="@string/digitNameMeu"
-            />
-        <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/digitZo"
-            android:text="@string/digitMeu"
+            android:text="@string/digitZo"
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameZo"
             />
         <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/div"
-            android:text="@string/div"
+            android:id="@+id/digitMeu"
+            android:text="@string/digitMeu"
+            style="@style/button_small_style"
+            android:contentDescription="@string/digitNameMeu"
+            />
+       <eu.ttbox.gabuzomeu.ColorButton
+            android:id="@+id/plus"
+            android:text="@string/plus"
             style="@style/button_style"
-            android:contentDescription="@string/divDesc"
+            android:contentDescription="@string/plusDesc"
+            />
+         <eu.ttbox.gabuzomeu.ColorButton
+            android:id="@+id/minus"
+            android:text="@string/minus"
+            style="@style/button_style"
+            android:contentDescription="@string/minusDesc"
+            />
+        <eu.ttbox.gabuzomeu.ColorButton
+            android:id="@+id/mul"
+            android:text="@string/mul"
+            style="@style/button_style"
+            android:contentDescription="@string/mulDesc"
             />
     </LinearLayout>
 
@@ -68,61 +81,23 @@
             style="@style/button_small_style"
             android:contentDescription="@string/digitNameBu"
             />
-        <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/mul"
-            android:text="@string/mul"
-            style="@style/button_style"
-            android:contentDescription="@string/mulDesc"
-            />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        >
-        <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/pi"
-            android:text="@string/pi"
-            style="@style/button_style"
-            android:contentDescription="@string/piDesc"
-            />
-        <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/e"
-            android:text="@string/e"
-            style="@style/button_style"
-            android:contentDescription="@string/eDesc"
-            />
-        <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/minus"
-            android:text="@string/minus"
-            style="@style/button_style"
-            android:contentDescription="@string/minusDesc"
-            />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        >
-        <eu.ttbox.gabuzomeu.ColorButton
+       <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/dot"
             android:text="@string/dot"
             style="@style/digit_button_style"
             android:contentDescription="@string/dotDesc"
+            />
+       <eu.ttbox.gabuzomeu.ColorButton
+            android:id="@+id/div"
+            android:text="@string/div"
+            style="@style/button_style"
+            android:contentDescription="@string/divDesc"
             />
         <eu.ttbox.gabuzomeu.ColorButton
             android:id="@+id/equal"
             android:text="@string/equal"
             style="@style/button_style"
             android:contentDescription="@string/equalDesc"
-            />
-        <eu.ttbox.gabuzomeu.ColorButton
-            android:id="@+id/plus"
-            android:text="@string/plus"
-            style="@style/button_style"
-            android:contentDescription="@string/plusDesc"
             />
     </LinearLayout>
 </LinearLayout>
