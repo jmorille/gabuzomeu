@@ -15,7 +15,7 @@ public class ClockService extends Service {
 	private Handler m_cHandler = new Handler();
 	private Runnable m_cHandlerCallBacks = new Runnable() {
 		public void run() {
-			UpdateTime();
+			updateTime();
 			runTimer();
 		}
 	};
@@ -38,7 +38,7 @@ public class ClockService extends Service {
 			if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
 				m_cHandler.removeCallbacks(m_cHandlerCallBacks);
 			} else {
-				UpdateTime();
+				updateTime();
 			}
 		}
 	}
@@ -48,7 +48,6 @@ public class ClockService extends Service {
 		if (intent.getAction().equalsIgnoreCase(Widget.CLOCK_START)) {
 			runTimer();
 		} else if (intent.getAction().equalsIgnoreCase(Widget.CLOCK_STOP)) {
-			// ������������� ������
 			m_cHandler.removeCallbacks(m_cHandlerCallBacks);
 			stopSelf();
 		}
@@ -56,12 +55,11 @@ public class ClockService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	private void UpdateTime() {
-		Widget.UpdateTime(this);
+	private void updateTime() {
+		Widget.updateTime(this);
 	}
 
 	private void runTimer() {
