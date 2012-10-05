@@ -1,5 +1,7 @@
 package eu.ttbox.gabuzomeu.test.service;
 
+import java.math.BigDecimal;
+
 import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
 import android.test.AndroidTestCase;
 import android.util.Log;
@@ -79,4 +81,6 @@ public class GabuzomeuConverterTest extends AndroidTestCase {
 			j++;
 		}
 	}
+	
+	
 }
