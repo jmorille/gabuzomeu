@@ -15,26 +15,29 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "YOUR TAG");
-		//Acquire the lock
+		PowerManager pm = (PowerManager) context
+				.getSystemService(Context.POWER_SERVICE);
+		PowerManager.WakeLock wl = pm.newWakeLock(
+				PowerManager.PARTIAL_WAKE_LOCK, "YOUR TAG");
+		// Acquire the lock
 		wl.acquire();
 
-		//You can do the processing here update the widget/remote views.
+		// You can do the processing here update the widget/remote views.
 		RemoteViews remoteViews = new RemoteViews(context.getPackageName(),
 				R.layout.widget);
-		String time = Utility.getCurrentTime("hh:mm:ss a");
-		remoteViews.setTextViewText(R.id.time, time);
-		//Toast.makeText(context, time, Toast.LENGTH_LONG).show();
-		ComponentName thiswidget = new ComponentName(context, ClockWidgetProvider.class);
+		ClockWidgetProvider.updateRemoveViews(remoteViews, context);
+		ComponentName thiswidget = new ComponentName(context,
+				ClockWidgetProvider.class);
 		AppWidgetManager manager = AppWidgetManager.getInstance(context);
 		manager.updateAppWidget(thiswidget, remoteViews);
-		//Release the lock
+		// Release the lock
 		wl.release();
 
 	}
-	public void setOnetimeTimer(Context context){
-		AlarmManager am=(AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
+	public void setOnetimeTimer(Context context) {
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
 		Intent intent = new Intent(context, AlarmManagerBroadcastReceiver.class);
 		PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
 		am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pi);
