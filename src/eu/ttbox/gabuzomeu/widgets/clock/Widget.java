@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -25,28 +26,20 @@ public class Widget extends AppWidgetProvider {
 		String monthNames[] = new DateFormatSymbols().getMonths();
 		GabuzomeuConverter converter = new GabuzomeuConverter(context);
 		Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
-		final int N = appWidgetIds.length;
-
 		// Perform this loop procedure for each App Widget that belongs to this
 		// provider
-		for (int i = 0; i < N; i++) {
+		for (int i = 0; i < appWidgetIds.length; i++) {
 			int appWidgetId = appWidgetIds[i];
-			// Create an Intent to launch ExampleActivity
-			Intent intent = new Intent(context, Info.class);
-			PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
-					intent, 0);
-			// Get the layout for the App Widget and attach an on-click listener
-			// to the button
 			RemoteViews views = new RemoteViews(context.getPackageName(),
 					R.layout.widget);
-
 			String hourMinute = String.format("%1$tH:%1$tM",
 					System.currentTimeMillis());
 			StringBuilder shadokDigit = new StringBuilder(); // For Symbole
 			StringBuilder shadokDigitName = new StringBuilder();
 			converter.encodeEquationToShadokCode(hourMinute, shadokDigit,
 					shadokDigitName);
-			views.setTextViewText(R.id.time, shadokDigitName.toString()+":" + calendar.get(Calendar.SECOND));
+			views.setTextViewText(R.id.time, shadokDigitName.toString() + ":"
+					+ calendar.get(Calendar.SECOND));
 
 			views.setTextViewText(R.id.weekday,
 					dayNames[calendar.get(Calendar.DAY_OF_WEEK)].toUpperCase());
@@ -62,6 +55,31 @@ public class Widget extends AppWidgetProvider {
 
 	@Override
 	public void onDisabled(Context context) {
+		Intent intent = new Intent(context, Widget.class);
+		PendingIntent sender = PendingIntent
+				.getBroadcast(context, 0, intent, 0);
+		AlarmManager alarmManager = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(sender);
+		super.onDisabled(context);
 	}
+
+	@Override
+	public void onDeleted(Context context, int[] appWidgetIds) {
+		super.onDeleted(context, appWidgetIds);
+	}
+
+	@Override
+	public void onEnabled(Context context) {
+		super.onEnabled(context);
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent(context, Widget.class);
+		PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
+		// After after 3 seconds
+		am.setRepeating(AlarmManager.RTC_WAKEUP,
+				System.currentTimeMillis() + 1000, 1000, pi);
+	}
+
 
 }

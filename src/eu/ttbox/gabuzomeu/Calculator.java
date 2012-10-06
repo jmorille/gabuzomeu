@@ -16,12 +16,7 @@
 
 package eu.ttbox.gabuzomeu;
 
-import eu.ttbox.gabuzomeu.R;
-import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
-import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay;
-import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay.OnFocusPanelListener;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
@@ -44,6 +39,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
+import eu.ttbox.gabuzomeu.service.GabuzomeuConverter;
+import eu.ttbox.gabuzomeu.ui.CalculatorConverterDisplay.OnFocusPanelListener;
 
 public class Calculator extends FragmentActivity implements PanelSwitcher.Listener, Logic.Listener, OnClickListener, OnMenuItemClickListener {
 
