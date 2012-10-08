@@ -16,8 +16,8 @@
 
 package eu.ttbox.gabuzomeu;
 
-import android.text.SpannableStringBuilder;
 import android.text.Editable;
+import android.text.SpannableStringBuilder;
 
 class CalculatorEditable extends SpannableStringBuilder {
     private static final char[] ORIGINALS    = {'-',      '*',      '/'};

@@ -16,16 +16,16 @@
 
 package eu.ttbox.gabuzomeu;
 
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-import android.view.View;
-import android.content.Context;
-import android.widget.BaseAdapter;
-import android.widget.TextView;
-
 import java.util.Vector;
 
 import org.javia.arity.SyntaxException;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
 
 class HistoryAdapter extends BaseAdapter {
     private Vector<HistoryEntry> mEntries;

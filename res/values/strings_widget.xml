@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_name">ShadokClock</string>
-<string name="widget_label">Shadok Clock</string>
-<string name="widget_description">Shadok Clock</string>
-<string name="widget_intro">Shadok Clock</string>
-<string name="test">test</string>
+
+    <string name="widget_name">GaBuZoMeuClock</string>
+    <string name="widget_label">GaBuZoMeu Clock</string>
+    <string name="widget_description">GaBuZoMeu Clock</string>
+    <string name="widget_intro">GaBuZoMeu Clock</string>
+    <string name="title_activity_widget">WidgetActivity</string>
+
 </resources>
