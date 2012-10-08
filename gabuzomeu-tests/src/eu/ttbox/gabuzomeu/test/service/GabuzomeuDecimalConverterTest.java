@@ -83,7 +83,20 @@ public class GabuzomeuDecimalConverterTest  extends AndroidTestCase {
 //	        return new String(cursor, bufLen - cursor, buf);
 	    }
 	 
- 
+	// converts integer n into a base b string
+	    public static String toString(int n, int base) {
+	       // special case
+	       if (n == 0) return "0";
+
+	       String digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	       String s = "";
+	       while (n > 0) {
+	          int d = n % base;
+	          s = digits.charAt(d) + s;
+	          n = n / base;
+	       }
+	       return s;
+	    }
 	    
 		public void testConverterReal() {
 			String[] nbs = new String[] {//

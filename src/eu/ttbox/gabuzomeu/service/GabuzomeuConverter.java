@@ -1,5 +1,6 @@
 package eu.ttbox.gabuzomeu.service;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import android.content.Context;
@@ -37,6 +38,10 @@ public class GabuzomeuConverter {
 		return (c >= '0' && c <= '9');// || c == '.';
 	}
 
+	public final static boolean isDottKey(char c) {
+        return (c == '.'  );// || c == '.';
+    }
+	
 	public GabuzomeuConverter(Context mContext) {
 		super();
 		this.mContext = mContext;
@@ -152,16 +157,32 @@ public class GabuzomeuConverter {
 		StringBuilder current = new StringBuilder(baseSize + baseSize);
 		boolean isShadokDigit = shadokDigit != null;
 		boolean isShadokDigitName = shadokDigitName != null;
+		boolean isAfterDot =false;
 		for (int i = 0; i < baseSize; i++) {
 			char c = base10.charAt(i);
 			if (isNumberPartKey(c)) {
 				current.append(c);
 			} else {
+			   
 				int currentSize = current.length();
 				if (currentSize > 0) {
-					convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
+//				    if (isAfterDot) {
+//				        String numberAfterDot = current.toString();
+//				        BigInteger nb = new BigInteger(numberAfterDot);
+//				        BigInteger nbd=  nb.divide(new BigInteger("0.25"));
+//				        convertBase10NumberToShadokDigit(nbd.toString(), shadokDigit, shadokDigitName);
+// 				    } else {
+//				        convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
+//				    }
+				    convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
 					current.delete(0, currentSize);
 				}
+                isAfterDot =false;
+                // Check
+				if (isDottKey(c)) {
+				    isAfterDot =true;
+				}
+				// Write Char
 				if (isShadokDigit) {
 					shadokDigit.append(c);
 				}
@@ -172,7 +193,16 @@ public class GabuzomeuConverter {
 		}
 		// Clear Cache
 		if (current.length() > 0) {
-			convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
+		    if (isAfterDot) {
+//                String numberAfterDot = current.toString();
+//                BigInteger base10Dot = new BigInteger(numberAfterDot);
+//                String base4 = base10Dot.toString(4);
+//                shadokDigitName.append(base4);
+//                Log.e(TAG, "Convert after dot "+ isAfterDot + " : " + base4);
+              convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
+            } else {
+                convertBase10NumberToShadokDigit(current.toString(), shadokDigit, shadokDigitName);
+            }
 		}
 	}
 
