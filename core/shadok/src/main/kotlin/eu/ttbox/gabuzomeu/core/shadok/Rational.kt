@@ -115,9 +115,18 @@ class Rational private constructor(val numerator: BigInteger, val denominator: B
         /** Décimales conservées quand le développement décimal ne termine pas. */
         const val DEFAULT_MAX_SCALE: Int = 20
 
-        /** Facteurs premiers de 10, ceux qui rendent un développement décimal fini. */
+        /**
+         * Facteurs premiers de 10, ceux qui rendent un développement décimal fini.
+         *
+         * `BigInteger.valueOf(2)` et non `BigInteger.TWO` : cette constante n'existe sur
+         * Android qu'à partir de l'API 33, alors que `minSdk` est 31. Elle faisait donc
+         * échouer l'initialisation de cette classe — donc **toute** arithmétique de
+         * l'application — d'un `NoSuchFieldError` sur Android 12 et 12L. Rien ne l'avait
+         * signalé : ce module est du Kotlin pur, hors de portée du `NewApi` d'Android Lint,
+         * et l'appareil de développement tourne en API 37.
+         */
         private val DECIMAL_PRIME_FACTORS =
-            listOf(BigInteger.TWO, BigInteger.valueOf(5))
+            listOf(BigInteger.valueOf(2), BigInteger.valueOf(5))
 
         val ZERO: Rational = Rational(BigInteger.ZERO, BigInteger.ONE)
         val ONE: Rational = Rational(BigInteger.ONE, BigInteger.ONE)
