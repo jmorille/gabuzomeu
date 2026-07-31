@@ -1,20 +1,37 @@
 name: Release
 
-# Déclenché par un tag de version. Le tag pilote le numéro de version de l'artefact :
-# `git tag v1.2.3 && git push origin v1.2.3` produit un AAB et un APK en 1.2.3.
+# Trois façons de publier, parce qu'il y a trois façons de s'y prendre.
+#
+# 1. `release: published` — **le cas de l'interface GitHub**. Publier une release depuis
+#    le site n'émet pas de `push` de tag : le tag est créé par l'API, ce qui déclenche
+#    `create` et `release`, pas `push`. Sans cette entrée, une release faite à la souris
+#    reste sans artefact, et c'est exactement ce qui est arrivé à `2.0.0-RC0`.
+# 2. `push` d'un tag — le cas ligne de commande, `git tag 1.2.3 && git push origin 1.2.3`.
+#    Le préfixe « v » est facultatif et un suffixe de pré-version est accepté, sans quoi
+#    `2.0.0-RC0` ne correspondait à rien.
+# 3. `workflow_dispatch` — reprise manuelle, pour rattraper une release déjà publiée.
 on:
+  release:
+    types: [published]
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
   workflow_dispatch:
     inputs:
       version:
-        description: "Version à publier, sans le « v » (ex. 1.2.3)"
+        description: "Tag à publier (ex. 2.0.0-RC0, ou v1.2.3)"
         required: true
         type: string
 
 permissions:
   contents: write
+
+# Filet de sécurité : si un même tag déclenchait deux fois le workflow, deux exécutions
+# téléverseraient les mêmes fichiers sur la même release. On garde la dernière.
+concurrency:
+  group: release-${{ github.event.release.tag_name || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   release:
@@ -29,6 +46,9 @@ jobs:
         with:
           # Historique complet : nécessaire pour dériver le versionCode du nombre de commits.
           fetch-depth: 0
+          # En reprise manuelle, `github.ref` est la branche : on force le tag demandé,
+          # sinon on construirait la pointe de master et non la version publiée.
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref }}
 
       - uses: actions/setup-java@v4
         with:
@@ -39,18 +59,27 @@ jobs:
 
       - name: Déterminer la version
         id: version
+        env:
+          # Chaque évènement porte le tag ailleurs : `release` dans sa charge utile,
+          # `push` dans la réf, `workflow_dispatch` dans son entrée.
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            # refs/tags/v1.2.3 -> 1.2.3
-            VERSION="${GITHUB_REF_NAME#v}"
-          fi
+          case "$GITHUB_EVENT_NAME" in
+            release)          TAG="$RELEASE_TAG" ;;
+            workflow_dispatch) TAG="$INPUT_TAG" ;;
+            *)                TAG="$GITHUB_REF_NAME" ;;
+          esac
+          # Le « v » n'est qu'une convention de nommage du tag : v1.2.3 -> 1.2.3.
+          # Un suffixe de pré-version, lui, est conservé : « 2.0.0-RC0 » est un
+          # versionName parfaitement valide, et c'est une information utile.
+          VERSION="${TAG#v}"
           # versionCode monotone : le nombre de commits ne peut que croître.
           VERSION_CODE="$(git rev-list --count HEAD)"
-          echo "name=$VERSION"       >> "$GITHUB_OUTPUT"
-          echo "code=$VERSION_CODE"  >> "$GITHUB_OUTPUT"
-          echo "Version $VERSION (versionCode $VERSION_CODE)"
+          echo "tag=$TAG"           >> "$GITHUB_OUTPUT"
+          echo "name=$VERSION"      >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "Tag $TAG -> version $VERSION (versionCode $VERSION_CODE)"
 
       # On ne publie jamais une version qui ne passe pas les tests.
       - name: Vérifications
@@ -82,12 +111,19 @@ jobs:
             app/build/outputs/bundle/release/*.aab
             app/build/outputs/apk/release/*.apk
 
-      - name: Créer la release GitHub
+      - name: Publier les artefacts sur la release
         uses: softprops/action-gh-release@v2
         with:
+          # Explicite : en reprise manuelle, `github.ref` est une branche et l'action
+          # publierait sur une pseudo-release nommée d'après elle.
+          tag_name: ${{ steps.version.outputs.tag }}
           name: GaBuZoMeu ${{ steps.version.outputs.name }}
-          generate_release_notes: true
-          draft: false
+          # Sur une release déjà publiée à la main, on ajoute les fichiers sans réécrire
+          # les notes que l'auteur a rédigées.
+          generate_release_notes: ${{ github.event_name != 'release' }}
+          # Une release sans APK est précisément le symptôme à ne plus jamais laisser
+          # passer en silence : si le glob ne trouve rien, le job échoue.
+          fail_on_unmatched_files: true
           files: |
             app/build/outputs/bundle/release/*.aab
             app/build/outputs/apk/release/*.apk
