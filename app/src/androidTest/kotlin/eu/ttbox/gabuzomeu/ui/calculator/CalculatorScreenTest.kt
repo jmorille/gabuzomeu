@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import eu.ttbox.gabuzomeu.R
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
 import org.junit.Rule
@@ -33,6 +34,15 @@ class CalculatorScreenTest {
      */
     @get:Rule
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+
+    /**
+     * Résout une chaîne depuis les ressources, au lieu de l'écrire en dur.
+     *
+     * Les tests ne doivent rien supposer de la locale de l'appareil : en dur, ils
+     * passeraient sur un téléphone français et échoueraient sur l'émulateur `en-US` de
+     * la CI, qui sert `values-en/`.
+     */
+    private fun string(resId: Int): String = composeTestRule.activity.getString(resId)
 
     private fun setScreen(
         state: CalculatorUiState,
@@ -71,9 +81,9 @@ class CalculatorScreenTest {
         setScreen(CalculatorUiState(), onKey = { pressed += it })
 
         composeTestRule.onNodeWithText("7").performClick()
-        composeTestRule.onNodeWithContentDescription("Multiplié par").performClick()
+        composeTestRule.onNodeWithContentDescription(string(R.string.key_times)).performClick()
         composeTestRule.onNodeWithText("6").performClick()
-        composeTestRule.onNodeWithContentDescription("Égale").performClick()
+        composeTestRule.onNodeWithContentDescription(string(R.string.key_equals)).performClick()
 
         assertEquals(4, pressed.size)
         assertEquals(KeyAction.Digit('7'), pressed[0])
@@ -126,7 +136,7 @@ class CalculatorScreenTest {
         var requested: NumberNotation? = null
         setScreen(CalculatorUiState(), onNotationChange = { requested = it })
 
-        composeTestRule.onNodeWithText("Shadok").performClick()
+        composeTestRule.onNodeWithText(string(R.string.mode_shadok)).performClick()
 
         assertEquals(NumberNotation.SHADOK, requested)
     }
