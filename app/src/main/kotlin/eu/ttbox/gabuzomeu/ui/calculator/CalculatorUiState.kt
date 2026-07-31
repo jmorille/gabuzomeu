@@ -2,6 +2,7 @@ package eu.ttbox.gabuzomeu.ui.calculator
 
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
+import eu.ttbox.gabuzomeu.data.DisplaySettings
 
 /**
  * L'état affichable de la calculatrice — immuable, dérivé du tampon d'expression.
@@ -13,9 +14,9 @@ import eu.ttbox.gabuzomeu.core.eval.NumberNotation
  */
 data class CalculatorUiState(
     val notation: NumberNotation = NumberNotation.DECIMAL,
-    val decimal: String = "",
     val glyphs: String = "",
     val labels: String = "",
+    val decimal: String = "",
     /** Au moins un nombre a dû être tronqué pour s'écrire en base 4. */
     val shadokApproximate: Boolean = false,
     /** Résultat non représentable exactement en décimal (un tiers, par exemple). */
@@ -23,6 +24,7 @@ data class CalculatorUiState(
     val error: EvalError? = null,
     /** L'affichage montre le résultat d'un « = » et non une saisie en cours. */
     val showingResult: Boolean = false,
+    val settings: DisplaySettings = DisplaySettings(),
 ) {
     val isEmpty: Boolean get() = decimal.isEmpty()
 }

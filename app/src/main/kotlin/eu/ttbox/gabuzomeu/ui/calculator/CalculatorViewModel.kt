@@ -17,6 +17,7 @@ import eu.ttbox.gabuzomeu.core.eval.ExpressionDisplay
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
 import eu.ttbox.gabuzomeu.data.CalculatorPreferences
+import eu.ttbox.gabuzomeu.data.DisplaySettings
 import eu.ttbox.gabuzomeu.data.SessionStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,6 +49,7 @@ class CalculatorViewModel(
     private var showingResult = false
     private var error: EvalError? = null
     private var decimalApproximate = false
+    private var settings = DisplaySettings()
 
     private val _uiState = MutableStateFlow(CalculatorUiState())
     val uiState: StateFlow<CalculatorUiState> = _uiState.asStateFlow()
@@ -63,6 +65,14 @@ class CalculatorViewModel(
             persistRequests.filterNotNull().collectLatest { request ->
                 delay(PERSIST_DEBOUNCE_MS)
                 sessionStore.save(request.keys, request.notation)
+            }
+        }
+
+        // Les réglages d'affichage vivent hors de l'expression : on les suit en continu.
+        viewModelScope.launch {
+            sessionStore.settings.collect { stored ->
+                settings = stored
+                publish()
             }
         }
 
@@ -131,6 +141,14 @@ class CalculatorViewModel(
         publish()
     }
 
+    fun onSettingsChange(updated: DisplaySettings) {
+        settings = updated
+        publish()
+        // Écriture immédiate : un réglage se change rarement, l'anti-rebond de la saisie
+        // n'a pas de raison de s'appliquer ici.
+        viewModelScope.launch { sessionStore.saveSettings(updated) }
+    }
+
     // ------------------------------------------------------------------ interne
 
     private fun reset() {
@@ -180,6 +198,7 @@ class CalculatorViewModel(
             decimalApproximate = decimalApproximate,
             error = error,
             showingResult = showingResult,
+            settings = settings,
         )
 
         val keys = buffer.replayKeys()

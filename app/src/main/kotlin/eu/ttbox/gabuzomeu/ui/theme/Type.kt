@@ -17,29 +17,34 @@ import androidx.compose.ui.unit.sp
  */
 val GabuzomeuTypography = Typography()
 
-/** Styles propres à l'afficheur de la calculatrice. */
+/**
+ * Styles propres à l'afficheur.
+ *
+ * Le **Shadok est la ligne principale** : c'est le sujet de l'application. Les noms
+ * prononcés viennent ensuite, et la traduction décimale est secondaire.
+ */
 object DisplayTypography {
 
-    /** Ligne principale : l'expression décimale. */
-    val primary = TextStyle(
-        fontSize = 44.sp,
-        fontWeight = FontWeight.Light,
-        // Chiffres à largeur fixe : l'expression ne « danse » pas pendant la frappe.
-        fontFamily = FontFamily.Monospace,
-        textAlign = TextAlign.End,
-    )
-
-    /** Ligne des glyphes Shadok. */
+    /** Ligne principale : les glyphes Shadok. */
     val glyphs = TextStyle(
-        fontSize = 32.sp,
+        fontSize = 44.sp,
         fontWeight = FontWeight.Normal,
         textAlign = TextAlign.End,
     )
 
-    /** Ligne des noms Shadok, la plus verbeuse donc la plus petite. */
+    /** Deuxième ligne : les noms prononcés, `BuZo`. */
     val labels = TextStyle(
-        fontSize = 20.sp,
+        fontSize = 26.sp,
         fontWeight = FontWeight.Medium,
+        textAlign = TextAlign.End,
+    )
+
+    /** Ligne secondaire : la traduction décimale. */
+    val decimal = TextStyle(
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Normal,
+        // Chiffres à largeur fixe : l'expression ne « danse » pas pendant la frappe.
+        fontFamily = FontFamily.Monospace,
         textAlign = TextAlign.End,
     )
 

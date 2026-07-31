@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
+import eu.ttbox.gabuzomeu.data.DisplaySettings
 import eu.ttbox.gabuzomeu.data.SessionStore
 import eu.ttbox.gabuzomeu.data.StoredSession
 import kotlinx.coroutines.Dispatchers
@@ -258,16 +259,70 @@ class CalculatorViewModelTest {
         assertEquals("7", model.uiState.value.decimal)
     }
 
+    // ------------------------------------------------------- réglages d'affichage
+
+    @Test
+    fun `les reglages par defaut affichent les trois lignes`() = runTest {
+        val model = viewModel()
+        advanceUntilIdle()
+
+        val settings = model.uiState.value.settings
+        assertTrue(settings.showShadokLabels)
+        assertTrue(settings.showDecimal)
+    }
+
+    @Test
+    fun `masquer les noms Shadok est publie et persiste`() = runTest {
+        val model = viewModel()
+        advanceUntilIdle()
+
+        model.onSettingsChange(DisplaySettings(showShadokLabels = false))
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.settings.showShadokLabels)
+        assertTrue(model.uiState.value.settings.showDecimal)
+        assertFalse(store.savedSettings.value.showShadokLabels)
+    }
+
+    @Test
+    fun `masquer le decimal est publie et persiste`() = runTest {
+        val model = viewModel()
+        advanceUntilIdle()
+
+        model.onSettingsChange(DisplaySettings(showDecimal = false))
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.settings.showDecimal)
+        assertFalse(store.savedSettings.value.showDecimal)
+    }
+
+    @Test
+    fun `les reglages stockes sont restaures au lancement`() = runTest {
+        store.savedSettings.value = DisplaySettings(showShadokLabels = false, showDecimal = false)
+
+        val model = viewModel()
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.settings.showShadokLabels)
+        assertFalse(model.uiState.value.settings.showDecimal)
+    }
+
     private class FakeSessionStore : SessionStore {
         val saved = MutableStateFlow(StoredSession())
+        val savedSettings = MutableStateFlow(DisplaySettings())
         var saveCount: Int = 0
             private set
 
         override val session: Flow<StoredSession> = saved
+        override val settings: Flow<DisplaySettings> = savedSettings
 
         override suspend fun save(keys: String, notation: NumberNotation) {
             saveCount++
             saved.value = StoredSession(keys, notation)
+        }
+
+        override suspend fun saveSettings(settings: DisplaySettings) {
+            savedSettings.value = settings
         }
     }
 }

@@ -3,6 +3,7 @@ package eu.ttbox.gabuzomeu.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -39,6 +40,14 @@ class CalculatorPreferences(context: Context) : SessionStore {
         )
     }
 
+    override val settings: Flow<DisplaySettings> = dataStore.data.map { preferences ->
+        val defaults = DisplaySettings()
+        DisplaySettings(
+            showShadokLabels = preferences[KEY_SHOW_LABELS] ?: defaults.showShadokLabels,
+            showDecimal = preferences[KEY_SHOW_DECIMAL] ?: defaults.showDecimal,
+        )
+    }
+
     override suspend fun save(keys: String, notation: NumberNotation) {
         dataStore.edit { preferences ->
             preferences[KEY_EXPRESSION] = keys
@@ -46,8 +55,17 @@ class CalculatorPreferences(context: Context) : SessionStore {
         }
     }
 
+    override suspend fun saveSettings(settings: DisplaySettings) {
+        dataStore.edit { preferences ->
+            preferences[KEY_SHOW_LABELS] = settings.showShadokLabels
+            preferences[KEY_SHOW_DECIMAL] = settings.showDecimal
+        }
+    }
+
     private companion object {
         val KEY_EXPRESSION = stringPreferencesKey("expression")
         val KEY_NOTATION = stringPreferencesKey("notation")
+        val KEY_SHOW_LABELS = booleanPreferencesKey("show-shadok-labels")
+        val KEY_SHOW_DECIMAL = booleanPreferencesKey("show-decimal")
     }
 }

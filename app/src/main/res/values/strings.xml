@@ -33,6 +33,11 @@
 
     <string name="display_empty">Aucune expression</string>
 
+    <!-- Réglages d'affichage -->
+    <string name="settings_open">Réglages d\'affichage</string>
+    <string name="settings_show_shadok_labels">Afficher les noms Shadok</string>
+    <string name="settings_show_decimal">Afficher le décimal</string>
+
     <!-- Erreurs d'évaluation -->
     <string name="error_empty">Rien à calculer</string>
     <string name="error_syntax">Expression incomplète</string>

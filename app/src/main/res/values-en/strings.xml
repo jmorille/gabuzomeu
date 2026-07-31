@@ -18,6 +18,10 @@
 
     <string name="display_empty">No expression</string>
 
+    <string name="settings_open">Display settings</string>
+    <string name="settings_show_shadok_labels">Show Shadok names</string>
+    <string name="settings_show_decimal">Show decimal</string>
+
     <string name="error_empty">Nothing to compute</string>
     <string name="error_syntax">Incomplete expression</string>
     <string name="error_parentheses">Unbalanced parentheses</string>

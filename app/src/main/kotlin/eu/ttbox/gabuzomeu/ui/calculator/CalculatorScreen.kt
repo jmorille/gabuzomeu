@@ -15,9 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
+import eu.ttbox.gabuzomeu.data.DisplaySettings
+import eu.ttbox.gabuzomeu.ui.calculator.components.DisplaySettingsMenu
 import eu.ttbox.gabuzomeu.ui.calculator.components.InputModeSelector
 import eu.ttbox.gabuzomeu.ui.calculator.components.Keypad
-import eu.ttbox.gabuzomeu.ui.calculator.components.TripleDisplay
+import eu.ttbox.gabuzomeu.ui.calculator.components.ShadokDisplay
 
 /**
  * L'écran de la calculatrice.
@@ -33,6 +35,7 @@ fun CalculatorScreen(
     widthSizeClass: WindowWidthSizeClass,
     onKey: (KeyAction) -> Unit,
     onNotationChange: (NumberNotation) -> Unit,
+    onSettingsChange: (DisplaySettings) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { insets ->
@@ -43,9 +46,9 @@ fun CalculatorScreen(
             color = MaterialTheme.colorScheme.surface,
         ) {
             if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-                WideLayout(state, onKey, onNotationChange)
+                WideLayout(state, onKey, onNotationChange, onSettingsChange)
             } else {
-                StackedLayout(state, onKey, onNotationChange)
+                StackedLayout(state, onKey, onNotationChange, onSettingsChange)
             }
         }
     }
@@ -57,18 +60,22 @@ private fun StackedLayout(
     state: CalculatorUiState,
     onKey: (KeyAction) -> Unit,
     onNotationChange: (NumberNotation) -> Unit,
+    onSettingsChange: (DisplaySettings) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        TripleDisplay(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            DisplaySettingsMenu(settings = state.settings, onSettingsChange = onSettingsChange)
+        }
+        ShadokDisplay(
             state = state,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(DISPLAY_WEIGHT),
         )
-        InputModeSelector(
-            notation = state.notation,
-            onNotationChange = onNotationChange,
-        )
+        InputModeSelector(notation = state.notation, onNotationChange = onNotationChange)
         Keypad(
             notation = state.notation,
             onKey = onKey,
@@ -86,6 +93,7 @@ private fun WideLayout(
     state: CalculatorUiState,
     onKey: (KeyAction) -> Unit,
     onNotationChange: (NumberNotation) -> Unit,
+    onSettingsChange: (DisplaySettings) -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxSize(),
@@ -98,7 +106,8 @@ private fun WideLayout(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.End,
         ) {
-            TripleDisplay(state = state)
+            DisplaySettingsMenu(settings = state.settings, onSettingsChange = onSettingsChange)
+            ShadokDisplay(state = state)
         }
         Column(
             modifier = Modifier
@@ -107,16 +116,8 @@ private fun WideLayout(
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            InputModeSelector(
-                notation = state.notation,
-                onNotationChange = onNotationChange,
-                modifier = Modifier.padding(horizontal = 0.dp),
-            )
-            Keypad(
-                notation = state.notation,
-                onKey = onKey,
-                modifier = Modifier.weight(1f),
-            )
+            InputModeSelector(notation = state.notation, onNotationChange = onNotationChange)
+            Keypad(notation = state.notation, onKey = onKey, modifier = Modifier.weight(1f))
         }
     }
 }

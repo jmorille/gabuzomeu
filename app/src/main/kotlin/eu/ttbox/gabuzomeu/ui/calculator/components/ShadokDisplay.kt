@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -24,32 +25,37 @@ import androidx.compose.ui.unit.dp
 import eu.ttbox.gabuzomeu.R
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.shadok.ShadokFormatter
+import eu.ttbox.gabuzomeu.ui.DisplayTags
 import eu.ttbox.gabuzomeu.ui.calculator.CalculatorUiState
 import eu.ttbox.gabuzomeu.ui.shadok.ShadokGlyphText
+import eu.ttbox.gabuzomeu.ui.shadok.ShadokLabelText
 import eu.ttbox.gabuzomeu.ui.theme.DisplayTypography
 
 /**
- * Les trois écritures simultanées : décimal, glyphes Shadok, noms Shadok.
+ * L'afficheur : les glyphes Shadok en vedette, puis les noms, puis le décimal.
  *
- * Contrairement au projet d'origine, ce ne sont pas trois champs éditables synchronisés
- * entre eux mais trois projections en lecture seule du même tampon. Tout l'échafaudage
- * de `CalculatorEditText` (256 lignes : suppression de l'IME, `NoTextSelectionMode`,
- * menu contextuel copier/coller maison) et de `CalculatorDisplay` (`ViewSwitcher` +
+ * Contrairement au projet d'origine, ce ne sont pas des champs éditables synchronisés
+ * entre eux mais des projections en lecture seule du même tampon. Tout l'échafaudage de
+ * `CalculatorEditText` (256 lignes : suppression de l'IME, `NoTextSelectionMode`, menu
+ * contextuel copier/coller maison) et de `CalculatorDisplay` (`ViewSwitcher` +
  * `TranslateAnimation`) disparaît : sans champ de saisie, il n'y a plus de clavier
  * système à combattre.
+ *
+ * Les deux lignes secondaires se masquent depuis les réglages ; la ligne de glyphes,
+ * elle, est toujours là.
  */
 @Composable
-fun TripleDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
+fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        DecimalLine(state)
         GlyphLine(state)
-        LabelLine(state)
+        if (state.settings.showShadokLabels) LabelLine(state)
+        if (state.settings.showDecimal) DecimalLine(state)
 
         state.error?.let { error ->
             Text(
@@ -61,30 +67,10 @@ fun TripleDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
     }
 }
 
-/** Ligne principale : le décimal, la notation de référence. */
-@Composable
-private fun DecimalLine(state: CalculatorUiState) {
-    val color = MaterialTheme.colorScheme.onSurface
-    DisplayLine(
-        approximate = state.decimalApproximate,
-        style = DisplayTypography.primary,
-        color = color,
-    ) { lineModifier ->
-        AnimatedContent(
-            targetState = state.decimal,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            label = "decimal",
-            modifier = lineModifier,
-        ) { text ->
-            ScrollingText(text = text, style = DisplayTypography.primary, color = color)
-        }
-    }
-}
-
-/** Ligne des glyphes, dessinés en vectoriel. */
+/** Ligne principale : les glyphes Shadok, l'identité de l'application. */
 @Composable
 private fun GlyphLine(state: CalculatorUiState) {
-    val color = MaterialTheme.colorScheme.primary
+    val color = MaterialTheme.colorScheme.onSurface
     DisplayLine(
         approximate = state.shadokApproximate,
         style = DisplayTypography.glyphs,
@@ -96,29 +82,63 @@ private fun GlyphLine(state: CalculatorUiState) {
             semanticsLabel = state.labels.ifEmpty { stringResource(R.string.display_empty) },
             style = DisplayTypography.glyphs,
             color = color,
-            modifier = lineModifier.horizontalScroll(
-                state = rememberScrollState(),
-                reverseScrolling = true,
-            ),
+            operatorColor = MaterialTheme.colorScheme.tertiary,
+            modifier = lineModifier
+                .testTag(DisplayTags.GLYPHS)
+                .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
         )
     }
 }
 
-/** Ligne des noms prononcés : « Quand il y a encore un shadok de plus… » */
+/** Deuxième ligne : les noms prononcés — « quand il y a encore un shadok de plus… ». */
 @Composable
 private fun LabelLine(state: CalculatorUiState) {
-    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    val color = MaterialTheme.colorScheme.primary
     DisplayLine(
         approximate = state.shadokApproximate,
         style = DisplayTypography.labels,
         color = color,
     ) { lineModifier ->
-        ScrollingText(
-            text = state.labels,
+        ShadokLabelText(
+            expression = state.labels,
             style = DisplayTypography.labels,
             color = color,
-            modifier = lineModifier,
+            operatorColor = MaterialTheme.colorScheme.tertiary,
+            modifier = lineModifier
+                .testTag(DisplayTags.LABELS)
+                .fillMaxWidth()
+                .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
         )
+    }
+}
+
+/** Ligne secondaire : la traduction décimale. */
+@Composable
+private fun DecimalLine(state: CalculatorUiState) {
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    DisplayLine(
+        approximate = state.decimalApproximate,
+        style = DisplayTypography.decimal,
+        color = color,
+    ) { lineModifier ->
+        AnimatedContent(
+            targetState = state.decimal,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "decimal",
+            modifier = lineModifier,
+        ) { text ->
+            Text(
+                text = text,
+                style = DisplayTypography.decimal,
+                color = color,
+                maxLines = 1,
+                textAlign = TextAlign.End,
+                modifier = Modifier
+                    .testTag(DisplayTags.DECIMAL)
+                    .fillMaxWidth()
+                    .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
+            )
+        }
     }
 }
 
@@ -151,26 +171,6 @@ private fun DisplayLine(
         }
         content(Modifier.weight(1f))
     }
-}
-
-@Composable
-private fun ScrollingText(
-    text: String,
-    style: TextStyle,
-    color: Color,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = style,
-        color = color,
-        maxLines = 1,
-        textAlign = TextAlign.End,
-        modifier = modifier
-            .fillMaxWidth()
-            // Une expression longue défile au lieu d'être tronquée.
-            .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
-    )
 }
 
 private fun EvalError.messageRes(): Int = when (this) {

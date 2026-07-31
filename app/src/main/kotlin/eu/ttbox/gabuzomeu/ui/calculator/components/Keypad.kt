@@ -17,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
+import eu.ttbox.gabuzomeu.ui.KeypadTags
 import eu.ttbox.gabuzomeu.ui.calculator.KeyAction
 import eu.ttbox.gabuzomeu.ui.shadok.ShadokGlyphs
 import eu.ttbox.gabuzomeu.ui.theme.DisplayTypography
@@ -68,7 +70,14 @@ private fun KeyButton(key: KeySpec, onKey: (KeyAction) -> Unit, modifier: Modifi
     }
 
     // clearAndSetSemantics : TalkBack annonce « Zo », jamais la forme « ⅃ ».
-    val semantics = Modifier.clearAndSetSemantics { contentDescription = description }
+    //
+    // Conséquence à connaître : cela efface aussi la sémantique de texte des
+    // descendants, donc une touche n'est PAS trouvable par `onNodeWithText`. D'où le
+    // testTag, posé dans le même bloc — un repère stable, indépendant de la langue.
+    val semantics = Modifier.clearAndSetSemantics {
+        contentDescription = description
+        testTag = KeypadTags.of(key.action)
+    }
 
     val content: @Composable () -> Unit = {
         if (key.glyph != null) {

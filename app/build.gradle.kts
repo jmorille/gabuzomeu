@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.compose.material3)
     implementation(libs.compose.material3.windowsizeclass)
+    implementation(libs.compose.material.icons.core)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)

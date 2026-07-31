@@ -2,25 +2,40 @@ package eu.ttbox.gabuzomeu.ui.calculator
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import eu.ttbox.gabuzomeu.R
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
+import eu.ttbox.gabuzomeu.core.eval.Operator
+import eu.ttbox.gabuzomeu.core.shadok.ShadokDigit
+import eu.ttbox.gabuzomeu.data.DisplaySettings
+import eu.ttbox.gabuzomeu.ui.DisplayTags
+import eu.ttbox.gabuzomeu.ui.KeypadTags
+import eu.ttbox.gabuzomeu.ui.SettingsTags
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 /**
  * Tests instrumentés de l'écran.
  *
- * Le test d'origine, `CalculatorHitSomeButtons`, ne pouvait plus passer du tout : il
- * castait `display.getCurrentView()` en `EditText` alors que les enfants du
+ * Deux principes, appris à la dure :
+ *
+ * 1. **Rien en dur qui dépende de la langue.** Une première version comparait des
+ *    chaînes françaises ; elles passaient sur un téléphone français et échouaient sur
+ *    l'émulateur `en-US` de la CI, qui sert `values-en/`.
+ * 2. **Pas de recherche par texte sur les touches.** Le pavé applique
+ *    `clearAndSetSemantics`, ce qui efface la sémantique de texte des descendants : une
+ *    touche est introuvable par `onNodeWithText`. On passe donc par des `testTag`
+ *    dérivés de l'action.
+ *
+ * Le test d'origine, `CalculatorHitSomeButtons`, ne pouvait de toute façon plus passer :
+ * il castait `display.getCurrentView()` en `EditText` alors que les enfants du
  * `ViewSwitcher` étaient devenus des `CalculatorConverterDisplay` (`LinearLayout`) —
  * `ClassCastException` garantie.
  */
@@ -35,20 +50,12 @@ class CalculatorScreenTest {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
-    /**
-     * Résout une chaîne depuis les ressources, au lieu de l'écrire en dur.
-     *
-     * Les tests ne doivent rien supposer de la locale de l'appareil : en dur, ils
-     * passeraient sur un téléphone français et échoueraient sur l'émulateur `en-US` de
-     * la CI, qui sert `values-en/`.
-     */
-    private fun string(resId: Int): String = composeTestRule.activity.getString(resId)
-
     private fun setScreen(
         state: CalculatorUiState,
         widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
         onKey: (KeyAction) -> Unit = {},
         onNotationChange: (NumberNotation) -> Unit = {},
+        onSettingsChange: (DisplaySettings) -> Unit = {},
     ) {
         composeTestRule.setContent {
             // dynamicColor = false : un rendu stable, indépendant du fond d'écran.
@@ -58,37 +65,118 @@ class CalculatorScreenTest {
                     widthSizeClass = widthSizeClass,
                     onKey = onKey,
                     onNotationChange = onNotationChange,
+                    onSettingsChange = onSettingsChange,
                 )
             }
         }
     }
 
+    // ------------------------------------------------------------------ affichage
+
     @Test
-    fun lesTroisEcrituresSontAffichees() {
+    fun leShadokEstLaLignePrincipaleEtLeDecimalEstSecondaire() {
+        setScreen(CalculatorUiState(glyphs = "_⅃", labels = "BuZo", decimal = "6"))
+
+        // La ligne de glyphes est vectorielle : elle s'annonce par ses noms.
+        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS)
+            .assertIsDisplayed()
+            .assertContentDescriptionEquals("BuZo")
+        composeTestRule.onNodeWithTag(DisplayTags.LABELS).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertIsDisplayed()
+    }
+
+    @Test
+    fun masquerLesNomsShadokRetireLaLigneCorrespondante() {
         setScreen(
-            CalculatorUiState(decimal = "6", glyphs = "_⅃", labels = "BuZo"),
+            CalculatorUiState(
+                glyphs = "_⅃",
+                labels = "BuZo",
+                decimal = "6",
+                settings = DisplaySettings(showShadokLabels = false),
+            ),
         )
 
-        composeTestRule.onNodeWithText("6").assertIsDisplayed()
-        composeTestRule.onNodeWithText("BuZo").assertIsDisplayed()
-        // La ligne de glyphes est vectorielle : elle s'annonce par ses noms.
-        composeTestRule.onNodeWithContentDescription("BuZo").assertIsDisplayed()
+        composeTestRule.onNodeWithTag(DisplayTags.LABELS).assertDoesNotExist()
+        // Les glyphes restent : ils ne sont pas masquables.
+        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertIsDisplayed()
     }
+
+    @Test
+    fun masquerLeDecimalRetireLaLigneCorrespondante() {
+        setScreen(
+            CalculatorUiState(
+                glyphs = "_⅃",
+                labels = "BuZo",
+                decimal = "6",
+                settings = DisplaySettings(showDecimal = false),
+            ),
+        )
+
+        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertDoesNotExist()
+        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(DisplayTags.LABELS).assertIsDisplayed()
+    }
+
+    @Test
+    fun lesGlyphesRestentVisiblesMemeToutMasque() {
+        setScreen(
+            CalculatorUiState(
+                glyphs = "_⅃",
+                labels = "BuZo",
+                decimal = "6",
+                settings = DisplaySettings(showShadokLabels = false, showDecimal = false),
+            ),
+        )
+
+        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertIsDisplayed()
+    }
+
+    // -------------------------------------------------------------------- réglages
+
+    @Test
+    fun leMenuPermetDeBasculerLesReglages() {
+        var requested: DisplaySettings? = null
+        setScreen(CalculatorUiState(), onSettingsChange = { requested = it })
+
+        composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(SettingsTags.TOGGLE_LABELS).performClick()
+
+        assertEquals(DisplaySettings(showShadokLabels = false), requested)
+    }
+
+    @Test
+    fun leMenuPermetDeMasquerLeDecimal() {
+        var requested: DisplaySettings? = null
+        setScreen(CalculatorUiState(), onSettingsChange = { requested = it })
+
+        composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(SettingsTags.TOGGLE_DECIMAL).performClick()
+
+        assertEquals(DisplaySettings(showDecimal = false), requested)
+    }
+
+    // ------------------------------------------------------------------------ pavé
 
     @Test
     fun lePaveDecimalEmetLesBonnesActions() {
         val pressed = mutableListOf<KeyAction>()
         setScreen(CalculatorUiState(), onKey = { pressed += it })
 
-        composeTestRule.onNodeWithText("7").performClick()
-        composeTestRule.onNodeWithContentDescription(string(R.string.key_times)).performClick()
-        composeTestRule.onNodeWithText("6").performClick()
-        composeTestRule.onNodeWithContentDescription(string(R.string.key_equals)).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit('7'))).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Op(Operator.TIMES))).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit('6'))).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Evaluate)).performClick()
 
-        assertEquals(4, pressed.size)
-        assertEquals(KeyAction.Digit('7'), pressed[0])
-        assertEquals(KeyAction.Digit('6'), pressed[2])
-        assertEquals(KeyAction.Evaluate, pressed[3])
+        assertEquals(
+            listOf(
+                KeyAction.Digit('7'),
+                KeyAction.Op(Operator.TIMES),
+                KeyAction.Digit('6'),
+                KeyAction.Evaluate,
+            ),
+            pressed,
+        )
     }
 
     /**
@@ -97,23 +185,22 @@ class CalculatorScreenTest {
      * C'est la garantie structurelle contre le bug d'origine : dans
      * `res/layout-port/shadok_pad.xml:32-42`, `@+id/digitMeu` portait
      * `contentDescription="@string/digitNameMeu"` mais `text="@string/digitZo"` — les
-     * descriptions de Zo et Meu étaient croisées.
+     * descriptions de Zo et Meu étaient croisées. Elles dérivent désormais de
+     * [ShadokDigit.label], donc l'inversion est impossible.
      */
     @Test
     fun lesTouchesShadokSAnnoncentParLeurNom() {
         val pressed = mutableListOf<KeyAction>()
-        setScreen(
-            CalculatorUiState(notation = NumberNotation.SHADOK),
-            onKey = { pressed += it },
-        )
+        setScreen(CalculatorUiState(notation = NumberNotation.SHADOK), onKey = { pressed += it })
 
-        listOf("Ga" to '◯', "Bu" to '_', "Zo" to '⅃', "Meu" to '◿').forEach { (label, glyph) ->
+        ShadokDigit.entries.forEach { digit ->
             pressed.clear()
-            composeTestRule.onNodeWithContentDescription(label).performClick()
+            // Trouvée par son nom prononcé, cliquée, et vérifiée sur le glyphe émis.
+            composeTestRule.onNodeWithContentDescription(digit.label).performClick()
             assertEquals(
-                KeyAction.Digit(glyph),
+                KeyAction.Digit(digit.glyph),
                 pressed.single(),
-                "la touche annoncee « $label » doit saisir le glyphe $glyph",
+                "la touche annoncée « ${digit.label} » doit saisir le glyphe ${digit.glyph}",
             )
         }
     }
@@ -122,12 +209,15 @@ class CalculatorScreenTest {
     fun lePaveShadokNAffichePasDeChiffresDecimaux() {
         setScreen(CalculatorUiState(notation = NumberNotation.SHADOK))
 
-        // En base 4, les chiffres 4 a 9 n'existent pas.
-        listOf("4", "5", "6", "7", "8", "9").forEach { absent ->
-            assertTrue(
-                composeTestRule.onAllNodesWithText(absent).fetchSemanticsNodes().isEmpty(),
-                "le chiffre $absent ne doit pas figurer sur le pave Shadok",
-            )
+        // En base 4, les chiffres 4 à 9 n'existent pas.
+        "456789".forEach { absent ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit(absent)))
+                .assertDoesNotExist()
+        }
+        // Les quatre chiffres Shadok, eux, sont bien là.
+        ShadokDigit.entries.forEach { digit ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit(digit.glyph)))
+                .assertIsDisplayed()
         }
     }
 
@@ -136,7 +226,11 @@ class CalculatorScreenTest {
         var requested: NumberNotation? = null
         setScreen(CalculatorUiState(), onNotationChange = { requested = it })
 
-        composeTestRule.onNodeWithText(string(R.string.mode_shadok)).performClick()
+        // Le sélecteur affiche des libellés traduits : on résout la ressource.
+        val shadokLabel = composeTestRule.activity.getString(
+            eu.ttbox.gabuzomeu.R.string.mode_shadok,
+        )
+        composeTestRule.onNodeWithText(shadokLabel).performClick()
 
         assertEquals(NumberNotation.SHADOK, requested)
     }
@@ -153,8 +247,8 @@ class CalculatorScreenTest {
             widthSizeClass = WindowWidthSizeClass.Expanded,
         )
 
-        listOf("Ga", "Bu", "Zo", "Meu").forEach { label ->
-            composeTestRule.onNodeWithContentDescription(label).assertIsDisplayed()
+        ShadokDigit.entries.forEach { digit ->
+            composeTestRule.onNodeWithContentDescription(digit.label).assertIsDisplayed()
         }
     }
 }
