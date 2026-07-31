@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Nécessaire pour reposer l'alarme de la minute après un redémarrage. Le widget
+        d'origine ne l'avait pas et ne captait pas BOOT_COMPLETED : après un reboot, il
+        se figeait définitivement.
+
+        En revanche WAKE_LOCK a disparu : le système garde déjà le processus éveillé
+        pendant onReceive.
+    -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application>
+        <receiver
+            android:name=".ShadokClockWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <!-- Réagir à un changement d'heure, de fuseau, ou à un redémarrage. -->
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/shadok_clock_widget_info" />
+        </receiver>
+    </application>
+
+</manifest>

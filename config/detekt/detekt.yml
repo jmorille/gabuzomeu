@@ -1,0 +1,47 @@
+# Écarts assumés par rapport à la configuration Detekt par défaut.
+# `buildUponDefaultConfig = true` : seules les règles listées ici sont modifiées.
+
+complexity:
+  LongParameterList:
+    # Les composables Compose prennent légitimement beaucoup de paramètres — c'est ainsi
+    # que l'on hisse l'état plutôt que de le cacher.
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # Rational est une classe arithmétique : plus, minus, times, div, compareTo…
+    # Les découper nuirait à la lisibilité.
+    thresholdInClasses: 25
+    ignoreAnnotated: ['Composable']
+
+naming:
+  FunctionNaming:
+    # Les composables sont en PascalCase, par convention Compose.
+    ignoreAnnotated: ['Composable']
+  FunctionMaxLength:
+    # Les noms de tests sont des phrases : ils documentent le comportement vérifié.
+    excludes: ['**/test/**', '**/androidTest/**']
+
+style:
+  MagicNumber:
+    # Les valeurs des chiffres Shadok sont déclarées dans l'enum : c'est leur définition,
+    # pas une constante égarée.
+    ignoreEnums: true
+    # Les tailles et espacements d'interface sont lisibles en clair.
+    ignoreAnnotated: ['Composable']
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/ui/theme/**'
+      # ShadokGlyphs ne contient que des coordonnées de tracé vectoriel : ce sont des
+      # données de dessin, les nommer une à une n'apporterait rien.
+      - '**/ui/shadok/ShadokGlyphs.kt'
+  MaxLineLength:
+    maxLineLength: 100
+    excludes: ['**/test/**', '**/androidTest/**']
+  ReturnCount:
+    # Les règles de saisie d'ExpressionBuffer sont une série de gardes : sortir tôt est
+    # plus clair qu'un arbre de conditions imbriquées.
+    max: 8
+
+exceptions:
+  TooGenericExceptionCaught:
+    excludes: ['**/test/**', '**/androidTest/**']

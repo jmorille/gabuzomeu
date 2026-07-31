@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app_name is deliberately NOT overridden: "GaBuZoMeu" is the product name. -->
+
+    <string name="mode_decimal">Decimal</string>
+    <string name="mode_shadok">Shadok</string>
+
+    <string name="key_clear">Clear all</string>
+    <string name="key_delete">Delete last character</string>
+    <string name="key_left_paren">Opening parenthesis</string>
+    <string name="key_right_paren">Closing parenthesis</string>
+    <string name="key_separator">Decimal point</string>
+    <string name="key_equals">Equals</string>
+    <string name="key_plus">Plus</string>
+    <string name="key_minus">Minus</string>
+    <string name="key_times">Times</string>
+    <string name="key_divide">Divided by</string>
+
+    <string name="display_empty">No expression</string>
+
+    <string name="error_empty">Nothing to compute</string>
+    <string name="error_syntax">Incomplete expression</string>
+    <string name="error_parentheses">Unbalanced parentheses</string>
+    <string name="error_division_by_zero">Division by zero</string>
+</resources>

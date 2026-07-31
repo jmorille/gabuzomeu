@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Les chaînes du widget vivent dans le module qui les utilise. -->
+<resources>
+    <string name="widget_description">L\'heure en Ga, Bu, Zo et Meu</string>
+</resources>

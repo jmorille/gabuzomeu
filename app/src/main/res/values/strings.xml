@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Le français est la langue par défaut : les Shadoks sont une série française.
+
+    Le projet d'origine avait la logique inverse et deux incohérences : values-fr/
+    écrasait app_name par « Calculatrice », effaçant « GaBuZoMeu » pour les utilisateurs
+    français, et un values-sw/ (swahili) traînait, hérité tel quel d'AOSP avec ses
+    attributs msgid.
+
+    Les noms Ga/Bu/Zo/Meu ne figurent pas ici : ce sont des noms propres issus de la
+    série, donc des constantes de code (voir ShadokDigit).
+-->
+<resources>
+    <!-- Nom du produit : ne se traduit pas. Le values-fr/ d'origine l'écrasait par
+         « Calculatrice », effaçant l'identité de l'application. -->
+    <string name="app_name" translatable="false">GaBuZoMeu</string>
+
+    <!-- Modes de saisie -->
+    <string name="mode_decimal">Décimal</string>
+    <string name="mode_shadok">Shadok</string>
+
+    <!-- Descriptions d'accessibilité des touches -->
+    <string name="key_clear">Effacer tout</string>
+    <string name="key_delete">Effacer le dernier caractère</string>
+    <string name="key_left_paren">Parenthèse ouvrante</string>
+    <string name="key_right_paren">Parenthèse fermante</string>
+    <string name="key_separator">Virgule décimale</string>
+    <string name="key_equals">Égale</string>
+    <string name="key_plus">Plus</string>
+    <string name="key_minus">Moins</string>
+    <string name="key_times">Multiplié par</string>
+    <string name="key_divide">Divisé par</string>
+
+    <string name="display_empty">Aucune expression</string>
+
+    <!-- Erreurs d'évaluation -->
+    <string name="error_empty">Rien à calculer</string>
+    <string name="error_syntax">Expression incomplète</string>
+    <string name="error_parentheses">Parenthèses déséquilibrées</string>
+    <string name="error_division_by_zero">Division par zéro</string>
+
+    <!-- Les chaînes du widget vivent dans le module :widget, qui les possède. -->
+</resources>

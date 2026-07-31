@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Aucun qualificatif de densité ni de version : minSdk 31 est très au-delà de
+    l'API 26, donc il n'existe aucun appareil cible à servir en PNG legacy, et les
+    tracés sont vectoriels donc indépendants de la densité.
+
+    Le projet d'origine n'avait QUE des PNG en drawable-ldpi..xhdpi (convention
+    pré-API 26) : ni icône adaptative, ni calque monochrome pour les icônes
+    thématiques d'Android 13+.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>

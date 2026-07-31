@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Thème XML minimal : il ne sert qu'à la fenêtre avant que Compose ne prenne la main
+    (couleur de fond au démarrage, absence de barre de titre). Toutes les couleurs de
+    l'interface viennent du thème Compose (ui/theme/Theme.kt), avec les couleurs
+    dynamiques Material You.
+
+    Le projet d'origine utilisait @android:style/Theme.Holo.NoActionBar, et son AppTheme
+    n'était défini que dans values-v11/ et values-v14/ — jamais dans values/.
+-->
+<resources>
+    <style name="Theme.Gabuzomeu" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

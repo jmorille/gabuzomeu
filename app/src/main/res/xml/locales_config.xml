@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Permet à l'utilisateur de choisir la langue de cette application seule, depuis les
+    réglages système (Android 13+). Le français est en tête : c'est la langue par défaut.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="fr" />
+    <locale android:name="en" />
+</locale-config>

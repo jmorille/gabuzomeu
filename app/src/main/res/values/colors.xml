@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fond de l'icône adaptative. Les couleurs de l'interface, elles, sont
+         définies dans le thème Compose (ui/theme/Color.kt) et non ici. -->
+    <color name="ic_launcher_background">#1D3557</color>
+</resources>

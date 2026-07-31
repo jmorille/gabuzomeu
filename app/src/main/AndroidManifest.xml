@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Reconstruit intégralement. Écarts notables avec le manifeste d'origine :
+
+    - UNE seule activité de lanceur. L'ancien en déclarait deux (Calculator et
+      WidgetActivity, cette dernière affichant un RelativeLayout vide), donc deux icônes
+      installées ; une troisième activité, MainActivity, était présente en code mais
+      entièrement commentée ici.
+    - android:name avec le point initial. L'ancien écrivait android:name="Calculator",
+      forme relative non canonique que seul aapt savait résoudre.
+    - android:exported explicite, obligatoire depuis l'API 31.
+    - plus de android:debuggable : c'est un réglage de build type, pas de manifeste.
+    - plus de permission WAKE_LOCK : le widget n'en a plus besoin.
+    - android:dataExtractionRules remplace android:allowBackup, déprécié depuis
+      l'API 31 — soit notre minSdk exactement.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Gabuzomeu"
+        tools:targetApi="33">
+
+        <!-- Pas de android:label ici : il serait identique à celui de <application>. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Gabuzomeu">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- Conservé : permet « ouvre la calculatrice » via l'Assistant. -->
+                <category android:name="android.intent.category.APP_CALCULATOR" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

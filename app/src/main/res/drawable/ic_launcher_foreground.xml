@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Les quatre chiffres Shadok disposés en carré : Ga ◯ (0), Bu _ (1),
+    Zo ⅃ (2), Meu ◿ (3). Un 2×2 pour évoquer la base 4.
+
+    Tracés dans la zone de sécurité de l'icône adaptative (66×66 centrés dans le
+    viewport de 108×108, soit x et y de 21 à 87) afin de survivre à tous les masques
+    de lanceur.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Ga ◯ — LARGE CIRCLE, en haut à gauche -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M26.5,37.5 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5" />
+
+    <!-- Bu _ — LOW LINE, en haut à droite -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M59.5,45 h22 v4 h-22 z" />
+
+    <!-- Zo ⅃ — REVERSED SANS-SERIF CAPITAL L, en bas à gauche -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44.5,59.5 h4 v22 h-22 v-4 h18 z" />
+
+    <!-- Meu ◿ — LOWER RIGHT TRIANGLE, en bas à droite -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M81.5,59.5 V81.5 H59.5 Z" />
+</vector>

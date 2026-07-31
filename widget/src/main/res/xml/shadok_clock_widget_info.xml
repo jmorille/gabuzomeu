@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    android:updatePeriodMillis="0" — le widget se replanifie lui-même à la minute via
+    ClockTickScheduler. L'original demandait 1800000, soit exactement le plancher imposé
+    par le système (30 min) : il ne pouvait donc pas afficher une horloge vivante par ce
+    seul mécanisme.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minHeight="110dp"
+    android:minWidth="180dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="3"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

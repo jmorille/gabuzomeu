@@ -1,0 +1,20 @@
+# Normalisation des fins de ligne. Le dépôt est développé sous Windows mais la CI
+# tourne sous Linux : sans cela, `./gradlew` échouerait avec « bad interpreter ».
+* text=auto eol=lf
+
+# Scripts exécutés par un shell : LF impératif.
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Scripts Windows : CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaires : aucune conversion.
+*.jar binary
+*.png binary
+*.jks binary
+*.keystore binary
+*.ttf binary
+*.aab binary
+*.apk binary
