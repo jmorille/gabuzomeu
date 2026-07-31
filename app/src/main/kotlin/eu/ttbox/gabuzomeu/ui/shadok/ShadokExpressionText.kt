@@ -21,6 +21,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.em
 import eu.ttbox.gabuzomeu.core.shadok.ShadokDigit
 
 /**
@@ -35,8 +36,25 @@ private const val SEPARATOR_CHARS = "+−×÷()-*/"
 /** Largeur d'un glyphe rapportée à sa hauteur : resserre les chiffres d'un même nombre. */
 private const val GLYPH_ADVANCE_RATIO = 0.78f
 
-/** Espace fine U+2009, pour aérer autour des opérateurs sans les détacher. */
-private const val THIN_SPACE = ' '
+/**
+ * Espace U+2005 (quart de cadratin) autour des opérateurs.
+ *
+ * Une espace fine U+2009 ne suffisait pas. `−` (U+2212) et le glyphe `Bu` (`_`, U+005F) sont
+ * deux barres horizontales de longueur voisine : collées à un chiffre, elles se lisaient comme
+ * une seule suite. Le problème valait aussi pour le signe d'un nombre négatif, dont le `−`
+ * de tête pouvait passer pour un `Bu`.
+ */
+private const val OPERATOR_SPACE = ' '
+
+/**
+ * Les opérateurs sont écrits **plus grand** que les chiffres qui les entourent.
+ *
+ * C'est le levier décisif contre la confusion `−`/`Bu` : la couleur et la graisse, déjà en
+ * place, ne changeaient ni la longueur ni l'épaisseur de la barre. Exprimée en `em`, la taille
+ * reste relative à celle de la ligne — l'écart tient donc à toutes les tailles de police
+ * système, sans calcul à refaire.
+ */
+private val OPERATOR_SIZE = 1.3f.em
 
 /**
  * Affiche une expression en **glyphes** Shadok, opérateurs compris.
@@ -152,11 +170,17 @@ fun ShadokLabelText(
 
 /** Un opérateur, coloré et entouré d'espaces fines. */
 private fun AnnotatedString.Builder.appendSeparator(character: Char, operatorColor: Color) {
-    append(THIN_SPACE)
-    withStyle(SpanStyle(color = operatorColor, fontWeight = FontWeight.Bold)) {
+    append(OPERATOR_SPACE)
+    withStyle(
+        SpanStyle(
+            color = operatorColor,
+            fontWeight = FontWeight.Bold,
+            fontSize = OPERATOR_SIZE,
+        ),
+    ) {
         append(character)
     }
-    append(THIN_SPACE)
+    append(OPERATOR_SPACE)
 }
 
 private fun inlineIdOf(digit: ShadokDigit): String = "shadok-${digit.name}"

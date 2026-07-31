@@ -8,12 +8,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import eu.ttbox.gabuzomeu.R
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.data.DisplaySettings
@@ -21,6 +27,7 @@ import eu.ttbox.gabuzomeu.ui.calculator.components.CalculatorMenu
 import eu.ttbox.gabuzomeu.ui.calculator.components.InputModeSelector
 import eu.ttbox.gabuzomeu.ui.calculator.components.Keypad
 import eu.ttbox.gabuzomeu.ui.calculator.components.ShadokDisplay
+import kotlinx.coroutines.launch
 
 /**
  * L'écran de la calculatrice.
@@ -39,32 +46,68 @@ fun CalculatorScreen(
     onModeChange: (CalculationMode) -> Unit,
     onSettingsChange: (DisplaySettings) -> Unit,
     modifier: Modifier = Modifier,
+    onPaste: (String) -> Unit = {},
 ) {
-    Scaffold(modifier = modifier.fillMaxSize()) { insets ->
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val copied = stringResource(R.string.copy_done)
+
+    // Ce rappel n'est déclenché qu'en dessous d'Android 13, où le système n'affiche aucune
+    // confirmation de copie de lui-même — la décision est prise dans DisplayActionsMenu, au
+    // plus près de l'appel au presse-papiers.
+    val onCopied: () -> Unit = {
+        scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(copied)
+        }
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { insets ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(insets),
             color = MaterialTheme.colorScheme.surface,
         ) {
+            val actions = CalculatorActions(
+                onKey = onKey,
+                onNotationChange = onNotationChange,
+                onModeChange = onModeChange,
+                onSettingsChange = onSettingsChange,
+                onPaste = onPaste,
+                onCopied = onCopied,
+            )
             if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-                WideLayout(state, onKey, onNotationChange, onModeChange, onSettingsChange)
+                WideLayout(state, actions)
             } else {
-                StackedLayout(state, onKey, onNotationChange, onModeChange, onSettingsChange)
+                StackedLayout(state, actions)
             }
         }
     }
 }
 
+/**
+ * Les rappels de l'écran, regroupés.
+ *
+ * Six paramètres traversaient les deux dispositions : les passer un à un rendait chaque
+ * signature illisible et faisait échouer la règle `LongParameterList` de Detekt. Ils forment
+ * un tout — ce que l'écran sait faire — et voyagent donc ensemble.
+ */
+private data class CalculatorActions(
+    val onKey: (KeyAction) -> Unit,
+    val onNotationChange: (NumberNotation) -> Unit,
+    val onModeChange: (CalculationMode) -> Unit,
+    val onSettingsChange: (DisplaySettings) -> Unit,
+    val onPaste: (String) -> Unit,
+    val onCopied: () -> Unit,
+)
+
 /** Téléphone en portrait, ou fenêtre étroite : afficheur au-dessus, pavé en dessous. */
 @Composable
-private fun StackedLayout(
-    state: CalculatorUiState,
-    onKey: (KeyAction) -> Unit,
-    onNotationChange: (NumberNotation) -> Unit,
-    onModeChange: (CalculationMode) -> Unit,
-    onSettingsChange: (DisplaySettings) -> Unit,
-) {
+private fun StackedLayout(state: CalculatorUiState, actions: CalculatorActions) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -73,21 +116,26 @@ private fun StackedLayout(
             CalculatorMenu(
                 mode = state.mode,
                 settings = state.settings,
-                onModeChange = onModeChange,
-                onSettingsChange = onSettingsChange,
+                onModeChange = actions.onModeChange,
+                onSettingsChange = actions.onSettingsChange,
             )
         }
         ShadokDisplay(
             state = state,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(state.displayWeight()),
+                .weight(DISPLAY_WEIGHT),
+            onPaste = actions.onPaste,
+            onCopied = actions.onCopied,
         )
-        InputModeSelector(notation = state.notation, onNotationChange = onNotationChange)
+        InputModeSelector(
+            notation = state.notation,
+            onNotationChange = actions.onNotationChange,
+        )
         Keypad(
             mode = state.mode,
             notation = state.notation,
-            onKey = onKey,
+            onKey = actions.onKey,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(KEYPAD_WEIGHT)
@@ -98,13 +146,7 @@ private fun StackedLayout(
 
 /** Tablette ou paysage large : afficheur et pavé côte à côte. */
 @Composable
-private fun WideLayout(
-    state: CalculatorUiState,
-    onKey: (KeyAction) -> Unit,
-    onNotationChange: (NumberNotation) -> Unit,
-    onModeChange: (CalculationMode) -> Unit,
-    onSettingsChange: (DisplaySettings) -> Unit,
-) {
+private fun WideLayout(state: CalculatorUiState, actions: CalculatorActions) {
     Row(
         modifier = Modifier.fillMaxSize(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -124,12 +166,14 @@ private fun WideLayout(
             CalculatorMenu(
                 mode = state.mode,
                 settings = state.settings,
-                onModeChange = onModeChange,
-                onSettingsChange = onSettingsChange,
+                onModeChange = actions.onModeChange,
+                onSettingsChange = actions.onSettingsChange,
             )
             ShadokDisplay(
                 state = state,
                 modifier = if (state.mode == CalculationMode.RPN) Modifier.weight(1f) else Modifier,
+                onPaste = actions.onPaste,
+                onCopied = actions.onCopied,
             )
         }
         Column(
@@ -139,11 +183,14 @@ private fun WideLayout(
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            InputModeSelector(notation = state.notation, onNotationChange = onNotationChange)
+            InputModeSelector(
+                notation = state.notation,
+                onNotationChange = actions.onNotationChange,
+            )
             Keypad(
                 mode = state.mode,
                 notation = state.notation,
-                onKey = onKey,
+                onKey = actions.onKey,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -151,16 +198,12 @@ private fun WideLayout(
 }
 
 /**
- * La part de hauteur réservée à l'afficheur.
+ * La part de hauteur réservée à l'afficheur — **la même dans les deux modes**.
  *
- * La NPI en demande davantage : au-dessus des trois lignes de X vient la pile, qui n'a
- * d'intérêt que si l'on en voit quelques niveaux.
+ * Elle a d'abord été plus généreuse en NPI, pour laisser voir quelques niveaux de pile. Mais
+ * le pavé héritait du reste, si bien qu'il changeait de taille en basculant de mode : les
+ * touches sautaient sous le doigt, et la mémoire gestuelle ne servait plus à rien. C'est le
+ * pavé qui doit rester stable ; la pile, elle, se contente de la place restante et défile.
  */
-private fun CalculatorUiState.displayWeight(): Float = when (mode) {
-    CalculationMode.CLASSIC -> CLASSIC_DISPLAY_WEIGHT
-    CalculationMode.RPN -> RPN_DISPLAY_WEIGHT
-}
-
-private const val CLASSIC_DISPLAY_WEIGHT = 1f
-private const val RPN_DISPLAY_WEIGHT = 1.5f
+private const val DISPLAY_WEIGHT = 1.5f
 private const val KEYPAD_WEIGHT = 2f

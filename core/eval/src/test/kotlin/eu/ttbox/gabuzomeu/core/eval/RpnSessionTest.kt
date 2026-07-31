@@ -292,6 +292,18 @@ class RpnSessionTest {
     }
 
     @Test
+    fun `un niveau de pile s'ecrit aussi en base 4, et signale l'approximation`() {
+        // La quatrieme ecriture doit valoir pour la pile comme pour la frappe : c'est elle
+        // qu'on copie quand la police du destinataire ne porte pas les glyphes.
+        val exact = type("1").enter().type("4").applying(Operator.DIVIDE)
+        val approximate = type("1").enter().type("3").applying(Operator.DIVIDE)
+
+        assertEquals("0.1", exact.stackText(ExpressionDisplay.SHADOK_BASE4).single())
+        assertFalse(exact.renderStack(ExpressionDisplay.SHADOK_BASE4).single().approximate)
+        assertTrue(approximate.renderStack(ExpressionDisplay.SHADOK_BASE4).single().approximate)
+    }
+
+    @Test
     fun `changer de notation convertit la frappe et laisse la pile telle quelle`() {
         val session = type("2").enter().type("6").withNotation(NumberNotation.SHADOK)
 

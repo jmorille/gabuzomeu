@@ -537,6 +537,115 @@ class CalculatorViewModelTest {
         assertEquals("42", restored.uiState.value.decimal)
     }
 
+    // ---------------------------------------------------------------- presse-papiers
+
+    @Test
+    fun `la quatrieme ecriture accompagne les trois autres`() = runTest {
+        val model = viewModel()
+
+        model.onKey(KeyAction.Digit('6'))
+
+        // Elle n'est affichée nulle part, mais elle doit être là pour être copiée.
+        assertEquals("12", model.uiState.value.base4)
+    }
+
+    @Test
+    fun `un collage s'insere au milieu d'une expression`() = runTest {
+        // La preuve que le collage passe par les règles de frappe, et non par un chemin
+        // parallèle : il se comporte comme si l'utilisateur avait tapé le nombre.
+        val model = viewModel()
+        model.onKey(KeyAction.Digit('6'))
+        model.onKey(KeyAction.Op(Operator.TIMES))
+
+        model.onPaste("7")
+
+        assertEquals("6×7", model.uiState.value.decimal)
+        model.onKey(KeyAction.Evaluate)
+        assertEquals("42", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `les quatre ecritures se collent toutes`() = runTest {
+        val model = viewModel()
+
+        listOf("_⅃", "BuZo", "6").forEach { text ->
+            model.onKey(KeyAction.Clear)
+            model.onPaste(text)
+            assertEquals("6", model.uiState.value.decimal, "collage de \"$text\"")
+        }
+
+        // La base 4 ne vaut 6 que sur le pavé Shadok : c'est la règle d'ambiguïté.
+        model.onKey(KeyAction.Clear)
+        model.onNotationChange(NumberNotation.SHADOK)
+        model.onPaste("12")
+        assertEquals("6", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `un collage apres un resultat repart de zero`() = runTest {
+        // Règle 5, identique à un chiffre tapé : le résultat n'est pas un préfixe.
+        val model = viewModel()
+        model.onKey(KeyAction.Digit('2'))
+        model.onKey(KeyAction.Op(Operator.PLUS))
+        model.onKey(KeyAction.Digit('3'))
+        model.onKey(KeyAction.Evaluate)
+        assertEquals("5", model.uiState.value.decimal)
+
+        model.onPaste("7")
+
+        assertEquals("7", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `un collage negatif arrive signe dans les deux modes`() = runTest {
+        val model = viewModel()
+
+        model.onPaste("−6")
+        assertEquals("−6", model.uiState.value.decimal)
+
+        model.onModeChange(CalculationMode.RPN)
+        model.onPaste("−6")
+        assertEquals("−6", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `un collage en NPI demarre une frappe sans toucher la pile`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+        model.onKey(KeyAction.Digit('4'))
+        model.onKey(KeyAction.Enter)
+
+        model.onPaste("0.25")
+
+        assertEquals("0.25", model.uiState.value.decimal, "X est la frappe collee")
+        assertEquals(listOf("4"), model.uiState.value.stack.map { it.decimal })
+    }
+
+    @Test
+    fun `un niveau de pile porte aussi sa base 4`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+        model.onKey(KeyAction.Digit('6'))
+        model.onKey(KeyAction.Enter)
+        model.onKey(KeyAction.Digit('7'))
+
+        assertEquals(listOf("12"), model.uiState.value.stack.map { it.base4 })
+    }
+
+    @Test
+    fun `un collage illisible ne change rien et ne signale pas d'erreur`() = runTest {
+        // L'interface grise « Coller » dans ce cas : personne ne peut déclencher cet appel
+        // par un geste. Le silence est donc la bonne réponse, pas un message d'erreur.
+        val model = viewModel()
+        model.onKey(KeyAction.Digit('6'))
+
+        listOf("", " ", "abc", "1/3", "1e9", "BuXo").forEach { text ->
+            model.onPaste(text)
+            assertEquals("6", model.uiState.value.decimal, "collage de \"$text\"")
+            assertNull(model.uiState.value.error)
+        }
+    }
+
     private class FakeSessionStore : SessionStore {
         val saved = MutableStateFlow(StoredSession())
         val savedSettings = MutableStateFlow(DisplaySettings())

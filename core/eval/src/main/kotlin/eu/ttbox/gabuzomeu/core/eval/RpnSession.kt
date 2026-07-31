@@ -196,6 +196,8 @@ data class RpnSession(
         ExpressionDisplay.SHADOK_GLYPHS -> renderedInBase4(ShadokNotation.GLYPHS)
 
         ExpressionDisplay.SHADOK_LABELS -> renderedInBase4(ShadokNotation.LABELS)
+
+        ExpressionDisplay.SHADOK_BASE4 -> renderedInBase4(ShadokNotation.BASE4)
     }
 
     private fun Rational.renderedInBase4(shadokNotation: ShadokNotation): Rendered {

@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.ttbox.gabuzomeu.R
+import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.shadok.ShadokFormatter
 import eu.ttbox.gabuzomeu.ui.DisplayTags
 import eu.ttbox.gabuzomeu.ui.calculator.StackLevel
@@ -53,7 +54,9 @@ internal val VALUE_COLUMN_SPACING = 12.dp
 internal fun RpnStackArea(
     levels: List<StackLevel>,
     showDecimal: Boolean,
+    notation: NumberNotation,
     modifier: Modifier = Modifier,
+    onCopied: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.testTag(DisplayTags.STACK),
@@ -64,7 +67,18 @@ internal fun RpnStackArea(
         // La liste est inversée comme la disposition : l'indice 0 est donc le niveau
         // immédiatement sous X — celui que les HP appellent Y.
         itemsIndexed(levels.asReversed()) { depth, level ->
-            StackRow(level = level, depth = depth, showDecimal = showDecimal)
+            // Chaque niveau est copiable pour lui-même : une valeur enfouie sous trois autres
+            // se récupère sans avoir à la ramener au sommet. Coller, en revanche, n'a pas de
+            // sens ici — on n'écrit pas au milieu d'une pile — donc l'item n'apparaît pas.
+            DisplayActions(
+                value = CopyableValue.of(level),
+                notation = notation,
+                tag = DisplayTags.stackLevelActions(depth),
+                modifier = Modifier.fillMaxWidth(),
+                onCopied = onCopied,
+            ) {
+                StackRow(level = level, depth = depth, showDecimal = showDecimal)
+            }
         }
     }
 }

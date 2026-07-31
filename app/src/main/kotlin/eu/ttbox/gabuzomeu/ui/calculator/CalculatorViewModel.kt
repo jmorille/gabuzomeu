@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import eu.ttbox.gabuzomeu.core.eval.Atom
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
+import eu.ttbox.gabuzomeu.core.eval.ClipboardNumber
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.eval.EvalResult
 import eu.ttbox.gabuzomeu.core.eval.Evaluator
@@ -17,9 +18,11 @@ import eu.ttbox.gabuzomeu.core.eval.ExpressionBuffer
 import eu.ttbox.gabuzomeu.core.eval.ExpressionDisplay
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
+import eu.ttbox.gabuzomeu.core.eval.PastedNumber
 import eu.ttbox.gabuzomeu.core.eval.Rendered
 import eu.ttbox.gabuzomeu.core.eval.RpnOutcome
 import eu.ttbox.gabuzomeu.core.eval.RpnSession
+import eu.ttbox.gabuzomeu.core.shadok.ShadokFormatter
 import eu.ttbox.gabuzomeu.data.CalculatorPreferences
 import eu.ttbox.gabuzomeu.data.DisplaySettings
 import eu.ttbox.gabuzomeu.data.SessionStore
@@ -134,6 +137,60 @@ class CalculatorViewModel(
 
         publish()
     }
+
+    /**
+     * Insère un nombre venu du presse-papiers.
+     *
+     * Le collage ne pose **aucun état nouveau** : il rejoue `appendDigit` / `appendSeparator`
+     * caractère par caractère, exactement comme la restauration d'une session persistée. Un
+     * tampon invalide ne peut donc pas naître d'un texte arbitraire.
+     *
+     * Un texte illisible est ignoré sans bruit — et c'est acceptable parce que l'interface
+     * grise « Coller » dans ce cas : l'utilisateur ne peut pas déclencher un échec silencieux.
+     */
+    fun onPaste(text: String) {
+        val pasted = ClipboardNumber.parseOrNull(text, buffer.notation) ?: return
+        error = null
+
+        when (mode) {
+            CalculationMode.CLASSIC -> pasteIntoBuffer(pasted)
+            CalculationMode.RPN -> pasteIntoRpn(pasted)
+        }
+
+        publish()
+    }
+
+    private fun pasteIntoBuffer(pasted: PastedNumber) {
+        // Règle 5, comme pour un chiffre tapé : un nombre après un résultat repart de zéro.
+        if (showingResult) reset()
+        // Le signe passe par l'opérateur, seule forme qu'un négatif prend en infixe. Le
+        // tampon l'acceptera ou le refusera selon ses propres règles — « 6−» collé après
+        // « 2× » donne « 2×−6 », et un moins en tête d'expression est licite.
+        if (pasted.negative) buffer = buffer.appendOperator(Operator.MINUS)
+        buffer = replayInto(buffer, pasted.keys)
+    }
+
+    private fun pasteIntoRpn(pasted: PastedNumber) {
+        pasted.keys.forEach { key ->
+            rpn = if (key == ShadokFormatter.SEPARATOR) {
+                rpn.appendSeparator()
+            } else {
+                rpn.appendDigit(key)
+            }
+        }
+        // Après les chiffres : `negate` bascule le signe de la frappe en cours, alors qu'avant
+        // eux il aurait changé celui du sommet de pile.
+        if (pasted.negative) rpn = rpn.negate()
+    }
+
+    private fun replayInto(target: ExpressionBuffer, keys: String): ExpressionBuffer =
+        keys.fold(target) { buffer, key ->
+            if (key == ShadokFormatter.SEPARATOR) {
+                buffer.appendSeparator()
+            } else {
+                buffer.appendDigit(key)
+            }
+        }
 
     fun onNotationChange(notation: NumberNotation) {
         // Les deux modes suivent : le sélecteur décimal/Shadok est un axe unique, il ne
@@ -294,6 +351,7 @@ class CalculatorViewModel(
             decimal = lines.decimal.text,
             glyphs = lines.glyphs.text,
             labels = lines.labels.text,
+            base4 = lines.base4.text,
             shadokApproximate = lines.glyphs.approximate,
             decimalApproximate = when (mode) {
                 // En infixe, une saisie décimale est rendue verbatim, donc toujours
@@ -314,18 +372,20 @@ class CalculatorViewModel(
         persistRequests.value = session
     }
 
-    /** Les trois projections de la ligne principale, selon le mode affiché. */
+    /** Les quatre projections de la ligne principale, selon le mode affiché. */
     private fun renderLines(): Lines = when (mode) {
         CalculationMode.CLASSIC -> Lines(
             decimal = buffer.render(ExpressionDisplay.DECIMAL),
             glyphs = buffer.render(ExpressionDisplay.SHADOK_GLYPHS),
             labels = buffer.render(ExpressionDisplay.SHADOK_LABELS),
+            base4 = buffer.render(ExpressionDisplay.SHADOK_BASE4),
         )
 
         CalculationMode.RPN -> Lines(
             decimal = rpn.renderX(ExpressionDisplay.DECIMAL),
             glyphs = rpn.renderX(ExpressionDisplay.SHADOK_GLYPHS),
             labels = rpn.renderX(ExpressionDisplay.SHADOK_LABELS),
+            base4 = rpn.renderX(ExpressionDisplay.SHADOK_BASE4),
         )
     }
 
@@ -335,11 +395,15 @@ class CalculatorViewModel(
         val decimal = rpn.renderBelowX(ExpressionDisplay.DECIMAL)
         val glyphs = rpn.renderBelowX(ExpressionDisplay.SHADOK_GLYPHS)
         val labels = rpn.renderBelowX(ExpressionDisplay.SHADOK_LABELS)
+        // Comme la ligne de X : jamais affichée, mais un appui long sur un niveau enfoui
+        // doit pouvoir le copier dans les quatre écritures.
+        val base4 = rpn.renderBelowX(ExpressionDisplay.SHADOK_BASE4)
         return decimal.indices.map { level ->
             StackLevel(
                 glyphs = glyphs[level].text,
                 labels = labels[level].text,
                 decimal = decimal[level].text,
+                base4 = base4[level].text,
                 shadokApproximate = glyphs[level].approximate,
                 decimalApproximate = decimal[level].approximate,
             )
@@ -409,7 +473,13 @@ class CalculatorViewModel(
         CalculationMode.entries.firstOrNull { it.name == name } ?: CalculationMode.CLASSIC
 
     /** Les trois écritures de la ligne principale, rendues d'un seul coup. */
-    private data class Lines(val decimal: Rendered, val glyphs: Rendered, val labels: Rendered)
+    private data class Lines(
+        val decimal: Rendered,
+        val glyphs: Rendered,
+        val labels: Rendered,
+        /** Jamais affichée : elle n'existe que pour être copiée. */
+        val base4: Rendered,
+    )
 
     companion object {
         private const val STATE_KEYS = "expression-keys"

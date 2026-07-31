@@ -1,6 +1,7 @@
 package eu.ttbox.gabuzomeu.ui
 
 import eu.ttbox.gabuzomeu.ui.calculator.KeyAction
+import eu.ttbox.gabuzomeu.ui.calculator.components.ValueWriting
 
 /**
  * Repères de test de l'interface, réunis en un seul endroit.
@@ -24,6 +25,21 @@ object DisplayTags {
 
     /** Un niveau de pile, repéré par son rang depuis le fond. */
     fun stackLevel(level: Int): String = "display-stack-$level"
+
+    /** La zone qui ouvre le menu copier/coller à l'appui long : X, ou l'expression. */
+    const val ACTIONS = "display-actions"
+
+    /** La même zone sur un niveau de pile enfoui. */
+    fun stackLevelActions(level: Int): String = "display-stack-actions-$level"
+}
+
+/** Le menu ouvert par un appui long sur une valeur affichée. */
+object ActionTags {
+    const val PASTE = "action-paste"
+    const val SHARE = "action-share"
+
+    /** Dérivé de l'écriture : un repère par item de copie, stable et indépendant de la langue. */
+    fun copy(writing: ValueWriting): String = "action-copy-${writing.name.lowercase()}"
 }
 
 object SettingsTags {

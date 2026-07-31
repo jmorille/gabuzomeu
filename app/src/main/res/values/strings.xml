@@ -22,7 +22,9 @@
     <!-- Modes de calcul : axe indépendant de la notation ci-dessus -->
     <string name="settings_mode">Mode de calcul</string>
     <string name="mode_classic">Calculatrice classique</string>
-    <string name="mode_rpn">Notation polonaise inverse</string>
+    <!-- « Polonaise inverse » et non « Notation polonaise inverse » : le menu annonce déjà
+         « Mode de calcul », donc le mot « Notation » n'ajoutait rien et allongeait la ligne. -->
+    <string name="mode_rpn">Polonaise inverse</string>
 
     <!-- Descriptions d'accessibilité des touches -->
     <string name="key_clear">Effacer tout</string>
@@ -50,6 +52,20 @@
     <string name="settings_open">Réglages d\'affichage</string>
     <string name="settings_show_shadok_labels">Afficher les noms Shadok</string>
     <string name="settings_show_decimal">Afficher le décimal</string>
+
+    <!-- Presse-papiers : les quatre écritures d'une valeur, plus coller et partager -->
+    <string name="display_actions">Copier, coller ou partager</string>
+    <string name="copy_glyphs">Copier les glyphes</string>
+    <string name="copy_labels">Copier les noms</string>
+    <string name="copy_base4">Copier la base 4</string>
+    <string name="copy_decimal">Copier le décimal</string>
+    <string name="copy_done">Copié</string>
+    <string name="paste">Coller</string>
+    <string name="share">Partager…</string>
+    <string name="share_title">Partager le nombre</string>
+    <!-- %1$s décimal, %2$s noms Shadok, %3$s glyphes, %4$s chiffres base 4. Les quatre
+         d'un coup : un message ne se relit pas sur la calculatrice qui l'a produit. -->
+    <string name="share_value">%1$s = %2$s = %3$s (base 4 : %4$s)</string>
 
     <!-- Erreurs d'évaluation -->
     <string name="error_empty">Rien à calculer</string>

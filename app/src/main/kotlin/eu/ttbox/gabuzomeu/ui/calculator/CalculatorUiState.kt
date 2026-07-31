@@ -16,6 +16,8 @@ data class StackLevel(
     val glyphs: String,
     val labels: String,
     val decimal: String,
+    /** Ni affichée ni lue : uniquement ce qu'un appui long copie. */
+    val base4: String = "",
     val shadokApproximate: Boolean = false,
     val decimalApproximate: Boolean = false,
 )
@@ -36,6 +38,13 @@ data class CalculatorUiState(
     val glyphs: String = "",
     val labels: String = "",
     val decimal: String = "",
+    /**
+     * La même valeur en chiffres base 4 bruts — `12` pour 6.
+     *
+     * Aucune ligne ne la montre : elle existe pour le presse-papiers, parce que `12` se colle
+     * et se relit partout, là où `_⅃` dépend d'une police qui porte U+2143.
+     */
+    val base4: String = "",
     /** Au moins un nombre a dû être tronqué pour s'écrire en base 4. */
     val shadokApproximate: Boolean = false,
     /** Valeur non représentable exactement en décimal (un tiers, par exemple). */

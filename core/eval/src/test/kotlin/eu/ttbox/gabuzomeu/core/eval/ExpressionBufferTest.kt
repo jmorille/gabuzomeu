@@ -168,6 +168,39 @@ class ExpressionBufferTest {
     }
 
     @Test
+    fun `la base 4 ecrit les memes chiffres que les glyphes et les noms`() {
+        // La quatrieme ecriture existe pour le presse-papiers : « 12 » se colle et se lit
+        // partout, la ou « _⅃ » depend d'une police qui porte U+2143.
+        val buffer = type("6")
+
+        assertEquals("12", buffer.render(ExpressionDisplay.SHADOK_BASE4).text)
+        assertEquals("_⅃", buffer.render(ExpressionDisplay.SHADOK_GLYPHS).text)
+        assertEquals("BuZo", buffer.render(ExpressionDisplay.SHADOK_LABELS).text)
+    }
+
+    @Test
+    fun `la base 4 rend la frappe Shadok verbatim, comme les deux autres`() {
+        // Le cas que la lecture glyphe par glyphe doit couvrir : une saisie en cours, dont
+        // les zeros de tete et le separateur final ne doivent pas etre normalises.
+        val buffer = type("◯⅃.", NumberNotation.SHADOK)
+
+        assertEquals("02.", buffer.render(ExpressionDisplay.SHADOK_BASE4).text)
+        assertEquals("◯⅃.", buffer.render(ExpressionDisplay.SHADOK_GLYPHS).text)
+        assertEquals("GaZo.", buffer.render(ExpressionDisplay.SHADOK_LABELS).text)
+    }
+
+    @Test
+    fun `les trois ecritures Shadok sont approchees ensemble`() {
+        // Elles decrivent les memes chiffres : l'une ne peut pas etre exacte quand l'autre
+        // est tronquee, sinon le marqueur « ≈ » mentirait selon le reglage choisi.
+        val buffer = type("0.1")
+
+        assertTrue(buffer.render(ExpressionDisplay.SHADOK_GLYPHS).approximate)
+        assertTrue(buffer.render(ExpressionDisplay.SHADOK_LABELS).approximate)
+        assertTrue(buffer.render(ExpressionDisplay.SHADOK_BASE4).approximate)
+    }
+
+    @Test
     fun `une decimale non representable en base 4 est signalee comme approchee`() {
         // 0.1 decimal = 0.0121212... en base 4 : developpement periodique.
         val approx = type("0.1").render(ExpressionDisplay.SHADOK_LABELS)

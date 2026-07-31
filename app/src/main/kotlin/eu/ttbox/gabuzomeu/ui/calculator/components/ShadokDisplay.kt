@@ -53,7 +53,12 @@ import eu.ttbox.gabuzomeu.ui.theme.DisplayTypography
  * elle, est toujours là.
  */
 @Composable
-fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
+fun ShadokDisplay(
+    state: CalculatorUiState,
+    modifier: Modifier = Modifier,
+    onPaste: (String) -> Unit = {},
+    onCopied: () -> Unit = {},
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -65,6 +70,8 @@ fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
             RpnStackArea(
                 levels = state.stack,
                 showDecimal = state.settings.showDecimal,
+                notation = state.notation,
+                onCopied = onCopied,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
@@ -73,11 +80,18 @@ fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
             // X reprend la disposition des niveaux de pile — décimal à gauche, Shadok à
             // droite — pour que l'œil lise la colonne des décimales d'un seul trait, du
             // fond de pile jusqu'au calcul en cours.
-            XValue(state)
+            ValueActions(state, onPaste, onCopied) { XValue(state) }
         } else {
-            GlyphLine(state)
-            if (state.settings.showShadokLabels) LabelLine(state)
-            if (state.settings.showDecimal) DecimalLine(state)
+            ValueActions(state, onPaste, onCopied) {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    GlyphLine(state)
+                    if (state.settings.showShadokLabels) LabelLine(state)
+                    if (state.settings.showDecimal) DecimalLine(state)
+                }
+            }
         }
 
         state.error?.let { error ->
@@ -88,6 +102,30 @@ fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+/**
+ * La valeur principale, rendue copiable.
+ *
+ * Un seul point d'ancrage pour les deux modes : en NPI c'est X, en classique l'expression
+ * entière — dans les deux cas, ce que l'utilisateur désigne quand il appuie sur l'afficheur.
+ */
+@Composable
+private fun ValueActions(
+    state: CalculatorUiState,
+    onPaste: (String) -> Unit,
+    onCopied: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    DisplayActions(
+        value = CopyableValue.of(state),
+        notation = state.notation,
+        tag = DisplayTags.ACTIONS,
+        modifier = Modifier.fillMaxWidth(),
+        onPaste = onPaste,
+        onCopied = onCopied,
+        content = content,
+    )
 }
 
 /**

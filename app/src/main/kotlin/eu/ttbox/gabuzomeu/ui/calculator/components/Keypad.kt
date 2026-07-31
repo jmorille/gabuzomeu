@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
@@ -97,7 +98,15 @@ private fun KeyButton(key: KeySpec, onKey: (KeyAction) -> Unit, modifier: Modifi
         } else {
             Text(
                 text = key.text.orEmpty(),
-                style = DisplayTypography.key,
+                // Les opérateurs en gras : dans Roboto, « − » (U+2212) est nettement plus fin
+                // que « + », « × » et « ÷ », si bien qu'il paraissait moins présent que ses
+                // voisins sur la même rangée. La graisse rattrape l'écart sans toucher aux
+                // chiffres, dont l'épaisseur, elle, est déjà cohérente.
+                style = if (key.kind == KeyKind.OPERATOR) {
+                    DisplayTypography.key.copy(fontWeight = FontWeight.Bold)
+                } else {
+                    DisplayTypography.key
+                },
                 maxLines = 1,
                 // La touche s'adapte au libellé plutôt que de le rogner : « ENTER ↵ » ne
                 // tient pas à la taille nominale sur une touche étroite, et le repli

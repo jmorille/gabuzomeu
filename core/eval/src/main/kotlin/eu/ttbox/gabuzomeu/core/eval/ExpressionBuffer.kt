@@ -4,11 +4,19 @@ import eu.ttbox.gabuzomeu.core.shadok.ShadokDigit
 import eu.ttbox.gabuzomeu.core.shadok.ShadokFormatter
 import eu.ttbox.gabuzomeu.core.shadok.ShadokNotation
 
-/** Les trois écritures simultanées d'une expression. */
+/**
+ * Les quatre écritures d'une expression.
+ *
+ * Trois sont affichées simultanément ; [SHADOK_BASE4] ne l'est pas — elle sert à copier une
+ * valeur sous une forme lisible partout, y compris là où les glyphes s'afficheraient en tofu.
+ */
 enum class ExpressionDisplay {
     DECIMAL,
     SHADOK_GLYPHS,
     SHADOK_LABELS,
+
+    /** Chiffres bruts en base 4 : `12` pour 6. Copiable et relisible sans police spéciale. */
+    SHADOK_BASE4,
 }
 
 /**
@@ -283,14 +291,19 @@ data class ExpressionBuffer(
                 // Shadok → décimal est toujours exact ; décimal saisi est rendu verbatim.
                 ExpressionDisplay.DECIMAL -> false
 
-                ExpressionDisplay.SHADOK_GLYPHS, ExpressionDisplay.SHADOK_LABELS ->
-                    notation != NumberNotation.SHADOK && toBase4().approximate
+                // Les trois écritures Shadok décrivent les mêmes chiffres : elles sont
+                // approchées ensemble ou pas du tout.
+                ExpressionDisplay.SHADOK_GLYPHS,
+                ExpressionDisplay.SHADOK_LABELS,
+                ExpressionDisplay.SHADOK_BASE4,
+                -> notation != NumberNotation.SHADOK && toBase4().approximate
             }
 
         private fun Atom.Number.render(display: ExpressionDisplay): String = when (display) {
             ExpressionDisplay.DECIMAL -> renderDecimal()
             ExpressionDisplay.SHADOK_GLYPHS -> renderShadok(ShadokNotation.GLYPHS)
             ExpressionDisplay.SHADOK_LABELS -> renderShadok(ShadokNotation.LABELS)
+            ExpressionDisplay.SHADOK_BASE4 -> renderShadok(ShadokNotation.BASE4)
         }
 
         private fun Atom.Number.renderDecimal(): String = when (notation) {
@@ -304,11 +317,17 @@ data class ExpressionBuffer(
             if (notation == NumberNotation.SHADOK) {
                 // Verbatim, glyphe par glyphe, pour préserver la frappe en cours.
                 return digits.map { char ->
-                    val digit = ShadokDigit.ofGlyphOrNull(char)
-                    when {
-                        digit == null -> char.toString()
-                        shadokNotation == ShadokNotation.LABELS -> digit.label
-                        else -> digit.glyph.toString()
+                    // Le séparateur décimal et le reste passent tels quels ; seuls les
+                    // glyphes se réécrivent. Le `when` sur la notation est exhaustif : une
+                    // cinquième écriture ne pourrait pas être oubliée ici.
+                    when (val digit = ShadokDigit.ofGlyphOrNull(char)) {
+                        null -> char.toString()
+
+                        else -> when (shadokNotation) {
+                            ShadokNotation.GLYPHS -> digit.glyph.toString()
+                            ShadokNotation.LABELS -> digit.label
+                            ShadokNotation.BASE4 -> digit.base4Char.toString()
+                        }
                     }
                 }.joinToString(separator = "")
             }

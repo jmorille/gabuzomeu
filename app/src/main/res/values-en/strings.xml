@@ -7,7 +7,7 @@
 
     <string name="settings_mode">Calculation mode</string>
     <string name="mode_classic">Classic calculator</string>
-    <string name="mode_rpn">Reverse Polish notation</string>
+    <string name="mode_rpn">Reverse Polish</string>
 
     <string name="key_clear">Clear all</string>
     <string name="key_delete">Delete last character</string>
@@ -31,6 +31,17 @@
     <string name="settings_open">Display settings</string>
     <string name="settings_show_shadok_labels">Show Shadok names</string>
     <string name="settings_show_decimal">Show decimal</string>
+
+    <string name="display_actions">Copy, paste or share</string>
+    <string name="copy_glyphs">Copy glyphs</string>
+    <string name="copy_labels">Copy names</string>
+    <string name="copy_base4">Copy base 4</string>
+    <string name="copy_decimal">Copy decimal</string>
+    <string name="copy_done">Copied</string>
+    <string name="paste">Paste</string>
+    <string name="share">Share…</string>
+    <string name="share_title">Share the number</string>
+    <string name="share_value">%1$s = %2$s = %3$s (base 4: %4$s)</string>
 
     <string name="error_empty">Nothing to compute</string>
     <string name="error_syntax">Incomplete expression</string>

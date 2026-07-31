@@ -5,19 +5,24 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
 import eu.ttbox.gabuzomeu.core.shadok.ShadokDigit
 import eu.ttbox.gabuzomeu.data.DisplaySettings
+import eu.ttbox.gabuzomeu.ui.ActionTags
 import eu.ttbox.gabuzomeu.ui.DisplayTags
 import eu.ttbox.gabuzomeu.ui.KeypadTags
 import eu.ttbox.gabuzomeu.ui.SettingsTags
+import eu.ttbox.gabuzomeu.ui.calculator.components.ValueWriting
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
 import org.junit.Rule
 import org.junit.Test
@@ -64,7 +69,19 @@ class CalculatorScreenTest {
         val onNotationChange: (NumberNotation) -> Unit = {},
         val onModeChange: (CalculationMode) -> Unit = {},
         val onSettingsChange: (DisplaySettings) -> Unit = {},
+        val onPaste: (String) -> Unit = {},
     )
+
+    /**
+     * Un nœud de l'afficheur, cherché dans l'arbre **non fusionné**.
+     *
+     * Depuis que l'afficheur est copiable, il est enveloppé d'un `combinedClickable` — et un
+     * modificateur cliquable fusionne la sémantique de ses descendants, ce qui fait disparaître
+     * leurs `testTag` de l'arbre fusionné. Chercher sans fusion vaut dans les deux cas et
+     * vérifie le nœud lui-même plutôt qu'un agrégat.
+     */
+    private fun displayNode(tag: String) =
+        composeTestRule.onNodeWithTag(tag, useUnmergedTree = true)
 
     private fun setScreen(
         state: CalculatorUiState,
@@ -81,6 +98,7 @@ class CalculatorScreenTest {
                     onNotationChange = callbacks.onNotationChange,
                     onModeChange = callbacks.onModeChange,
                     onSettingsChange = callbacks.onSettingsChange,
+                    onPaste = callbacks.onPaste,
                 )
             }
         }
@@ -93,11 +111,11 @@ class CalculatorScreenTest {
         setScreen(CalculatorUiState(glyphs = "_⅃", labels = "BuZo", decimal = "6"))
 
         // La ligne de glyphes est vectorielle : elle s'annonce par ses noms.
-        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS)
+        displayNode(DisplayTags.GLYPHS)
             .assertIsDisplayed()
             .assertContentDescriptionEquals("BuZo")
-        composeTestRule.onNodeWithTag(DisplayTags.LABELS).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertIsDisplayed()
+        displayNode(DisplayTags.LABELS).assertIsDisplayed()
+        displayNode(DisplayTags.DECIMAL).assertIsDisplayed()
     }
 
     @Test
@@ -111,10 +129,10 @@ class CalculatorScreenTest {
             ),
         )
 
-        composeTestRule.onNodeWithTag(DisplayTags.LABELS).assertDoesNotExist()
+        displayNode(DisplayTags.LABELS).assertDoesNotExist()
         // Les glyphes restent : ils ne sont pas masquables.
-        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertIsDisplayed()
+        displayNode(DisplayTags.GLYPHS).assertIsDisplayed()
+        displayNode(DisplayTags.DECIMAL).assertIsDisplayed()
     }
 
     @Test
@@ -128,9 +146,9 @@ class CalculatorScreenTest {
             ),
         )
 
-        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertDoesNotExist()
-        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(DisplayTags.LABELS).assertIsDisplayed()
+        displayNode(DisplayTags.DECIMAL).assertDoesNotExist()
+        displayNode(DisplayTags.GLYPHS).assertIsDisplayed()
+        displayNode(DisplayTags.LABELS).assertIsDisplayed()
     }
 
     @Test
@@ -144,7 +162,7 @@ class CalculatorScreenTest {
             ),
         )
 
-        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertIsDisplayed()
+        displayNode(DisplayTags.GLYPHS).assertIsDisplayed()
     }
 
     // -------------------------------------------------------------------- réglages
@@ -385,16 +403,16 @@ class CalculatorScreenTest {
             ),
         )
 
-        composeTestRule.onNodeWithTag(DisplayTags.STACK).assertIsDisplayed()
+        displayNode(DisplayTags.STACK).assertIsDisplayed()
         // L'indice 0 est le niveau immediatement sous X, donc le dernier de la liste.
-        composeTestRule.onNodeWithTag(DisplayTags.stackLevel(0))
+        displayNode(DisplayTags.stackLevel(0))
             .assertIsDisplayed()
             .assertContentDescriptionContains("BuMeu", substring = true)
-        composeTestRule.onNodeWithTag(DisplayTags.stackLevel(1))
+        displayNode(DisplayTags.stackLevel(1))
             .assertIsDisplayed()
             .assertContentDescriptionContains("Zo", substring = true)
         // Et X reste la ligne principale.
-        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertContentDescriptionEquals("BuZo")
+        displayNode(DisplayTags.GLYPHS).assertContentDescriptionEquals("BuZo")
     }
 
     /**
@@ -413,9 +431,9 @@ class CalculatorScreenTest {
             ),
         )
 
-        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertDoesNotExist()
+        displayNode(DisplayTags.DECIMAL).assertDoesNotExist()
         // Le niveau reste affiché, mais ne s'annonce plus que par ses noms Shadok.
-        composeTestRule.onNodeWithTag(DisplayTags.stackLevel(0))
+        displayNode(DisplayTags.stackLevel(0))
             .assertIsDisplayed()
             .assertContentDescriptionContains("Zo", substring = true)
     }
@@ -424,6 +442,64 @@ class CalculatorScreenTest {
     fun laPileNExistePasEnModeClassique() {
         setScreen(CalculatorUiState(glyphs = "_⅃", labels = "BuZo", decimal = "6"))
 
-        composeTestRule.onNodeWithTag(DisplayTags.STACK).assertDoesNotExist()
+        displayNode(DisplayTags.STACK).assertDoesNotExist()
+    }
+
+    // ------------------------------------------------------------- presse-papiers
+
+    private val six = CalculatorUiState(glyphs = "_⅃", labels = "BuZo", base4 = "12", decimal = "6")
+
+    @Test
+    fun unAppuiLongSurLAfficheurOuvreLesQuatreEcritures() {
+        setScreen(six)
+
+        composeTestRule.onNodeWithTag(DisplayTags.ACTIONS).performTouchInput { longClick() }
+
+        // Une entrée par écriture, et chacune retrouvée par un repère dérivé de l'écriture :
+        // aucune assertion sur un libellé traduit, la CI tourne en en-US.
+        ValueWriting.entries.forEach { writing ->
+            composeTestRule.onNodeWithTag(ActionTags.copy(writing)).assertIsDisplayed()
+        }
+        composeTestRule.onNodeWithTag(ActionTags.SHARE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(ActionTags.PASTE).assertIsDisplayed()
+    }
+
+    @Test
+    fun leMenuNeSOuvrePasAvantQuOnLeDemande() {
+        setScreen(six)
+
+        composeTestRule.onNodeWithTag(ActionTags.copy(ValueWriting.DECIMAL)).assertDoesNotExist()
+    }
+
+    @Test
+    fun surUnAfficheurVideCopierEstInactifMaisCollerReste() {
+        setScreen(CalculatorUiState())
+
+        composeTestRule.onNodeWithTag(DisplayTags.ACTIONS).performTouchInput { longClick() }
+
+        // Rien à copier, mais coller garde un sens : c'est précisément l'écran vide qu'on
+        // remplit depuis le presse-papiers.
+        composeTestRule.onNodeWithTag(ActionTags.copy(ValueWriting.DECIMAL)).assertIsNotEnabled()
+        composeTestRule.onNodeWithTag(ActionTags.SHARE).assertIsNotEnabled()
+        composeTestRule.onNodeWithTag(ActionTags.PASTE).assertIsDisplayed()
+    }
+
+    @Test
+    fun unNiveauDePileSeCopiePourLuiMeme() {
+        setScreen(
+            rpn.copy(
+                glyphs = "_⅃",
+                labels = "BuZo",
+                decimal = "6",
+                stack = listOf(StackLevel(glyphs = "⅃", labels = "Zo", base4 = "2", decimal = "2")),
+            ),
+        )
+
+        composeTestRule.onNodeWithTag(DisplayTags.stackLevelActions(0))
+            .performTouchInput { longClick() }
+
+        // On ne colle pas au milieu d'une pile : l'item n'existe pas, il n'est pas grisé.
+        composeTestRule.onNodeWithTag(ActionTags.copy(ValueWriting.BASE4)).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(ActionTags.PASTE).assertDoesNotExist()
     }
 }

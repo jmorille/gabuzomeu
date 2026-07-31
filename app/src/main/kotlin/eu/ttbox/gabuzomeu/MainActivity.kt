@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
                     onNotationChange = viewModel::onNotationChange,
                     onModeChange = viewModel::onModeChange,
                     onSettingsChange = viewModel::onSettingsChange,
+                    onPaste = viewModel::onPaste,
                 )
             }
         }
