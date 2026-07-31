@@ -32,11 +32,18 @@ import java.time.temporal.ChronoUnit
  */
 object ClockTickScheduler {
 
+    /** L'action du tic de minute, interne à l'application. */
+    internal const val ACTION_TICK: String = "eu.ttbox.gabuzomeu.widget.action.TICK"
+
     fun scheduleNextMinute(context: Context) {
         val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
         // set() remplace toute alarme déjà posée avec le même PendingIntent : la
         // replanification ne peut pas s'empiler.
-        alarmManager.set(AlarmManager.RTC, nextMinuteBoundaryMillis(), tickIntent(context))
+        alarmManager.set(
+            AlarmManager.RTC,
+            nextMinuteBoundaryMillis(Instant.now()),
+            tickIntent(context),
+        )
     }
 
     fun cancel(context: Context) {
@@ -44,20 +51,50 @@ object ClockTickScheduler {
         alarmManager.cancel(tickIntent(context))
     }
 
-    private fun nextMinuteBoundaryMillis(): Long = Instant.now()
-        .atZone(ZoneId.systemDefault())
+    /**
+     * L'instant du prochain changement de minute, strictement après [now].
+     *
+     * `now` est un paramètre et non un `Instant.now()` interne : c'est le seul calcul de ce
+     * fichier qui ne touche pas à Android, et le sortir ainsi le rend vérifiable sur la JVM
+     * — sans Robolectric ni émulateur. Le reste (AlarmManager, PendingIntent) n'est que du
+     * câblage plateforme.
+     *
+     * `plusMinutes(1)` **après** troncature, et jamais l'inverse : sur une heure pile, rendre
+     * `now` reposterait une alarme déjà échue, que le système délivrerait immédiatement — le
+     * widget se réveillerait alors en boucle au lieu d'une fois par minute.
+     */
+    internal fun nextMinuteBoundaryMillis(
+        now: Instant,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): Long = now
+        .atZone(zone)
         .truncatedTo(ChronoUnit.MINUTES)
         .plusMinutes(1)
         .toInstant()
         .toEpochMilli()
 
     /**
-     * Une diffusion `APPWIDGET_UPDATE` vers notre propre receiver : Glance prend alors
-     * le relais et rappelle `provideGlance`, qui relit l'heure.
+     * `true` tant qu'au moins une instance du widget est posée sur un écran d'accueil.
+     *
+     * Le garde-fou qui rend la planification **auto-réparante** : sans widget affiché, un
+     * tic ne sert plus à rien, et l'alarme doit s'éteindre d'elle-même. C'est ce qui empêche
+     * une alarme orpheline de survivre indéfiniment si un `cancel()` a été manqué.
+     */
+    internal fun shouldKeepTicking(widgetCount: Int): Boolean = widgetCount > 0
+
+    /**
+     * Une action **privée**, et non `APPWIDGET_UPDATE`.
+     *
+     * C'était le bug central : un `Intent(ACTION_APPWIDGET_UPDATE)` sans
+     * `EXTRA_APPWIDGET_IDS` est ignoré par `AppWidgetProvider.onReceive`, qui n'appelle
+     * `onUpdate` que si l'extra contient au moins un identifiant. Le tic réveillait donc le
+     * processus chaque minute **sans jamais redessiner l'horloge** : tout le coût, aucun
+     * effet. Une action à nous, traitée explicitement, rend le chemin sans ambiguïté.
      */
     private fun tickIntent(context: Context): PendingIntent {
-        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
-            component = ComponentName(context, ShadokClockWidgetReceiver::class.java)
+        val intent = Intent(ACTION_TICK).apply {
+            // Un receiver dédié, partagé par les deux widgets : voir ShadokClockTickReceiver.
+            component = ComponentName(context, ShadokClockTickReceiver::class.java)
         }
         return PendingIntent.getBroadcast(
             context,

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Le cadran est un disque : il lui faut une place à peu près carrée, d'où
+    targetCell 3×3 là où le widget numérique se contente de 3×2.
+
+    updatePeriodMillis : même filet de sécurité que le widget numérique — 30 min, le
+    plancher système. Ce n'est pas le mécanisme d'affichage (les aiguilles avancent grâce
+    aux tics de ClockTickScheduler), mais la reprise si la chaîne de tics est rompue.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/dial_widget_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minHeight="110dp"
+    android:minWidth="110dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="2"
+    android:updatePeriodMillis="1800000"
+    android:previewLayout="@layout/preview_dial_quarters"
+    android:configure="eu.ttbox.gabuzomeu.widget.ClockWidgetConfigActivity"
+    android:widgetFeatures="reconfigurable|configuration_optional"
+    android:widgetCategory="home_screen" />

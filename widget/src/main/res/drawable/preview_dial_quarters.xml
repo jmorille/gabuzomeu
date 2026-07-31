@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Miniature du cadran en quartiers Ga/Bu/Zo/Meu.
+
+    Généré à partir des MÊMES tracés de glyphes et de la MÊME géométrie que le rendu
+    réel (0° en haut, sens horaire) : la miniature du sélecteur ne peut donc pas
+    mentir sur ce que le widget affichera. Les aiguilles montrent 22:22, comme la
+    capture qui a servi à valider le cadran.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp" android:height="120dp"
+    android:viewportWidth="120" android:viewportHeight="120">
+    <path android:pathData="M60.0,4.800000000000002a55.199999999999996,55.199999999999996 0 1,0 0,110.39999999999999a55.199999999999996,55.199999999999996 0 1,0 0,-110.39999999999999z"
+        android:strokeColor="#FF000000" android:strokeWidth="2.4" />
+    <group android:translateX="51.00" android:translateY="7.01" android:scaleX="0.7500" android:scaleY="0.7500">
+      <path android:pathData="M3,12a9,9 0 1,0 18,0a9,9 0 1,0 -18,0" android:strokeColor="#FF000000" android:strokeWidth="2.5" />
+    </group>
+    <group android:translateX="94.99" android:translateY="51.00" android:scaleX="0.7500" android:scaleY="0.7500">
+      <path android:pathData="M2,16h20v3h-20z" android:fillColor="#FF000000" />
+    </group>
+    <group android:translateX="51.00" android:translateY="94.99" android:scaleX="0.7500" android:scaleY="0.7500">
+      <path android:pathData="M17,4h3v16h-16v-3h13z" android:fillColor="#FF000000" />
+    </group>
+    <group android:translateX="7.01" android:translateY="51.00" android:scaleX="0.7500" android:scaleY="0.7500">
+      <path android:pathData="M20,4V20H4z" android:fillColor="#FF000000" />
+    </group>
+    <path android:pathData="M60.0,60.0L40.42,42.98"
+        android:strokeColor="#FF000000" android:strokeWidth="5.5"
+        android:strokeLineCap="round" />
+    <path android:pathData="M60.0,60.0L89.34,86.42"
+        android:strokeColor="#FF000000" android:strokeWidth="3.4"
+        android:strokeLineCap="round" />
+    <path android:pathData="M60.0,57.3a2.7,2.7 0 1,0 0,5.4a2.7,2.7 0 1,0 0,-5.4z"
+        android:fillColor="#FF000000" />
+</vector>

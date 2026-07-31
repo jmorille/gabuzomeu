@@ -2,4 +2,34 @@
 <!-- Les chaînes du widget vivent dans le module qui les utilise. -->
 <resources>
     <string name="widget_description">L\'heure en Ga, Bu, Zo et Meu</string>
+    <string name="dial_widget_description">Cadran Shadok en quartiers</string>
+    <string name="hour_dial_widget_description">Cadran Shadok à douze heures</string>
+
+    <!-- Écran de configuration d'une horloge numérique posée. -->
+    <string name="config_background">Arrière-plan</string>
+    <string name="config_background_visible">Afficher l\'arrière-plan</string>
+    <string name="config_background_opacity">Transparence : %1$d %%</string>
+    <string name="config_background_color">Couleur de l\'arrière-plan</string>
+    <string name="config_background_color_system">Utiliser le paramètre du téléphone</string>
+    <string name="config_background_color_light">Lumineux</string>
+    <string name="config_background_color_dark">Sombre</string>
+
+    <string name="clock_config_notation">Écriture de l\'heure</string>
+    <string name="clock_config_notation_glyphs">Glyphes</string>
+    <string name="clock_config_notation_labels">Noms</string>
+    <string name="clock_config_notation_base4">Chiffres base 4</string>
+    <string name="clock_config_show_decimal">Afficher l\'heure décimale</string>
+    <string name="clock_config_date">Date</string>
+    <string name="clock_config_date_none">Aucune</string>
+    <string name="clock_config_date_weekday">Jour de la semaine — VENDREDI</string>
+    <string name="clock_config_date_long">Date longue — 31 juillet 2026</string>
+    <string name="clock_config_date_weekday_long">Jour et date longue, sur deux lignes</string>
+    <string name="clock_config_date_numeric">Date courte — 31/07/2026</string>
+    <string name="clock_config_date_shadok">Shadok — 133/13/133222</string>
+    <string name="clock_config_date_above">Date au-dessus de l\'heure</string>
+    <string name="clock_config_save">Enregistrer</string>
+
+    <!-- Uniquement pour la miniature du sélecteur, jamais affichée par le widget. -->
+    <string name="preview_weekday">VENDREDI</string>
+    <string name="preview_time_separator" translatable="false">:</string>
 </resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ◯ Ga = 0 — un cercle évidé, tracé en deux demi-arcs.
+
+    Tracés reportés depuis ShadokGlyphs de :app (viewport 24×24, ceux de l'icône de
+    lanceur). Glance ne sait pas rendre un ImageVector Compose : il lui faut une
+    ressource drawable. La couleur déclarée ici est sans importance — le widget applique
+    un ColorFilter.tint, donc seule la silhouette compte.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M3,12a9,9 0 1,0 18,0a9,9 0 1,0 -18,0"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2.5" />
+</vector>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Le cadran aux douze heures. minWidth plus généreux que celui des quarts : douze repères,
+    dont la moitié à deux chiffres, demandent de la place pour rester lisibles.
+
+    updatePeriodMillis : même filet de sécurité que les autres widgets — 30 min, le plancher
+    système, qui relance la chaîne de tics si elle a été rompue.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/hour_dial_widget_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minHeight="130dp"
+    android:minWidth="130dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="2"
+    android:updatePeriodMillis="1800000"
+    android:previewLayout="@layout/preview_dial_hours"
+    android:configure="eu.ttbox.gabuzomeu.widget.ClockWidgetConfigActivity"
+    android:widgetFeatures="reconfigurable|configuration_optional"
+    android:widgetCategory="home_screen" />

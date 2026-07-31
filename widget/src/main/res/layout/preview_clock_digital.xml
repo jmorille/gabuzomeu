@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Miniature du sélecteur pour l'horloge numérique.
+
+    `previewLayout` (API 31, notre plancher) affiche une VRAIE mise en page à l'échelle du
+    widget, là où l'ancien `previewImage` se contentait d'une image figée. Les glyphes sont les
+    mêmes ressources que le widget dessine réellement : la miniature ne peut donc pas montrer
+    autre chose que ce qui sera posé. Elle affiche 22:22, soit __⅃:__⅃ en base 4.
+
+    Les images sont marquées non pertinentes pour l'accessibilité : la miniature est un aperçu
+    décoratif, et c'est le sélecteur de widgets qui l'annonce par son libellé.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_preview_card"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/shadok_bu"
+            android:tint="?android:attr/textColorPrimary" />
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/shadok_bu"
+            android:tint="?android:attr/textColorPrimary" />
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/shadok_zo"
+            android:tint="?android:attr/textColorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/preview_time_separator"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/shadok_bu"
+            android:tint="?android:attr/textColorPrimary" />
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/shadok_bu"
+            android:tint="?android:attr/textColorPrimary" />
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/shadok_zo"
+            android:tint="?android:attr/textColorPrimary" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/preview_weekday"
+        android:textColor="?android:attr/colorAccent"
+        android:textSize="11sp" />
+</LinearLayout>

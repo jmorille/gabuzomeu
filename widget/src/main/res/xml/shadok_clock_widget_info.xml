@@ -1,17 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    android:updatePeriodMillis="0" — le widget se replanifie lui-même à la minute via
-    ClockTickScheduler. L'original demandait 1800000, soit exactement le plancher imposé
-    par le système (30 min) : il ne pouvait donc pas afficher une horloge vivante par ce
-    seul mécanisme.
+    minHeight 40dp et targetCellHeight 1 : l'horloge se pose sur UNE seule cellule de haut,
+    ce qui en fait un élément facile à caser dans une grille déjà remplie. À cette hauteur
+    seule l'heure tient ; les lignes de date s'effacent d'elles-mêmes, voir ClockWidgetLayout.
+
+    android:previewLayout : la miniature du sélecteur est une vraie mise en page, affichée à
+    l'échelle du widget. Elle réutilise les glyphes que le widget dessine, donc elle ne peut
+    pas montrer autre chose que le rendu réel.
+
+    android:updatePeriodMillis="1800000" — 30 min, le plancher imposé par le système. Ce
+    n'est PAS le mécanisme d'affichage : une horloge à la minute passe par les tics de
+    ClockTickScheduler. C'est un filet de sécurité, et il a une raison précise.
+
+    Avec la valeur 0 utilisée précédemment, l'horloge dépendait entièrement de la chaîne
+    d'alarmes. Qu'un tic soit perdu — arrêt forcé de l'application, alarme abandonnée par
+    le système — et l'affichage se figeait pour de bon, sans aucune reprise possible. Le
+    système redessine maintenant au moins toutes les 30 minutes, et `onUpdate` en profite
+    pour relancer la chaîne.
+
+    Contrepartie assumée : ces mises à jour système, elles, réveillent l'appareil, là où
+    nos tics utilisent RTC sans wakeup. Au pire 48 réveils par jour, contre le risque
+    d'une horloge muette et définitivement fausse.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_description"
     android:initialLayout="@layout/glance_default_loading_layout"
-    android:minHeight="110dp"
-    android:minWidth="180dp"
+    android:minHeight="40dp"
+    android:minWidth="110dp"
     android:resizeMode="horizontal|vertical"
-    android:targetCellHeight="2"
+    android:targetCellHeight="1"
     android:targetCellWidth="3"
-    android:updatePeriodMillis="0"
-    android:widgetCategory="home_screen" />
+    android:updatePeriodMillis="1800000"
+    android:previewLayout="@layout/preview_clock_digital"
+    android:widgetCategory="home_screen"
+    android:configure="eu.ttbox.gabuzomeu.widget.ClockWidgetConfigActivity"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

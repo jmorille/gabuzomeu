@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Miniature du sélecteur : le cadran, dessiné depuis la géométrie réelle (voir le vectoriel
+    preview_dial_hours, généré avec les mêmes tracés et les mêmes angles que le rendu).
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_preview_card"
+    android:padding="6dp">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:src="@drawable/preview_dial_hours"
+        android:tint="?android:attr/textColorPrimary" />
+</FrameLayout>

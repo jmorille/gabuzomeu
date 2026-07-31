@@ -22,12 +22,78 @@
                 <action android:name="android.intent.action.TIME_SET" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <!--
+                    Glance sait déjà rafraîchir tous les widgets sur LOCALE_CHANGED, mais
+                    encore faut-il que la diffusion arrive : sans cette action, le jour de la
+                    semaine et le mois restaient dans l'ancienne langue jusqu'au prochain
+                    évènement, alors même que provideGlance relit la locale à chaque rendu.
+                -->
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/shadok_clock_widget_info" />
         </receiver>
+
+        <!-- Le cadran : un second provider, listé séparément dans le sélecteur. -->
+        <receiver
+            android:name=".ShadokDialWidgetReceiver"
+            android:exported="false"
+            android:label="@string/dial_widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/shadok_dial_widget_info" />
+        </receiver>
+
+        <!-- Le cadran aux douze heures, écrites en glyphes Shadok. -->
+        <receiver
+            android:name=".ShadokHourDialWidgetReceiver"
+            android:exported="false"
+            android:label="@string/hour_dial_widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/shadok_hour_dial_widget_info" />
+        </receiver>
+
+        <!--
+            Le tic de minute, partagé par tous les widgets. Aucun intent-filter : il ne reçoit
+            qu'une action privée, par intention explicite, ce qui rend le filtre inutile et
+            évite d'exposer un point d'entrée de plus.
+        -->
+        <receiver
+            android:name=".ShadokClockTickReceiver"
+            android:exported="false" />
+
+        <!--
+            Les réglages d'une horloge numérique posée. `exported="false"` : c'est le système
+            qui la lance dans le flux de configuration, aucune autre application n'a à le faire.
+            Le thème est celui de l'application, fusionné depuis :app.
+        -->
+        <activity
+            android:name=".ClockWidgetConfigActivity"
+            android:exported="false"
+            android:label="@string/widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
