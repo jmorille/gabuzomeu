@@ -15,9 +15,14 @@
          « Calculatrice », effaçant l'identité de l'application. -->
     <string name="app_name" translatable="false">GaBuZoMeu</string>
 
-    <!-- Modes de saisie -->
+    <!-- Notations d'écriture des nombres -->
     <string name="mode_decimal">Décimal</string>
     <string name="mode_shadok">Shadok</string>
+
+    <!-- Modes de calcul : axe indépendant de la notation ci-dessus -->
+    <string name="settings_mode">Mode de calcul</string>
+    <string name="mode_classic">Calculatrice classique</string>
+    <string name="mode_rpn">Notation polonaise inverse</string>
 
     <!-- Descriptions d'accessibilité des touches -->
     <string name="key_clear">Effacer tout</string>
@@ -31,7 +36,15 @@
     <string name="key_times">Multiplié par</string>
     <string name="key_divide">Divisé par</string>
 
+    <!-- Touches propres à la notation polonaise inverse -->
+    <string name="key_enter">Empiler</string>
+    <string name="key_swap">Échanger les deux valeurs du sommet</string>
+    <string name="key_drop">Dépiler</string>
+    <string name="key_negate">Changer de signe</string>
+
     <string name="display_empty">Aucune expression</string>
+    <!-- %1$d : le rang du niveau depuis le fond de pile. %2$s : sa valeur en Shadok. -->
+    <string name="display_stack_level">Pile, niveau %1$d : %2$s</string>
 
     <!-- Réglages d'affichage -->
     <string name="settings_open">Réglages d\'affichage</string>
@@ -43,6 +56,7 @@
     <string name="error_syntax">Expression incomplète</string>
     <string name="error_parentheses">Parenthèses déséquilibrées</string>
     <string name="error_division_by_zero">Division par zéro</string>
+    <string name="error_stack_underflow">Pas assez de valeurs empilées</string>
 
     <!-- Les chaînes du widget vivent dans le module :widget, qui les possède. -->
 </resources>

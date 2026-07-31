@@ -144,6 +144,22 @@ class Rational private constructor(val numerator: BigInteger, val denominator: B
          */
         fun ofDecimal(text: String): Rational = ofDecimal(BigDecimal(text))
 
+        /**
+         * Relit ce que produit [toString] : `"7"` ou `"-1/3"`.
+         *
+         * C'est l'écriture de persistance de la pile NPI. Passer par la fraction plutôt
+         * que par le décimal est ce qui la rend **exacte** : un tiers empilé se retrouve
+         * après redémarrage comme un tiers, et non comme `0.33333333333333333333`.
+         */
+        fun parseOrNull(text: String): Rational? {
+            val parts = text.trim().split('/')
+            if (parts.size > 2) return null
+            return runCatching {
+                val numerator = BigInteger(parts[0])
+                if (parts.size == 1) of(numerator) else of(numerator, BigInteger(parts[1]))
+            }.getOrNull()
+        }
+
         fun ofDecimal(value: BigDecimal): Rational {
             val unscaled = value.unscaledValue()
             val scale = value.scale()

@@ -5,6 +5,10 @@
     <string name="mode_decimal">Decimal</string>
     <string name="mode_shadok">Shadok</string>
 
+    <string name="settings_mode">Calculation mode</string>
+    <string name="mode_classic">Classic calculator</string>
+    <string name="mode_rpn">Reverse Polish notation</string>
+
     <string name="key_clear">Clear all</string>
     <string name="key_delete">Delete last character</string>
     <string name="key_left_paren">Opening parenthesis</string>
@@ -16,7 +20,13 @@
     <string name="key_times">Times</string>
     <string name="key_divide">Divided by</string>
 
+    <string name="key_enter">Push onto stack</string>
+    <string name="key_swap">Swap the two top values</string>
+    <string name="key_drop">Drop top value</string>
+    <string name="key_negate">Change sign</string>
+
     <string name="display_empty">No expression</string>
+    <string name="display_stack_level">Stack, level %1$d: %2$s</string>
 
     <string name="settings_open">Display settings</string>
     <string name="settings_show_shadok_labels">Show Shadok names</string>
@@ -26,4 +36,5 @@
     <string name="error_syntax">Incomplete expression</string>
     <string name="error_parentheses">Unbalanced parentheses</string>
     <string name="error_division_by_zero">Division by zero</string>
+    <string name="error_stack_underflow">Not enough values on the stack</string>
 </resources>

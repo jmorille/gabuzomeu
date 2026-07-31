@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import eu.ttbox.gabuzomeu.core.eval.Atom
+import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.eval.EvalResult
 import eu.ttbox.gabuzomeu.core.eval.Evaluator
@@ -16,9 +17,14 @@ import eu.ttbox.gabuzomeu.core.eval.ExpressionBuffer
 import eu.ttbox.gabuzomeu.core.eval.ExpressionDisplay
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
+import eu.ttbox.gabuzomeu.core.eval.Rendered
+import eu.ttbox.gabuzomeu.core.eval.RpnOutcome
+import eu.ttbox.gabuzomeu.core.eval.RpnSession
 import eu.ttbox.gabuzomeu.data.CalculatorPreferences
 import eu.ttbox.gabuzomeu.data.DisplaySettings
 import eu.ttbox.gabuzomeu.data.SessionStore
+import eu.ttbox.gabuzomeu.data.StoredRpn
+import eu.ttbox.gabuzomeu.data.StoredSession
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +34,14 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/** Ce qu'une touche du pavé demande de faire. */
+/**
+ * Ce qu'une touche du pavé demande de faire.
+ *
+ * Certaines actions n'ont de sens que dans un mode : les parenthèses et le `=` sont propres
+ * à l'infixe, [Enter], [Swap], [Drop] et [Negate] à la NPI. Le pavé n'affiche jamais une
+ * touche hors de son mode, mais le `when` du ViewModel reste exhaustif — c'est le
+ * compilateur qui garantit qu'aucune action ne tombe dans l'oubli.
+ */
 sealed interface KeyAction {
     data class Digit(val character: Char) : KeyAction
     data class Op(val operator: Operator) : KeyAction
@@ -38,6 +51,18 @@ sealed interface KeyAction {
     data object Delete : KeyAction
     data object Clear : KeyAction
     data object Evaluate : KeyAction
+
+    /** NPI : empile la frappe, ou duplique le sommet. */
+    data object Enter : KeyAction
+
+    /** NPI : échange les deux valeurs du sommet. */
+    data object Swap : KeyAction
+
+    /** NPI : abandonne la frappe, ou dépile le sommet. */
+    data object Drop : KeyAction
+
+    /** NPI : change le signe de la frappe, ou du sommet. */
+    data object Negate : KeyAction
 }
 
 class CalculatorViewModel(
@@ -45,7 +70,14 @@ class CalculatorViewModel(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    private var mode = CalculationMode.CLASSIC
+
+    /** Mode infixe. Conservé même quand la NPI est affichée : basculer ne détruit rien. */
     private var buffer = ExpressionBuffer()
+
+    /** Mode NPI. Conservé de même, avec sa pile et sa frappe en cours. */
+    private var rpn = RpnSession()
+
     private var showingResult = false
     private var error: EvalError? = null
     private var decimalApproximate = false
@@ -55,7 +87,7 @@ class CalculatorViewModel(
     val uiState: StateFlow<CalculatorUiState> = _uiState.asStateFlow()
 
     /** Écritures disque regroupées : inutile de solliciter DataStore à chaque frappe. */
-    private val persistRequests = MutableStateFlow<StoredKeys?>(null)
+    private val persistRequests = MutableStateFlow<StoredSession?>(null)
 
     init {
         viewModelScope.launch {
@@ -64,7 +96,7 @@ class CalculatorViewModel(
             // (Flow.debounce ferait la même chose mais reste une API @FlowPreview.)
             persistRequests.filterNotNull().collectLatest { request ->
                 delay(PERSIST_DEBOUNCE_MS)
-                sessionStore.save(request.keys, request.notation)
+                sessionStore.save(request)
             }
         }
 
@@ -76,17 +108,17 @@ class CalculatorViewModel(
             }
         }
 
-        val savedKeys = savedStateHandle.get<String>(STATE_KEYS)
-        if (savedKeys != null) {
+        val saved = savedInstanceSession()
+        if (saved != null) {
             // Retour après mort du processus. SavedStateHandle est synchrone, donc
             // l'état est là immédiatement : pas de clignotement d'écran vide.
-            restore(savedKeys, notationNamed(savedStateHandle[STATE_NOTATION]))
+            restore(saved)
         } else {
             publish()
             viewModelScope.launch {
                 val stored = sessionStore.session.first()
                 // Ne pas écraser une saisie commencée pendant la lecture asynchrone.
-                if (buffer.isEmpty) restore(stored.keys, stored.notation)
+                if (untouched) restore(stored)
             }
         }
     }
@@ -95,6 +127,46 @@ class CalculatorViewModel(
         // Toute nouvelle frappe acquitte l'erreur affichée.
         error = null
 
+        when (mode) {
+            CalculationMode.CLASSIC -> onClassicKey(action)
+            CalculationMode.RPN -> onRpnKey(action)
+        }
+
+        publish()
+    }
+
+    fun onNotationChange(notation: NumberNotation) {
+        // Les deux modes suivent : le sélecteur décimal/Shadok est un axe unique, il ne
+        // doit pas laisser derrière lui un mode inactif écrit dans l'autre notation.
+        buffer = buffer.withNotation(notation)
+        rpn = rpn.withNotation(notation)
+        publish()
+    }
+
+    /**
+     * Bascule entre calculatrice classique et NPI.
+     *
+     * L'état de l'autre mode reste en place : revenir retrouve exactement l'expression, ou
+     * la pile, qu'on y avait laissée.
+     */
+    fun onModeChange(target: CalculationMode) {
+        if (target == mode) return
+        mode = target
+        error = null
+        publish()
+    }
+
+    fun onSettingsChange(updated: DisplaySettings) {
+        settings = updated
+        publish()
+        // Écriture immédiate : un réglage se change rarement, l'anti-rebond de la saisie
+        // n'a pas de raison de s'appliquer ici.
+        viewModelScope.launch { sessionStore.saveSettings(updated) }
+    }
+
+    // ------------------------------------------------------------- mode classique
+
+    private fun onClassicKey(action: KeyAction) {
         when (action) {
             is KeyAction.Digit -> {
                 // Règle 5 — un chiffre après un résultat repart de zéro, un opérateur
@@ -131,25 +203,11 @@ class CalculatorViewModel(
             KeyAction.Clear -> reset()
 
             KeyAction.Evaluate -> evaluate()
+
+            // Touches propres à la NPI : le pavé classique ne les affiche pas.
+            KeyAction.Enter, KeyAction.Swap, KeyAction.Drop, KeyAction.Negate -> Unit
         }
-
-        publish()
     }
-
-    fun onNotationChange(notation: NumberNotation) {
-        buffer = buffer.withNotation(notation)
-        publish()
-    }
-
-    fun onSettingsChange(updated: DisplaySettings) {
-        settings = updated
-        publish()
-        // Écriture immédiate : un réglage se change rarement, l'anti-rebond de la saisie
-        // n'a pas de raison de s'appliquer ici.
-        viewModelScope.launch { sessionStore.saveSettings(updated) }
-    }
-
-    // ------------------------------------------------------------------ interne
 
     private fun reset() {
         buffer = buffer.clear()
@@ -184,45 +242,182 @@ class CalculatorViewModel(
         }
     }
 
+    // ------------------------------------------------------------------ mode NPI
+
+    private fun onRpnKey(action: KeyAction) {
+        when (action) {
+            is KeyAction.Digit -> rpn = rpn.appendDigit(action.character)
+
+            KeyAction.Separator -> rpn = rpn.appendSeparator()
+
+            // Un opérateur peut échouer — pile trop courte, division par zéro — et
+            // l'échec laisse alors la session intacte : rien n'est perdu.
+            is KeyAction.Op -> record(rpn.apply(action.operator))
+
+            KeyAction.Swap -> record(rpn.swap())
+
+            KeyAction.Enter -> rpn = rpn.enter()
+
+            KeyAction.Drop -> rpn = rpn.dropTop()
+
+            KeyAction.Negate -> rpn = rpn.negate()
+
+            KeyAction.Delete -> rpn = rpn.deleteLast()
+
+            KeyAction.Clear -> rpn = rpn.clear()
+
+            // Touches propres à l'infixe : le pavé NPI ne les affiche pas. En postfixe,
+            // il n'y a ni parenthèses ni « = » — l'ordre de frappe est l'ordre de calcul.
+            KeyAction.Evaluate, KeyAction.LeftParen, KeyAction.RightParen -> Unit
+        }
+    }
+
+    /**
+     * Retient le résultat d'une opération de pile.
+     *
+     * En cas d'échec, `outcome.session` est l'état d'avant : l'affectation est donc sans
+     * effet et seule l'erreur change. Rien à défaire.
+     */
+    private fun record(outcome: RpnOutcome) {
+        rpn = outcome.session
+        error = outcome.error
+    }
+
+    // ------------------------------------------------------------------ publication
+
     private fun publish() {
-        val decimal = buffer.render(ExpressionDisplay.DECIMAL)
-        val glyphs = buffer.render(ExpressionDisplay.SHADOK_GLYPHS)
-        val labels = buffer.render(ExpressionDisplay.SHADOK_LABELS)
+        val lines = renderLines()
 
         _uiState.value = CalculatorUiState(
+            mode = mode,
             notation = buffer.notation,
-            decimal = decimal.text,
-            glyphs = glyphs.text,
-            labels = labels.text,
-            shadokApproximate = glyphs.approximate,
-            decimalApproximate = decimalApproximate,
+            decimal = lines.decimal.text,
+            glyphs = lines.glyphs.text,
+            labels = lines.labels.text,
+            shadokApproximate = lines.glyphs.approximate,
+            decimalApproximate = when (mode) {
+                // En infixe, une saisie décimale est rendue verbatim, donc toujours
+                // exacte : seule l'évaluation peut produire un arrondi, et elle renseigne
+                // le champ. En NPI, X peut être une valeur calculée qui traîne sur la pile.
+                CalculationMode.CLASSIC -> decimalApproximate
+
+                CalculationMode.RPN -> lines.decimal.approximate
+            },
+            stack = stackLevels(),
             error = error,
             showingResult = showingResult,
             settings = settings,
         )
 
-        val keys = buffer.replayKeys()
-        savedStateHandle[STATE_KEYS] = keys
-        savedStateHandle[STATE_NOTATION] = buffer.notation.name
-        persistRequests.value = StoredKeys(keys, buffer.notation)
+        val session = storedSession()
+        saveInstanceState(session)
+        persistRequests.value = session
     }
 
-    private fun restore(keys: String, notation: NumberNotation) {
-        buffer = ExpressionBuffer.replay(keys, notation)
+    /** Les trois projections de la ligne principale, selon le mode affiché. */
+    private fun renderLines(): Lines = when (mode) {
+        CalculationMode.CLASSIC -> Lines(
+            decimal = buffer.render(ExpressionDisplay.DECIMAL),
+            glyphs = buffer.render(ExpressionDisplay.SHADOK_GLYPHS),
+            labels = buffer.render(ExpressionDisplay.SHADOK_LABELS),
+        )
+
+        CalculationMode.RPN -> Lines(
+            decimal = rpn.renderX(ExpressionDisplay.DECIMAL),
+            glyphs = rpn.renderX(ExpressionDisplay.SHADOK_GLYPHS),
+            labels = rpn.renderX(ExpressionDisplay.SHADOK_LABELS),
+        )
+    }
+
+    /** Les niveaux sous X. Vide hors NPI : la calculatrice classique n'a pas de pile. */
+    private fun stackLevels(): List<StackLevel> {
+        if (mode != CalculationMode.RPN) return emptyList()
+        val decimal = rpn.renderBelowX(ExpressionDisplay.DECIMAL)
+        val glyphs = rpn.renderBelowX(ExpressionDisplay.SHADOK_GLYPHS)
+        val labels = rpn.renderBelowX(ExpressionDisplay.SHADOK_LABELS)
+        return decimal.indices.map { level ->
+            StackLevel(
+                glyphs = glyphs[level].text,
+                labels = labels[level].text,
+                decimal = decimal[level].text,
+                shadokApproximate = glyphs[level].approximate,
+                decimalApproximate = decimal[level].approximate,
+            )
+        }
+    }
+
+    // ------------------------------------------------------------------ persistance
+
+    /** Rien n'a encore été saisi, dans aucun des deux modes. */
+    private val untouched: Boolean
+        get() = buffer.isEmpty && rpn.stack.isEmpty && !rpn.entering
+
+    private fun storedSession(): StoredSession = StoredSession(
+        keys = buffer.replayKeys(),
+        notation = buffer.notation,
+        mode = mode,
+        rpn = StoredRpn(
+            stack = rpn.stack.keys(),
+            entry = rpn.entryKeys(),
+            entryNegative = rpn.entryNegative,
+        ),
+    )
+
+    private fun restore(session: StoredSession) {
+        buffer = ExpressionBuffer.replay(session.keys, session.notation)
+        rpn = RpnSession.restore(
+            stackKeys = session.rpn.stack,
+            entryKeys = session.rpn.entry,
+            entryNegative = session.rpn.entryNegative,
+            notation = session.notation,
+        )
+        mode = session.mode
         showingResult = false
         decimalApproximate = false
         error = null
         publish()
     }
 
+    private fun saveInstanceState(session: StoredSession) {
+        savedStateHandle[STATE_KEYS] = session.keys
+        savedStateHandle[STATE_NOTATION] = session.notation.name
+        savedStateHandle[STATE_MODE] = session.mode.name
+        savedStateHandle[STATE_RPN_STACK] = session.rpn.stack
+        savedStateHandle[STATE_RPN_ENTRY] = session.rpn.entry
+        savedStateHandle[STATE_RPN_NEGATIVE] = session.rpn.entryNegative
+    }
+
+    /** L'état sauvé par le système, ou `null` s'il s'agit d'un lancement à froid. */
+    private fun savedInstanceSession(): StoredSession? {
+        val keys = savedStateHandle.get<String>(STATE_KEYS) ?: return null
+        return StoredSession(
+            keys = keys,
+            notation = notationNamed(savedStateHandle[STATE_NOTATION]),
+            mode = modeNamed(savedStateHandle[STATE_MODE]),
+            rpn = StoredRpn(
+                stack = savedStateHandle.get<String>(STATE_RPN_STACK).orEmpty(),
+                entry = savedStateHandle.get<String>(STATE_RPN_ENTRY).orEmpty(),
+                entryNegative = savedStateHandle.get<Boolean>(STATE_RPN_NEGATIVE) == true,
+            ),
+        )
+    }
+
     private fun notationNamed(name: String?): NumberNotation =
         NumberNotation.entries.firstOrNull { it.name == name } ?: NumberNotation.DECIMAL
 
-    private data class StoredKeys(val keys: String, val notation: NumberNotation)
+    private fun modeNamed(name: String?): CalculationMode =
+        CalculationMode.entries.firstOrNull { it.name == name } ?: CalculationMode.CLASSIC
+
+    /** Les trois écritures de la ligne principale, rendues d'un seul coup. */
+    private data class Lines(val decimal: Rendered, val glyphs: Rendered, val labels: Rendered)
 
     companion object {
         private const val STATE_KEYS = "expression-keys"
         private const val STATE_NOTATION = "expression-notation"
+        private const val STATE_MODE = "calculation-mode"
+        private const val STATE_RPN_STACK = "rpn-stack"
+        private const val STATE_RPN_ENTRY = "rpn-entry"
+        private const val STATE_RPN_NEGATIVE = "rpn-entry-negative"
         private const val PERSIST_DEBOUNCE_MS = 300L
 
         /**

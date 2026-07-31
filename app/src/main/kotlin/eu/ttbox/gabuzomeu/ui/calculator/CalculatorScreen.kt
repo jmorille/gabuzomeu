@@ -14,9 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.data.DisplaySettings
-import eu.ttbox.gabuzomeu.ui.calculator.components.DisplaySettingsMenu
+import eu.ttbox.gabuzomeu.ui.calculator.components.CalculatorMenu
 import eu.ttbox.gabuzomeu.ui.calculator.components.InputModeSelector
 import eu.ttbox.gabuzomeu.ui.calculator.components.Keypad
 import eu.ttbox.gabuzomeu.ui.calculator.components.ShadokDisplay
@@ -35,6 +36,7 @@ fun CalculatorScreen(
     widthSizeClass: WindowWidthSizeClass,
     onKey: (KeyAction) -> Unit,
     onNotationChange: (NumberNotation) -> Unit,
+    onModeChange: (CalculationMode) -> Unit,
     onSettingsChange: (DisplaySettings) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -46,9 +48,9 @@ fun CalculatorScreen(
             color = MaterialTheme.colorScheme.surface,
         ) {
             if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-                WideLayout(state, onKey, onNotationChange, onSettingsChange)
+                WideLayout(state, onKey, onNotationChange, onModeChange, onSettingsChange)
             } else {
-                StackedLayout(state, onKey, onNotationChange, onSettingsChange)
+                StackedLayout(state, onKey, onNotationChange, onModeChange, onSettingsChange)
             }
         }
     }
@@ -60,6 +62,7 @@ private fun StackedLayout(
     state: CalculatorUiState,
     onKey: (KeyAction) -> Unit,
     onNotationChange: (NumberNotation) -> Unit,
+    onModeChange: (CalculationMode) -> Unit,
     onSettingsChange: (DisplaySettings) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -67,16 +70,22 @@ private fun StackedLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
         ) {
-            DisplaySettingsMenu(settings = state.settings, onSettingsChange = onSettingsChange)
+            CalculatorMenu(
+                mode = state.mode,
+                settings = state.settings,
+                onModeChange = onModeChange,
+                onSettingsChange = onSettingsChange,
+            )
         }
         ShadokDisplay(
             state = state,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(DISPLAY_WEIGHT),
+                .weight(state.displayWeight()),
         )
         InputModeSelector(notation = state.notation, onNotationChange = onNotationChange)
         Keypad(
+            mode = state.mode,
             notation = state.notation,
             onKey = onKey,
             modifier = Modifier
@@ -93,6 +102,7 @@ private fun WideLayout(
     state: CalculatorUiState,
     onKey: (KeyAction) -> Unit,
     onNotationChange: (NumberNotation) -> Unit,
+    onModeChange: (CalculationMode) -> Unit,
     onSettingsChange: (DisplaySettings) -> Unit,
 ) {
     Row(
@@ -103,11 +113,24 @@ private fun WideLayout(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            // En NPI, la pile occupe la hauteur disponible : la centrer la comprimerait.
+            verticalArrangement = if (state.mode == CalculationMode.RPN) {
+                Arrangement.Bottom
+            } else {
+                Arrangement.Center
+            },
             horizontalAlignment = Alignment.End,
         ) {
-            DisplaySettingsMenu(settings = state.settings, onSettingsChange = onSettingsChange)
-            ShadokDisplay(state = state)
+            CalculatorMenu(
+                mode = state.mode,
+                settings = state.settings,
+                onModeChange = onModeChange,
+                onSettingsChange = onSettingsChange,
+            )
+            ShadokDisplay(
+                state = state,
+                modifier = if (state.mode == CalculationMode.RPN) Modifier.weight(1f) else Modifier,
+            )
         }
         Column(
             modifier = Modifier
@@ -117,10 +140,27 @@ private fun WideLayout(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             InputModeSelector(notation = state.notation, onNotationChange = onNotationChange)
-            Keypad(notation = state.notation, onKey = onKey, modifier = Modifier.weight(1f))
+            Keypad(
+                mode = state.mode,
+                notation = state.notation,
+                onKey = onKey,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
 
-private const val DISPLAY_WEIGHT = 1f
+/**
+ * La part de hauteur réservée à l'afficheur.
+ *
+ * La NPI en demande davantage : au-dessus des trois lignes de X vient la pile, qui n'a
+ * d'intérêt que si l'on en voit quelques niveaux.
+ */
+private fun CalculatorUiState.displayWeight(): Float = when (mode) {
+    CalculationMode.CLASSIC -> CLASSIC_DISPLAY_WEIGHT
+    CalculationMode.RPN -> RPN_DISPLAY_WEIGHT
+}
+
+private const val CLASSIC_DISPLAY_WEIGHT = 1f
+private const val RPN_DISPLAY_WEIGHT = 1.5f
 private const val KEYPAD_WEIGHT = 2f

@@ -2,6 +2,7 @@ package eu.ttbox.gabuzomeu.ui.calculator
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -9,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
 import eu.ttbox.gabuzomeu.core.shadok.ShadokDigit
@@ -50,12 +52,24 @@ class CalculatorScreenTest {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
+    /**
+     * Les rappels de l'écran, regroupés.
+     *
+     * Un test n'en observe jamais qu'un ; les autres gardent leur lambda vide. Les passer
+     * en bloc évite aussi de faire grandir la liste de paramètres de [setScreen] à chaque
+     * nouvelle interaction — detekt s'en plaint, à juste titre.
+     */
+    private class Callbacks(
+        val onKey: (KeyAction) -> Unit = {},
+        val onNotationChange: (NumberNotation) -> Unit = {},
+        val onModeChange: (CalculationMode) -> Unit = {},
+        val onSettingsChange: (DisplaySettings) -> Unit = {},
+    )
+
     private fun setScreen(
         state: CalculatorUiState,
         widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
-        onKey: (KeyAction) -> Unit = {},
-        onNotationChange: (NumberNotation) -> Unit = {},
-        onSettingsChange: (DisplaySettings) -> Unit = {},
+        callbacks: Callbacks = Callbacks(),
     ) {
         composeTestRule.setContent {
             // dynamicColor = false : un rendu stable, indépendant du fond d'écran.
@@ -63,9 +77,10 @@ class CalculatorScreenTest {
                 CalculatorScreen(
                     state = state,
                     widthSizeClass = widthSizeClass,
-                    onKey = onKey,
-                    onNotationChange = onNotationChange,
-                    onSettingsChange = onSettingsChange,
+                    onKey = callbacks.onKey,
+                    onNotationChange = callbacks.onNotationChange,
+                    onModeChange = callbacks.onModeChange,
+                    onSettingsChange = callbacks.onSettingsChange,
                 )
             }
         }
@@ -137,7 +152,7 @@ class CalculatorScreenTest {
     @Test
     fun leMenuPermetDeBasculerLesReglages() {
         var requested: DisplaySettings? = null
-        setScreen(CalculatorUiState(), onSettingsChange = { requested = it })
+        setScreen(CalculatorUiState(), callbacks = Callbacks(onSettingsChange = { requested = it }))
 
         composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
         composeTestRule.onNodeWithTag(SettingsTags.TOGGLE_LABELS).performClick()
@@ -148,7 +163,7 @@ class CalculatorScreenTest {
     @Test
     fun leMenuPermetDeMasquerLeDecimal() {
         var requested: DisplaySettings? = null
-        setScreen(CalculatorUiState(), onSettingsChange = { requested = it })
+        setScreen(CalculatorUiState(), callbacks = Callbacks(onSettingsChange = { requested = it }))
 
         composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
         composeTestRule.onNodeWithTag(SettingsTags.TOGGLE_DECIMAL).performClick()
@@ -161,7 +176,7 @@ class CalculatorScreenTest {
     @Test
     fun lePaveDecimalEmetLesBonnesActions() {
         val pressed = mutableListOf<KeyAction>()
-        setScreen(CalculatorUiState(), onKey = { pressed += it })
+        setScreen(CalculatorUiState(), callbacks = Callbacks(onKey = { pressed += it }))
 
         composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit('7'))).performClick()
         composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Op(Operator.TIMES))).performClick()
@@ -191,7 +206,13 @@ class CalculatorScreenTest {
     @Test
     fun lesTouchesShadokSAnnoncentParLeurNom() {
         val pressed = mutableListOf<KeyAction>()
-        setScreen(CalculatorUiState(notation = NumberNotation.SHADOK), onKey = { pressed += it })
+        setScreen(
+            CalculatorUiState(notation = NumberNotation.SHADOK),
+            callbacks = Callbacks(onKey = {
+                pressed +=
+                    it
+            }),
+        )
 
         ShadokDigit.entries.forEach { digit ->
             pressed.clear()
@@ -224,7 +245,7 @@ class CalculatorScreenTest {
     @Test
     fun leSelecteurDeModeChangeDeNotation() {
         var requested: NumberNotation? = null
-        setScreen(CalculatorUiState(), onNotationChange = { requested = it })
+        setScreen(CalculatorUiState(), callbacks = Callbacks(onNotationChange = { requested = it }))
 
         // Le sélecteur affiche des libellés traduits : on résout la ressource.
         val shadokLabel = composeTestRule.activity.getString(
@@ -250,5 +271,136 @@ class CalculatorScreenTest {
         ShadokDigit.entries.forEach { digit ->
             composeTestRule.onNodeWithContentDescription(digit.label).assertIsDisplayed()
         }
+    }
+
+    // ------------------------------------------------------ notation polonaise inverse
+
+    private val rpn = CalculatorUiState(mode = CalculationMode.RPN)
+
+    @Test
+    fun leMenuPermetDeChoisirLaNotationPolonaiseInverse() {
+        var requested: CalculationMode? = null
+        setScreen(CalculatorUiState(), callbacks = Callbacks(onModeChange = { requested = it }))
+
+        composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(SettingsTags.MODE_RPN).performClick()
+
+        assertEquals(CalculationMode.RPN, requested)
+    }
+
+    @Test
+    fun leMenuPermetDeRevenirALaCalculatriceClassique() {
+        var requested: CalculationMode? = null
+        setScreen(rpn, callbacks = Callbacks(onModeChange = { requested = it }))
+
+        composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(SettingsTags.MODE_CLASSIC).performClick()
+
+        assertEquals(CalculationMode.CLASSIC, requested)
+    }
+
+    /**
+     * En postfixe, l'ordre de frappe est l'ordre de calcul : il n'y a rien à grouper ni à
+     * déclencher. Les touches correspondantes doivent donc disparaître, et non rester
+     * présentes sans effet.
+     */
+    @Test
+    fun lePaveNpiNAffichePasDeParenthesesNiDEgale() {
+        setScreen(rpn)
+
+        listOf(KeyAction.LeftParen, KeyAction.RightParen, KeyAction.Evaluate).forEach { absent ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(absent)).assertDoesNotExist()
+        }
+        listOf(KeyAction.Enter, KeyAction.Swap, KeyAction.Drop, KeyAction.Negate).forEach { key ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(key)).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun lePaveClassiqueNAffichePasLesTouchesDePile() {
+        setScreen(CalculatorUiState())
+
+        listOf(
+            KeyAction.Enter,
+            KeyAction.Swap,
+            KeyAction.Drop,
+            KeyAction.Negate,
+        ).forEach { absent ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(absent)).assertDoesNotExist()
+        }
+    }
+
+    @Test
+    fun lePaveNpiEmetLesBonnesActions() {
+        val pressed = mutableListOf<KeyAction>()
+        setScreen(rpn, callbacks = Callbacks(onKey = { pressed += it }))
+
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit('6'))).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Enter)).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit('7'))).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Op(Operator.TIMES))).performClick()
+
+        assertEquals(
+            listOf(
+                KeyAction.Digit('6'),
+                KeyAction.Enter,
+                KeyAction.Digit('7'),
+                KeyAction.Op(Operator.TIMES),
+            ),
+            pressed,
+        )
+    }
+
+    @Test
+    fun lePaveNpiShadokGardeSesQuatreChiffresEtSesTouchesDePile() {
+        setScreen(
+            CalculatorUiState(mode = CalculationMode.RPN, notation = NumberNotation.SHADOK),
+            widthSizeClass = WindowWidthSizeClass.Expanded,
+        )
+
+        ShadokDigit.entries.forEach { digit ->
+            composeTestRule.onNodeWithContentDescription(digit.label).assertIsDisplayed()
+        }
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Enter)).assertIsDisplayed()
+        // En base 4, les chiffres 4 a 9 n'existent pas, NPI ou non.
+        "456789".forEach { absent ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Digit(absent)))
+                .assertDoesNotExist()
+        }
+    }
+
+    // -------------------------------------------------------------------- la pile
+
+    @Test
+    fun lesNiveauxDePileSontAffichesDuSommetVersLeFond() {
+        setScreen(
+            rpn.copy(
+                glyphs = "_⅃",
+                labels = "BuZo",
+                decimal = "6",
+                stack = listOf(
+                    StackLevel(glyphs = "⅃", labels = "Zo", decimal = "2"),
+                    StackLevel(glyphs = "_◿", labels = "BuMeu", decimal = "7"),
+                ),
+            ),
+        )
+
+        composeTestRule.onNodeWithTag(DisplayTags.STACK).assertIsDisplayed()
+        // L'indice 0 est le niveau immediatement sous X, donc le dernier de la liste.
+        composeTestRule.onNodeWithTag(DisplayTags.stackLevel(0))
+            .assertIsDisplayed()
+            .assertContentDescriptionContains("BuMeu", substring = true)
+        composeTestRule.onNodeWithTag(DisplayTags.stackLevel(1))
+            .assertIsDisplayed()
+            .assertContentDescriptionContains("Zo", substring = true)
+        // Et X reste la ligne principale.
+        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertContentDescriptionEquals("BuZo")
+    }
+
+    @Test
+    fun laPileNExistePasEnModeClassique() {
+        setScreen(CalculatorUiState(glyphs = "_⅃", labels = "BuZo", decimal = "6"))
+
+        composeTestRule.onNodeWithTag(DisplayTags.STACK).assertDoesNotExist()
     }
 }

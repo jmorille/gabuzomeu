@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,14 +22,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.ttbox.gabuzomeu.R
+import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.shadok.ShadokFormatter
 import eu.ttbox.gabuzomeu.ui.DisplayTags
 import eu.ttbox.gabuzomeu.ui.calculator.CalculatorUiState
+import eu.ttbox.gabuzomeu.ui.calculator.StackLevel
 import eu.ttbox.gabuzomeu.ui.shadok.ShadokGlyphText
 import eu.ttbox.gabuzomeu.ui.shadok.ShadokLabelText
 import eu.ttbox.gabuzomeu.ui.theme.DisplayTypography
@@ -53,6 +61,16 @@ fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        if (state.mode == CalculationMode.RPN) {
+            StackArea(
+                levels = state.stack,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+            )
+            HorizontalDivider()
+        }
+
         GlyphLine(state)
         if (state.settings.showShadokLabels) LabelLine(state)
         if (state.settings.showDecimal) DecimalLine(state)
@@ -66,6 +84,78 @@ fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
         }
     }
 }
+
+/**
+ * La pile NPI : les niveaux **sous** X, le plus proche de X en bas.
+ *
+ * `reverseLayout` fait deux choses d'un coup : le sommet se colle au séparateur, juste
+ * au-dessus de la ligne principale, et la liste reste ancrée en bas quand la pile grandit —
+ * un empilement de dix valeurs ne pousse pas le calcul en cours hors de l'écran. Les
+ * niveaux profonds défilent vers le haut, sans limite de profondeur.
+ *
+ * Chaque niveau porte ses glyphes et son décimal, mais pas ses noms : trois écritures par
+ * ligne saturerait la hauteur, et c'est X qui a besoin du détail complet.
+ */
+@Composable
+private fun StackArea(levels: List<StackLevel>, modifier: Modifier = Modifier) {
+    LazyColumn(
+        modifier = modifier.testTag(DisplayTags.STACK),
+        reverseLayout = true,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        // La liste est inversée comme la disposition : l'indice 0 est donc le niveau
+        // immédiatement sous X — celui que les HP appellent Y.
+        itemsIndexed(levels.asReversed()) { depth, level ->
+            StackRow(level = level, depth = depth)
+        }
+    }
+}
+
+/** Un niveau de pile : sa valeur décimale à gauche, ses glyphes à droite. */
+@Composable
+private fun StackRow(level: StackLevel, depth: Int) {
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    // « Pile, niveau 1 : BuZo » — le rang et les noms Shadok. Les formes ne se prononcent
+    // pas, et répéter le décimal ferait doublon avec la ligne principale.
+    val description = stringResource(R.string.display_stack_level, depth + 1, level.labels)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            // Même précaution que sur les touches : clearAndSetSemantics efface la
+            // sémantique des descendants, donc le testTag doit être posé dans le bloc.
+            .clearAndSetSemantics {
+                contentDescription = description
+                testTag = DisplayTags.stackLevel(depth)
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = level.decimalWithMarker(),
+            style = DisplayTypography.decimal,
+            color = color,
+            maxLines = 1,
+        )
+        ShadokGlyphText(
+            expression = level.glyphs,
+            semanticsLabel = level.labels,
+            style = DisplayTypography.labels,
+            color = MaterialTheme.colorScheme.onSurface,
+            operatorColor = MaterialTheme.colorScheme.tertiary,
+        )
+    }
+}
+
+/**
+ * Le décimal d'un niveau, précédé de `≈` s'il est tronqué.
+ *
+ * Contrairement aux lignes principales, le marqueur est ici dans le texte : une ligne de
+ * pile ne défile pas, il ne risque donc pas de sortir de l'écran.
+ */
+private fun StackLevel.decimalWithMarker(): String =
+    if (decimalApproximate) "${ShadokFormatter.APPROXIMATION}$decimal" else decimal
 
 /** Ligne principale : les glyphes Shadok, l'identité de l'application. */
 @Composable
@@ -178,4 +268,5 @@ private fun EvalError.messageRes(): Int = when (this) {
     EvalError.SYNTAX -> R.string.error_syntax
     EvalError.UNBALANCED_PARENTHESES -> R.string.error_parentheses
     EvalError.DIVISION_BY_ZERO -> R.string.error_division_by_zero
+    EvalError.STACK_UNDERFLOW -> R.string.error_stack_underflow
 }

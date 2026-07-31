@@ -18,10 +18,18 @@ object DisplayTags {
     const val GLYPHS = "display-glyphs"
     const val LABELS = "display-labels"
     const val DECIMAL = "display-decimal"
+
+    /** La zone de pile NPI, présente seulement dans ce mode. */
+    const val STACK = "display-stack"
+
+    /** Un niveau de pile, repéré par son rang depuis le fond. */
+    fun stackLevel(level: Int): String = "display-stack-$level"
 }
 
 object SettingsTags {
     const val MENU_BUTTON = "settings-menu"
+    const val MODE_CLASSIC = "mode-classic"
+    const val MODE_RPN = "mode-rpn"
     const val TOGGLE_LABELS = "toggle-shadok-labels"
     const val TOGGLE_DECIMAL = "toggle-decimal"
 }
@@ -37,5 +45,9 @@ object KeypadTags {
         KeyAction.Delete -> "key-delete"
         KeyAction.Clear -> "key-clear"
         KeyAction.Evaluate -> "key-equals"
+        KeyAction.Enter -> "key-enter"
+        KeyAction.Swap -> "key-swap"
+        KeyAction.Drop -> "key-drop"
+        KeyAction.Negate -> "key-negate"
     }
 }

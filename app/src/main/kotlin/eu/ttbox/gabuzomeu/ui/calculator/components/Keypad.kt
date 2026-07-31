@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
+import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.ui.KeypadTags
 import eu.ttbox.gabuzomeu.ui.calculator.KeyAction
@@ -33,8 +34,13 @@ import eu.ttbox.gabuzomeu.ui.theme.DisplayTypography
  * bouton**), et les huit fichiers de disposition XML par orientation.
  */
 @Composable
-fun Keypad(notation: NumberNotation, onKey: (KeyAction) -> Unit, modifier: Modifier = Modifier) {
-    val rows = KeypadLayout.forNotation(notation)
+fun Keypad(
+    mode: CalculationMode,
+    notation: NumberNotation,
+    onKey: (KeyAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val rows = KeypadLayout.forMode(mode, notation)
 
     Column(
         modifier = modifier.fillMaxSize(),

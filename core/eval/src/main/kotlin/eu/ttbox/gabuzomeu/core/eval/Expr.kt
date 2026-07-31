@@ -21,6 +21,14 @@ enum class EvalError {
     UNBALANCED_PARENTHESES,
 
     DIVISION_BY_ZERO,
+
+    /**
+     * En NPI, un opérateur binaire réclamé alors que moins de deux valeurs sont empilées.
+     *
+     * Propre à la notation polonaise inverse : en infixe, la même faute est un défaut de
+     * syntaxe détecté par le parseur, alors qu'ici il n'y a rien à parser.
+     */
+    STACK_UNDERFLOW,
 }
 
 sealed interface EvalResult {

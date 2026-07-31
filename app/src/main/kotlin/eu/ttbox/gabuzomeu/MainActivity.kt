@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
                     widthSizeClass = calculateWindowSizeClass(this).widthSizeClass,
                     onKey = viewModel::onKey,
                     onNotationChange = viewModel::onNotationChange,
+                    onModeChange = viewModel::onModeChange,
                     onSettingsChange = viewModel::onSettingsChange,
                 )
             }

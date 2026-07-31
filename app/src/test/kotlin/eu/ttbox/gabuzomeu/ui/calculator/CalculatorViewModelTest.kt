@@ -1,11 +1,13 @@
 package eu.ttbox.gabuzomeu.ui.calculator
 
 import androidx.lifecycle.SavedStateHandle
+import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
 import eu.ttbox.gabuzomeu.data.DisplaySettings
 import eu.ttbox.gabuzomeu.data.SessionStore
+import eu.ttbox.gabuzomeu.data.StoredRpn
 import eu.ttbox.gabuzomeu.data.StoredSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -307,6 +309,234 @@ class CalculatorViewModelTest {
         assertFalse(model.uiState.value.settings.showDecimal)
     }
 
+    // ------------------------------------------------------- notation polonaise inverse
+
+    /** `6 ENTER 7 ×` : la NPI n'a ni parenthèses ni « = ». */
+    private fun CalculatorViewModel.rpnSixTimesSeven() {
+        onModeChange(CalculationMode.RPN)
+        onKey(KeyAction.Digit('6'))
+        onKey(KeyAction.Enter)
+        onKey(KeyAction.Digit('7'))
+        onKey(KeyAction.Op(Operator.TIMES))
+    }
+
+    @Test
+    fun `en NPI le resultat s'affiche sans passer par un egale`() = runTest {
+        val model = viewModel()
+
+        model.rpnSixTimesSeven()
+
+        val state = model.uiState.value
+        assertEquals(CalculationMode.RPN, state.mode)
+        assertEquals("42", state.decimal)
+        // 42 en base 4 = 222.
+        assertEquals("ZoZoZo", state.labels)
+        // Le resultat est X : il ne reste rien sous lui.
+        assertTrue(state.stack.isEmpty())
+    }
+
+    @Test
+    fun `la pile publiee ne montre que les niveaux sous X`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+
+        model.onKey(KeyAction.Digit('2'))
+        model.onKey(KeyAction.Enter)
+        model.onKey(KeyAction.Digit('7'))
+
+        val state = model.uiState.value
+        assertEquals("7", state.decimal, "X est la frappe en cours")
+        assertEquals(listOf("2"), state.stack.map { it.decimal })
+        // Chaque niveau porte aussi ses noms Shadok, pour TalkBack.
+        assertEquals("Zo", state.stack.single().labels)
+    }
+
+    @Test
+    fun `en NPI un operateur sur une pile trop courte remonte une erreur`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+
+        model.onKey(KeyAction.Digit('5'))
+        model.onKey(KeyAction.Op(Operator.DIVIDE))
+
+        assertEquals(EvalError.STACK_UNDERFLOW, model.uiState.value.error)
+        // La frappe est intacte : l'utilisateur corrige plutot que de tout retaper.
+        assertEquals("5", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `en NPI la division par zero laisse les deux operandes`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+
+        model.onKey(KeyAction.Digit('5'))
+        model.onKey(KeyAction.Enter)
+        model.onKey(KeyAction.Digit('0'))
+        model.onKey(KeyAction.Op(Operator.DIVIDE))
+
+        assertEquals(EvalError.DIVISION_BY_ZERO, model.uiState.value.error)
+        assertEquals("0", model.uiState.value.decimal)
+        assertEquals(listOf("5"), model.uiState.value.stack.map { it.decimal })
+    }
+
+    @Test
+    fun `en NPI un tiers est signale comme approche`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+
+        model.onKey(KeyAction.Digit('1'))
+        model.onKey(KeyAction.Enter)
+        model.onKey(KeyAction.Digit('3'))
+        model.onKey(KeyAction.Op(Operator.DIVIDE))
+
+        val state = model.uiState.value
+        assertTrue(state.decimalApproximate, "un tiers n'a pas d'ecriture decimale finie")
+        assertTrue(state.shadokApproximate, "ni de developpement fini en base 4")
+    }
+
+    @Test
+    fun `le plus-ou-moins signe la frappe en NPI`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+
+        model.onKey(KeyAction.Digit('5'))
+        model.onKey(KeyAction.Negate)
+
+        assertEquals("−5", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `DROP et effacement ont des effets distincts en NPI`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+        model.onKey(KeyAction.Digit('2'))
+        model.onKey(KeyAction.Enter)
+        model.onKey(KeyAction.Digit('3'))
+        model.onKey(KeyAction.Digit('4'))
+
+        // L'effacement ne touche que la frappe.
+        model.onKey(KeyAction.Delete)
+        assertEquals("3", model.uiState.value.decimal)
+        model.onKey(KeyAction.Delete)
+        assertEquals("2", model.uiState.value.decimal, "X redevient le sommet de la pile")
+
+        // DROP, lui, depile.
+        model.onKey(KeyAction.Drop)
+        assertEquals("", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `en NPI les parentheses et l'egale sont sans effet`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+        model.onKey(KeyAction.Digit('7'))
+
+        model.onKey(KeyAction.LeftParen)
+        model.onKey(KeyAction.RightParen)
+        model.onKey(KeyAction.Evaluate)
+
+        assertEquals("7", model.uiState.value.decimal)
+        assertNull(model.uiState.value.error)
+    }
+
+    // --------------------------------------------------------- coexistence des modes
+
+    @Test
+    fun `basculer de mode ne detruit ni l'expression ni la pile`() = runTest {
+        val model = viewModel()
+
+        // Une expression en classique.
+        model.onKey(KeyAction.Digit('6'))
+        model.onKey(KeyAction.Op(Operator.TIMES))
+        model.onKey(KeyAction.Digit('7'))
+
+        // Une pile en NPI.
+        model.onModeChange(CalculationMode.RPN)
+        assertEquals("", model.uiState.value.decimal, "la NPI part de son propre etat, vierge")
+        model.onKey(KeyAction.Digit('4'))
+        model.onKey(KeyAction.Enter)
+
+        // Retour en classique : l'expression est toujours la.
+        model.onModeChange(CalculationMode.CLASSIC)
+        assertEquals("6×7", model.uiState.value.decimal)
+
+        // Et la pile aussi.
+        model.onModeChange(CalculationMode.RPN)
+        assertEquals("4", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `changer de notation convertit les deux modes`() = runTest {
+        val model = viewModel()
+
+        model.onModeChange(CalculationMode.RPN)
+        model.onKey(KeyAction.Digit('6'))
+        model.onModeChange(CalculationMode.CLASSIC)
+        model.onKey(KeyAction.Digit('6'))
+
+        model.onNotationChange(NumberNotation.SHADOK)
+
+        // Le mode affiche est converti…
+        assertEquals("_⅃", model.uiState.value.glyphs)
+        // …et l'autre aussi, sinon son pave refuserait ses propres chiffres au retour.
+        model.onModeChange(CalculationMode.RPN)
+        assertEquals(NumberNotation.SHADOK, model.uiState.value.notation)
+        assertEquals("_⅃", model.uiState.value.glyphs, "la frappe NPI est convertie aussi")
+        model.onKey(KeyAction.Digit('◿'))
+        // BuZoMeu, soit 123 en base 4 = 27 : le glyphe Shadok a bien ete accepte.
+        assertEquals("27", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `les deux modes sont persistes ensemble`() = runTest {
+        val model = viewModel()
+
+        model.onKey(KeyAction.Digit('9'))
+        model.onModeChange(CalculationMode.RPN)
+        model.onKey(KeyAction.Digit('1'))
+        model.onKey(KeyAction.Enter)
+        model.onKey(KeyAction.Digit('3'))
+        model.onKey(KeyAction.Op(Operator.DIVIDE))
+        advanceUntilIdle()
+
+        val stored = store.saved.value
+        assertEquals("9", stored.keys)
+        assertEquals(CalculationMode.RPN, stored.mode)
+        // La pile est stockee en fractions : un tiers reste un tiers.
+        assertEquals("1/3", stored.rpn.stack)
+    }
+
+    @Test
+    fun `le mode et la pile sont restaures au lancement a froid`() = runTest {
+        store.saved.value = StoredSession(
+            keys = "8",
+            mode = CalculationMode.RPN,
+            rpn = StoredRpn(stack = "1/3;5", entry = "12", entryNegative = true),
+        )
+
+        val model = viewModel()
+        advanceUntilIdle()
+
+        val state = model.uiState.value
+        assertEquals(CalculationMode.RPN, state.mode)
+        assertEquals("−12", state.decimal, "la frappe et son signe sont restaures")
+        assertEquals(listOf("0.33333333333333333333", "5"), state.stack.map { it.decimal })
+        // Le tiers restaure est exact, donc signale comme tronque a l'affichage.
+        assertTrue(state.stack.first().decimalApproximate)
+    }
+
+    @Test
+    fun `SavedStateHandle restaure aussi le mode et la pile`() = runTest {
+        val savedState = SavedStateHandle()
+        val first = viewModel(savedState)
+        first.rpnSixTimesSeven()
+
+        val restored = viewModel(savedState)
+
+        assertEquals(CalculationMode.RPN, restored.uiState.value.mode)
+        assertEquals("42", restored.uiState.value.decimal)
+    }
+
     private class FakeSessionStore : SessionStore {
         val saved = MutableStateFlow(StoredSession())
         val savedSettings = MutableStateFlow(DisplaySettings())
@@ -316,9 +546,9 @@ class CalculatorViewModelTest {
         override val session: Flow<StoredSession> = saved
         override val settings: Flow<DisplaySettings> = savedSettings
 
-        override suspend fun save(keys: String, notation: NumberNotation) {
+        override suspend fun save(session: StoredSession) {
             saveCount++
-            saved.value = StoredSession(keys, notation)
+            saved.value = session
         }
 
         override suspend fun saveSettings(settings: DisplaySettings) {
