@@ -63,6 +63,7 @@ jobs:
           # Chaque évènement porte le tag ailleurs : `release` dans sa charge utile,
           # `push` dans la réf, `workflow_dispatch` dans son entrée.
           RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
           INPUT_TAG: ${{ inputs.version }}
         run: |
           case "$GITHUB_EVENT_NAME" in
@@ -74,12 +75,28 @@ jobs:
           # Un suffixe de pré-version, lui, est conservé : « 2.0.0-RC0 » est un
           # versionName parfaitement valide, et c'est une information utile.
           VERSION="${TAG#v}"
+          # Un suffixe après le patch (« -RC1 », « -beta.2 ») désigne une pré-version,
+          # comme en versionnage sémantique. Sans ce calcul, un tag de candidate
+          # apparaissait comme une release définitive, seule à être proposée en
+          # « Latest » sur la page du dépôt.
+          #
+          # Sur l'évènement `release`, la case cochée par l'auteur fait foi : elle est
+          # plus informée que le nom du tag, et la recopier évite de rétrograder une
+          # pré-version publiée à la main sous un tag sans suffixe.
+          if [ "$GITHUB_EVENT_NAME" = release ]; then
+            PRERELEASE="$RELEASE_PRERELEASE"
+          elif [ "$VERSION" != "${VERSION%%-*}" ]; then
+            PRERELEASE=true
+          else
+            PRERELEASE=false
+          fi
           # versionCode monotone : le nombre de commits ne peut que croître.
           VERSION_CODE="$(git rev-list --count HEAD)"
-          echo "tag=$TAG"           >> "$GITHUB_OUTPUT"
-          echo "name=$VERSION"      >> "$GITHUB_OUTPUT"
-          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
-          echo "Tag $TAG -> version $VERSION (versionCode $VERSION_CODE)"
+          echo "tag=$TAG"             >> "$GITHUB_OUTPUT"
+          echo "name=$VERSION"        >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE"   >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "Tag $TAG -> version $VERSION (versionCode $VERSION_CODE, prerelease $PRERELEASE)"
 
       # On ne publie jamais une version qui ne passe pas les tests.
       - name: Vérifications
@@ -118,6 +135,8 @@ jobs:
           # publierait sur une pseudo-release nommée d'après elle.
           tag_name: ${{ steps.version.outputs.tag }}
           name: GaBuZoMeu ${{ steps.version.outputs.name }}
+          # Une candidate ne doit pas s'annoncer comme la version stable du dépôt.
+          prerelease: ${{ steps.version.outputs.prerelease }}
           # Sur une release déjà publiée à la main, on ajoute les fichiers sans réécrire
           # les notes que l'auteur a rédigées.
           generate_release_notes: ${{ github.event_name != 'release' }}
