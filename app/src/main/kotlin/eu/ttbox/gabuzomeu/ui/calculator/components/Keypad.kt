@@ -99,9 +99,9 @@ private fun KeyButton(key: KeySpec, onKey: (KeyAction) -> Unit, modifier: Modifi
                 text = key.text.orEmpty(),
                 style = DisplayTypography.key,
                 maxLines = 1,
-                // La touche s'adapte au libellé plutôt que de le rogner. « DROP » sortait
-                // en « DRO » à la taille nominale ; le repli protège aussi les libellés
-                // longs quand l'utilisateur agrandit la police du système.
+                // La touche s'adapte au libellé plutôt que de le rogner : « ENTER ↵ » ne
+                // tient pas à la taille nominale sur une touche étroite, et le repli
+                // protège tous les libellés quand la police du système est agrandie.
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = MIN_KEY_FONT_SIZE,
                     maxFontSize = DisplayTypography.key.fontSize,

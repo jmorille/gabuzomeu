@@ -38,7 +38,7 @@ data class KeySpec(
  *
  * Les pavés NPI n'ont ni parenthèses ni « = » : en postfixe, l'ordre de frappe est l'ordre
  * de calcul, il n'y a rien à grouper ni à déclencher. À leur place, le jeu des HP —
- * `ENTER` pour empiler, `x↔y` et `DROP` pour rattraper un ordre erroné, et `±` sans lequel
+ * `ENTER` pour empiler, `x↔y` et `x↓` pour rattraper un ordre erroné, et `±` sans lequel
  * un opérande négatif serait insaisissable, faute de moins préfixe.
  */
 object KeypadLayout {
@@ -135,7 +135,11 @@ object KeypadLayout {
     private val drop = KeySpec(
         action = KeyAction.Drop,
         kind = KeyKind.FUNCTION,
-        text = "DROP",
+        // « x↓ » et non « DROP » : le seul mot anglais du pavé, illisible pour qui ne le
+        // connaît pas. Le couple se lit maintenant ensemble — `x↔y` échange x et y, `x↓`
+        // fait sortir x — et « x » est la notation HP du sommet de pile. Le libellé
+        // traduit reste dans `key_drop`, pour TalkBack.
+        text = "x↓",
         contentDescriptionRes = R.string.key_drop,
     )
 
@@ -168,7 +172,7 @@ object KeypadLayout {
         listOf(separator, equals.copy(weight = 3f)),
     )
 
-    /** La rangée de fonctions en NPI : `x↔y` et `DROP` remplacent les parenthèses. */
+    /** La rangée de fonctions en NPI : `x↔y` et `x↓` remplacent les parenthèses. */
     private val rpnFunctionRow = listOf(functionRow[0], functionRow[1], swap, drop)
 
     private val rpnDecimal: List<List<KeySpec>> = listOf(
