@@ -397,6 +397,29 @@ class CalculatorScreenTest {
         composeTestRule.onNodeWithTag(DisplayTags.GLYPHS).assertContentDescriptionEquals("BuZo")
     }
 
+    /**
+     * Le réglage vaut pour toute la colonne : le masquer sur X et le laisser sur les
+     * niveaux au-dessus donnerait un afficheur mi-figue mi-raisin.
+     */
+    @Test
+    fun masquerLeDecimalLeRetireAussiDeLaPile() {
+        setScreen(
+            rpn.copy(
+                glyphs = "_⅃",
+                labels = "BuZo",
+                decimal = "6",
+                stack = listOf(StackLevel(glyphs = "⅃", labels = "Zo", decimal = "2")),
+                settings = DisplaySettings(showDecimal = false),
+            ),
+        )
+
+        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertDoesNotExist()
+        // Le niveau reste affiché, mais ne s'annonce plus que par ses noms Shadok.
+        composeTestRule.onNodeWithTag(DisplayTags.stackLevel(0))
+            .assertIsDisplayed()
+            .assertContentDescriptionContains("Zo", substring = true)
+    }
+
     @Test
     fun laPileNExistePasEnModeClassique() {
         setScreen(CalculatorUiState(glyphs = "_⅃", labels = "BuZo", decimal = "6"))

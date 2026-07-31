@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -19,6 +20,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.ui.KeypadTags
@@ -93,7 +95,18 @@ private fun KeyButton(key: KeySpec, onKey: (KeyAction) -> Unit, modifier: Modifi
                 modifier = Modifier.size(GLYPH_KEY_SIZE),
             )
         } else {
-            Text(text = key.text.orEmpty(), style = DisplayTypography.key)
+            Text(
+                text = key.text.orEmpty(),
+                style = DisplayTypography.key,
+                maxLines = 1,
+                // La touche s'adapte au libellé plutôt que de le rogner. « DROP » sortait
+                // en « DRO » à la taille nominale ; le repli protège aussi les libellés
+                // longs quand l'utilisateur agrandit la police du système.
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = MIN_KEY_FONT_SIZE,
+                    maxFontSize = DisplayTypography.key.fontSize,
+                ),
+            )
         }
     }
 
@@ -139,3 +152,6 @@ private fun KeyKind.colors(): ButtonColors = when (this) {
 
 private val KEY_SPACING = 8.dp
 private val GLYPH_KEY_SIZE = 30.dp
+
+/** Plancher du repli typographique : en dessous, une touche cesse d'être lisible. */
+private val MIN_KEY_FONT_SIZE = 12.sp

@@ -62,18 +62,23 @@ fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (state.mode == CalculationMode.RPN) {
-            StackArea(
+            RpnStackArea(
                 levels = state.stack,
+                showDecimal = state.settings.showDecimal,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
             )
             HorizontalDivider()
+            // X reprend la disposition des niveaux de pile — décimal à gauche, Shadok à
+            // droite — pour que l'œil lise la colonne des décimales d'un seul trait, du
+            // fond de pile jusqu'au calcul en cours.
+            XValue(state)
+        } else {
+            GlyphLine(state)
+            if (state.settings.showShadokLabels) LabelLine(state)
+            if (state.settings.showDecimal) DecimalLine(state)
         }
-
-        GlyphLine(state)
-        if (state.settings.showShadokLabels) LabelLine(state)
-        if (state.settings.showDecimal) DecimalLine(state)
 
         state.error?.let { error ->
             Text(
@@ -86,85 +91,82 @@ fun ShadokDisplay(state: CalculatorUiState, modifier: Modifier = Modifier) {
 }
 
 /**
- * La pile NPI : les niveaux **sous** X, le plus proche de X en bas.
+ * Le registre X en NPI : décimal et glyphes **sur la même ligne**, les noms en dessous.
  *
- * `reverseLayout` fait deux choses d'un coup : le sommet se colle au séparateur, juste
- * au-dessus de la ligne principale, et la liste reste ancrée en bas quand la pile grandit —
- * un empilement de dix valeurs ne pousse pas le calcul en cours hors de l'écran. Les
- * niveaux profonds défilent vers le haut, sans limite de profondeur.
+ * La première ligne reprend exactement le partage des niveaux de pile — décimal à gauche,
+ * Shadok à droite, mêmes moitiés — si bien que les deux colonnes se lisent d'un seul trait
+ * du fond de pile jusqu'au calcul en cours. Les noms prononcés viennent ensuite, sur toute
+ * la largeur : ce sont eux qui s'allongent le plus (`MeuZoGa` pour trois chiffres).
  *
- * Chaque niveau porte ses glyphes et son décimal, mais pas ses noms : trois écritures par
- * ligne saturerait la hauteur, et c'est X qui a besoin du détail complet.
+ * En mode classique l'afficheur reste empilé : il n'y a pas de pile au-dessus avec laquelle
+ * s'aligner, et une expression entière a besoin de toute la largeur.
  */
 @Composable
-private fun StackArea(levels: List<StackLevel>, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier.testTag(DisplayTags.STACK),
-        reverseLayout = true,
+private fun XValue(state: CalculatorUiState) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        // La liste est inversée comme la disposition : l'indice 0 est donc le niveau
-        // immédiatement sous X — celui que les HP appellent Y.
-        itemsIndexed(levels.asReversed()) { depth, level ->
-            StackRow(level = level, depth = depth)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(VALUE_COLUMN_SPACING),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (state.settings.showDecimal) {
+                XDecimal(state, modifier = Modifier.weight(1f))
+            }
+            GlyphLine(state, modifier = Modifier.weight(1f))
+        }
+        // Le « ≈ » du Shadok est déjà porté par la ligne de glyphes : le répéter sur les
+        // noms le ferait paraître deux fois pour une seule et même valeur.
+        if (state.settings.showShadokLabels) LabelLine(state, showApproximation = false)
+    }
+}
+
+/** Le décimal de X, aligné à gauche et son marqueur `≈` ancré hors du défilement. */
+@Composable
+private fun XDecimal(state: CalculatorUiState, modifier: Modifier = Modifier) {
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        if (state.decimalApproximate) {
+            Text(
+                text = ShadokFormatter.APPROXIMATION.toString(),
+                style = DisplayTypography.decimal,
+                color = color,
+                modifier = Modifier.padding(end = 4.dp),
+            )
+        }
+        AnimatedContent(
+            targetState = state.decimal,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "decimal-x",
+            modifier = Modifier.weight(1f),
+        ) { text ->
+            Text(
+                text = text,
+                style = DisplayTypography.decimal,
+                color = color,
+                maxLines = 1,
+                textAlign = TextAlign.Start,
+                modifier = Modifier
+                    .testTag(DisplayTags.DECIMAL)
+                    .fillMaxWidth()
+                    .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
+            )
         }
     }
 }
 
-/** Un niveau de pile : sa valeur décimale à gauche, ses glyphes à droite. */
-@Composable
-private fun StackRow(level: StackLevel, depth: Int) {
-    val color = MaterialTheme.colorScheme.onSurfaceVariant
-    // « Pile, niveau 1 : BuZo » — le rang et les noms Shadok. Les formes ne se prononcent
-    // pas, et répéter le décimal ferait doublon avec la ligne principale.
-    val description = stringResource(R.string.display_stack_level, depth + 1, level.labels)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            // Même précaution que sur les touches : clearAndSetSemantics efface la
-            // sémantique des descendants, donc le testTag doit être posé dans le bloc.
-            .clearAndSetSemantics {
-                contentDescription = description
-                testTag = DisplayTags.stackLevel(depth)
-            },
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = level.decimalWithMarker(),
-            style = DisplayTypography.decimal,
-            color = color,
-            maxLines = 1,
-        )
-        ShadokGlyphText(
-            expression = level.glyphs,
-            semanticsLabel = level.labels,
-            style = DisplayTypography.labels,
-            color = MaterialTheme.colorScheme.onSurface,
-            operatorColor = MaterialTheme.colorScheme.tertiary,
-        )
-    }
-}
-
-/**
- * Le décimal d'un niveau, précédé de `≈` s'il est tronqué.
- *
- * Contrairement aux lignes principales, le marqueur est ici dans le texte : une ligne de
- * pile ne défile pas, il ne risque donc pas de sortir de l'écran.
- */
-private fun StackLevel.decimalWithMarker(): String =
-    if (decimalApproximate) "${ShadokFormatter.APPROXIMATION}$decimal" else decimal
-
 /** Ligne principale : les glyphes Shadok, l'identité de l'application. */
 @Composable
-private fun GlyphLine(state: CalculatorUiState) {
+private fun GlyphLine(state: CalculatorUiState, modifier: Modifier = Modifier) {
     val color = MaterialTheme.colorScheme.onSurface
     DisplayLine(
         approximate = state.shadokApproximate,
         style = DisplayTypography.glyphs,
         color = color,
+        modifier = modifier,
     ) { lineModifier ->
         ShadokGlyphText(
             expression = state.glyphs,
@@ -182,10 +184,10 @@ private fun GlyphLine(state: CalculatorUiState) {
 
 /** Deuxième ligne : les noms prononcés — « quand il y a encore un shadok de plus… ». */
 @Composable
-private fun LabelLine(state: CalculatorUiState) {
+private fun LabelLine(state: CalculatorUiState, showApproximation: Boolean = true) {
     val color = MaterialTheme.colorScheme.primary
     DisplayLine(
-        approximate = state.shadokApproximate,
+        approximate = state.shadokApproximate && showApproximation,
         style = DisplayTypography.labels,
         color = color,
     ) { lineModifier ->
@@ -245,10 +247,11 @@ private fun DisplayLine(
     approximate: Boolean,
     style: TextStyle,
     color: Color,
+    modifier: Modifier = Modifier,
     content: @Composable (Modifier) -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (approximate) {
