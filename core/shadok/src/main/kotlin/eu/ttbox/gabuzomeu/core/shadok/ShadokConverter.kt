@@ -42,7 +42,9 @@ object ShadokConverter {
         val integerDigits = integerPart.toString(ShadokDigit.RADIX)
             .map { ShadokDigit.of(it.digitToInt(ShadokDigit.RADIX)) }
 
-        var remainder = magnitude - Rational.of(integerPart)
+        // `fractionalPart()` plutôt que la soustraction écrite à la main : c'est la même
+        // opération, nommée une seule fois et vérifiée par les tests de [Rational].
+        var remainder = magnitude.fractionalPart()
         val fractionDigits = ArrayList<ShadokDigit>(maxFractionDigits)
         while (!remainder.isZero && fractionDigits.size < maxFractionDigits) {
             remainder *= RADIX_RATIONAL

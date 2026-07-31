@@ -11,12 +11,17 @@ package eu.ttbox.gabuzomeu.core.eval
  * Le pavé scientifique (sin, cos, ln, π, factorielle…) a été abandonné : il reposait
  * sur la bibliothèque `arity`, un jar jamais publié sur un dépôt public et livré à la
  * main dans le projet. Le périmètre se limite donc à l'arithmétique.
+ *
+ * Aucun champ `precedence` ici : [Parser] est à descente récursive, et la priorité y est
+ * portée par les **niveaux de la grammaire** (`expression` appelle `terme`, qui appelle
+ * `facteur`). Une constante numérique en doublon ne pourrait que contredire la grammaire
+ * sans que rien ne le signale — elle avait d'ailleurs cessé d'être lue.
  */
-enum class Operator(val symbol: Char, val precedence: Int) {
-    PLUS('+', precedence = 1),
-    MINUS('−', precedence = 1),
-    TIMES('×', precedence = 2),
-    DIVIDE('÷', precedence = 2),
+enum class Operator(val symbol: Char) {
+    PLUS('+'),
+    MINUS('−'),
+    TIMES('×'),
+    DIVIDE('÷'),
     ;
 
     companion object {

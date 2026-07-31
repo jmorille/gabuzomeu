@@ -17,6 +17,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Les actions sont toutes sur le runtime Node 24 (Node 20 est déprécié) : checkout v7,
+# setup-java v5, upload-artifact v7.
+#
+# `gradle/actions` s'arrête volontairement à **v5**, et ce n'est pas un oubli. La v6
+# extrait le cache dans un composant `gradle-actions-caching` **propriétaire**, régi par
+# les conditions commerciales de Gradle et non plus par la licence MIT, et elle **retire
+# le support du cache de configuration** — que ce projet active
+# (`org.gradle.configuration-cache=true` dans gradle.properties). Passer en v6 relève
+# donc d'une décision de licence, pas d'une montée de version de routine.
 jobs:
   # La logique métier ne dépend pas d'Android : ses tests tournent en quelques
   # secondes et échouent vite. On les isole donc du reste.
@@ -24,19 +33,19 @@ jobs:
     name: Logique métier (JVM)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Tests de :core:shadok et :core:eval
         run: ./gradlew :core:shadok:test :core:eval:test
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: rapports-tests-core
@@ -46,14 +55,14 @@ jobs:
     name: Build, lint et style
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Vérification du formatage
         run: ./gradlew spotlessCheck
@@ -65,7 +74,7 @@ jobs:
         # `build` enchaîne assemble + lint (en warningsAsErrors) + test.
         run: ./gradlew build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: rapports-lint
@@ -76,7 +85,7 @@ jobs:
       - name: APK release (non signé, vérifie que R8 ne casse rien)
         run: ./gradlew :app:assembleRelease
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: apk-release
           path: app/build/outputs/apk/release/*.apk
@@ -85,14 +94,14 @@ jobs:
     name: Tests instrumentés (émulateur API 31)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       # L'accélération matérielle KVM est nécessaire pour que l'émulateur soit utilisable.
       - name: Activer KVM
@@ -112,7 +121,7 @@ jobs:
           disable-animations: true
           script: ./gradlew :app:connectedDebugAndroidTest
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: rapports-tests-instrumentes

@@ -2,7 +2,6 @@ package eu.ttbox.gabuzomeu.core.shadok
 
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.math.MathContext
 import java.math.RoundingMode
 
 /**
@@ -55,9 +54,6 @@ class Rational private constructor(val numerator: BigInteger, val denominator: B
 
     /** Partie fractionnaire signée : `this - truncate()`, donc dans `]-1, 1[`. */
     fun fractionalPart(): Rational = this - of(truncate())
-
-    fun toBigDecimal(mathContext: MathContext): BigDecimal =
-        BigDecimal(numerator).divide(BigDecimal(denominator), mathContext)
 
     /**
      * `true` si l'écriture décimale de cette valeur est finie.

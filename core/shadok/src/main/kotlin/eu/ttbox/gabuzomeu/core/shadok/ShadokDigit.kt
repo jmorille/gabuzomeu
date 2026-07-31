@@ -48,9 +48,6 @@ enum class ShadokDigit(
         private val byValue: Map<Int, ShadokDigit> = entries.associateBy { it.value }
         private val byGlyph: Map<Char, ShadokDigit> = entries.associateBy { it.glyph }
 
-        /** Les quatre glyphes concaténés, pratique pour un test d'appartenance. */
-        val glyphs: String = entries.joinToString(separator = "") { it.glyph.toString() }
-
         /**
          * @throws IllegalArgumentException si [value] n'est pas dans 0..3. Le code
          * d'origine utilisait un `SparseArray` renvoyant `null`, auto-déballé en `char`

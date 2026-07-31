@@ -28,9 +28,4 @@ data class Base4Number(
 
     val isZero: Boolean
         get() = fractionDigits.isEmpty() && integerDigits.all { it == ShadokDigit.GA }
-
-    companion object {
-        val ZERO: Base4Number =
-            Base4Number(negative = false, integerDigits = listOf(ShadokDigit.GA))
-    }
 }
