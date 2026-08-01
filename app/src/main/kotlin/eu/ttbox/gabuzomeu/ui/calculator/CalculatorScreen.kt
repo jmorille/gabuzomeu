@@ -48,6 +48,7 @@ fun CalculatorScreen(
     modifier: Modifier = Modifier,
     onPaste: (String) -> Unit = {},
     onOpenHelp: () -> Unit = {},
+    onOpenGame: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -81,6 +82,7 @@ fun CalculatorScreen(
                 onPaste = onPaste,
                 onCopied = onCopied,
                 onOpenHelp = onOpenHelp,
+                onOpenGame = onOpenGame,
             )
             if (widthSizeClass == WindowWidthSizeClass.Expanded) {
                 WideLayout(state, actions)
@@ -106,6 +108,7 @@ private data class CalculatorActions(
     val onPaste: (String) -> Unit,
     val onCopied: () -> Unit,
     val onOpenHelp: () -> Unit,
+    val onOpenGame: () -> Unit,
 )
 
 /** Téléphone en portrait, ou fenêtre étroite : afficheur au-dessus, pavé en dessous. */
@@ -122,6 +125,7 @@ private fun StackedLayout(state: CalculatorUiState, actions: CalculatorActions) 
                 onModeChange = actions.onModeChange,
                 onSettingsChange = actions.onSettingsChange,
                 onOpenHelp = actions.onOpenHelp,
+                onOpenGame = actions.onOpenGame,
             )
         }
         ShadokDisplay(
@@ -173,6 +177,7 @@ private fun WideLayout(state: CalculatorUiState, actions: CalculatorActions) {
                 onModeChange = actions.onModeChange,
                 onSettingsChange = actions.onSettingsChange,
                 onOpenHelp = actions.onOpenHelp,
+                onOpenGame = actions.onOpenGame,
             )
             ShadokDisplay(
                 state = state,

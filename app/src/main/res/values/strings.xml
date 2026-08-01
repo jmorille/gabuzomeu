@@ -50,8 +50,12 @@
 
     <!-- Réglages d'affichage -->
     <string name="settings_open">Réglages d\'affichage</string>
-    <string name="settings_show_shadok_labels">Afficher les noms Shadok</string>
-    <string name="settings_show_decimal">Afficher le décimal</string>
+    <!-- Le verbe est porté par le titre de section, pas par chaque item : « Afficher »
+         deux fois de suite se lisait comme une duplication. -->
+    <string name="settings_display">Affichage</string>
+    <string name="settings_shadok_labels">Noms Shadok</string>
+    <string name="settings_decimal">Décimal</string>
+    <string name="settings_help">Aide</string>
 
     <!-- Tuile des réglages rapides : ce nom apparaît dans la liste des tuiles à ajouter -->
     <string name="tile_clock_label">Heure Shadok</string>
@@ -78,6 +82,22 @@
     <string name="help_source_title">D\'où ça vient</string>
     <string name="help_source_body">La leçon d\'origine, celle qui a inspiré cette application, est en ligne sur la chaîne Archive INA. Le lien ouvre YouTube.</string>
     <string name="help_source_link">Archive INA — Comment compter comme les Shadoks ?</string>
+
+    <!-- Le jeu : reconnaître les nombres Shadok -->
+    <string name="game_open">Jouer aux nombres</string>
+    <string name="game_title">Nombres Shadok</string>
+    <string name="game_close">Revenir à la calculatrice</string>
+    <string name="game_read_prompt">Combien font ces glyphes ?</string>
+    <string name="game_write_prompt">Comment s\'écrit ce nombre ?</string>
+    <!-- %1$d bonnes réponses, %2$d questions posées. Écrit en fraction et non « %1$d sur
+         %2$d » : un chiffre suivi d'un mot fait réclamer un pluriel par lint, et un score se
+         lit très bien comme une fraction. -->
+    <string name="game_score">%1$d / %2$d</string>
+    <string name="game_streak">Série : %1$d</string>
+    <string name="game_correct">Bien vu</string>
+    <!-- %1$s la bonne réponse, écrite en noms Shadok pour être prononçable. -->
+    <string name="game_wrong">C\'était %1$s</string>
+    <string name="game_next">Continuer</string>
 
     <!-- Presse-papiers : les quatre écritures d'une valeur, plus coller et partager -->
     <string name="display_actions">Copier, coller ou partager</string>

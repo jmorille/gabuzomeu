@@ -14,8 +14,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ttbox.gabuzomeu.ui.calculator.CalculatorScreen
 import eu.ttbox.gabuzomeu.ui.calculator.CalculatorViewModel
+import eu.ttbox.gabuzomeu.ui.game.ShadokQuizScreen
 import eu.ttbox.gabuzomeu.ui.help.ShadokHelpScreen
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
+
+/**
+ * Les écrans de l'application.
+ *
+ * Une énumération plutôt qu'un booléen par écran : deux booléens pourraient être vrais en même
+ * temps, ce qui n'a aucun sens, et `rememberSaveable` sait déjà sérialiser un `enum`.
+ */
+private enum class Screen { CALCULATOR, HELP, GAME }
 
 /**
  * L'unique activité de l'application.
@@ -41,15 +50,18 @@ class MainActivity : ComponentActivity() {
                 )
                 val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-                // Deux écrans ne justifient pas une bibliothèque de navigation, ni une seconde
-                // activité. `rememberSaveable` suffit : l'aide survit à la rotation, et
-                // `BackHandler` — posé dans l'écran d'aide — rend le retour matériel naturel.
-                var showHelp by rememberSaveable { mutableStateOf(false) }
+                // Trois écrans ne justifient pas une bibliothèque de navigation, ni une seconde
+                // activité. `rememberSaveable` suffit : l'écran ouvert survit à la rotation, et
+                // le `BackHandler` posé dans chacun rend le retour matériel naturel. Un `when`
+                // exhaustif garantit qu'un quatrième écran ne pourrait pas être oublié ici.
+                var screen by rememberSaveable { mutableStateOf(Screen.CALCULATOR) }
 
-                if (showHelp) {
-                    ShadokHelpScreen(onClose = { showHelp = false })
-                } else {
-                    CalculatorScreen(
+                when (screen) {
+                    Screen.HELP -> ShadokHelpScreen(onClose = { screen = Screen.CALCULATOR })
+
+                    Screen.GAME -> ShadokQuizScreen(onClose = { screen = Screen.CALCULATOR })
+
+                    Screen.CALCULATOR -> CalculatorScreen(
                         state = state,
                         widthSizeClass = calculateWindowSizeClass(this).widthSizeClass,
                         onKey = viewModel::onKey,
@@ -57,7 +69,8 @@ class MainActivity : ComponentActivity() {
                         onModeChange = viewModel::onModeChange,
                         onSettingsChange = viewModel::onSettingsChange,
                         onPaste = viewModel::onPaste,
-                        onOpenHelp = { showHelp = true },
+                        onOpenHelp = { screen = Screen.HELP },
+                        onOpenGame = { screen = Screen.GAME },
                     )
                 }
             }

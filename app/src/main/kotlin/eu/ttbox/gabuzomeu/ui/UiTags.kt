@@ -51,6 +51,20 @@ object SettingsTags {
 
     /** L'entrée qui mène à « Comprendre les Shadoks ». */
     const val HELP = "settings-help"
+
+    /** L'entrée qui mène au jeu. */
+    const val GAME = "settings-game"
+}
+
+/** Le jeu d'apprentissage. */
+object GameTags {
+    const val SCREEN = "game-screen"
+    const val CLOSE = "game-close"
+    const val QUESTION = "game-question"
+    const val SCORE = "game-score"
+
+    /** Un bouton de réponse, repéré par son rang à l'écran. */
+    fun choice(index: Int): String = "game-choice-$index"
 }
 
 /** L'écran d'apprentissage. */

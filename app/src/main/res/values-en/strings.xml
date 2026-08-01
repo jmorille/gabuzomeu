@@ -29,8 +29,10 @@
     <string name="display_stack_level">Stack, level %1$d: %2$s</string>
 
     <string name="settings_open">Display settings</string>
-    <string name="settings_show_shadok_labels">Show Shadok names</string>
-    <string name="settings_show_decimal">Show decimal</string>
+    <string name="settings_display">Display</string>
+    <string name="settings_shadok_labels">Shadok names</string>
+    <string name="settings_decimal">Decimal</string>
+    <string name="settings_help">Help</string>
 
     <string name="tile_clock_label">Shadok time</string>
 
@@ -53,6 +55,17 @@
     <string name="help_source_title">Where it comes from</string>
     <string name="help_source_body">The original lesson, the one that inspired this application, is online on the Archive INA channel. The link opens YouTube.</string>
     <string name="help_source_link">Archive INA — Comment compter comme les Shadoks ?</string>
+
+    <string name="game_open">Play with numbers</string>
+    <string name="game_title">Shadok numbers</string>
+    <string name="game_close">Back to the calculator</string>
+    <string name="game_read_prompt">What do these glyphs add up to?</string>
+    <string name="game_write_prompt">How is this number written?</string>
+    <string name="game_score">%1$d / %2$d</string>
+    <string name="game_streak">Streak: %1$d</string>
+    <string name="game_correct">Well spotted</string>
+    <string name="game_wrong">It was %1$s</string>
+    <string name="game_next">Continue</string>
 
     <string name="display_actions">Copy, paste or share</string>
     <string name="copy_glyphs">Copy glyphs</string>

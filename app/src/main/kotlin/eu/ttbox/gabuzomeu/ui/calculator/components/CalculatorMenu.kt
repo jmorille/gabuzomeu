@@ -46,6 +46,7 @@ fun CalculatorMenu(
     onSettingsChange: (DisplaySettings) -> Unit,
     modifier: Modifier = Modifier,
     onOpenHelp: () -> Unit = {},
+    onOpenGame: () -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -73,14 +74,18 @@ fun CalculatorMenu(
 
             HorizontalDivider()
 
+            // « Affichage » plutôt que deux lignes commençant par « Afficher » : le titre de
+            // section porte le verbe une fois pour toutes, et les items nomment simplement ce
+            // qu'ils montrent. Même structure que « Mode de calcul » au-dessus.
+            MenuHeading(stringResource(R.string.settings_display))
             SettingToggle(
-                label = stringResource(R.string.settings_show_shadok_labels),
+                label = stringResource(R.string.settings_shadok_labels),
                 checked = settings.showShadokLabels,
                 testTag = SettingsTags.TOGGLE_LABELS,
                 onCheckedChange = { onSettingsChange(settings.copy(showShadokLabels = it)) },
             )
             SettingToggle(
-                label = stringResource(R.string.settings_show_decimal),
+                label = stringResource(R.string.settings_decimal),
                 checked = settings.showDecimal,
                 testTag = SettingsTags.TOGGLE_DECIMAL,
                 onCheckedChange = { onSettingsChange(settings.copy(showDecimal = it)) },
@@ -88,9 +93,10 @@ fun CalculatorMenu(
 
             HorizontalDivider()
 
-            // En pied de menu, et non en tête : on vient ici pour calculer, la leçon n'est
-            // qu'occasionnelle. Mais elle doit être trouvable, sinon « ◿⅃ » ne veut rien dire
-            // pour qui ouvre l'application la première fois.
+            // En pied de menu, et non en tête : on vient ici pour calculer, apprendre n'est
+            // qu'occasionnel. Mais il faut que ce soit trouvable, sinon « ◿⅃ » ne veut rien
+            // dire pour qui ouvre l'application la première fois.
+            MenuHeading(stringResource(R.string.settings_help))
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.help_open)) },
                 onClick = {
@@ -98,6 +104,14 @@ fun CalculatorMenu(
                     onOpenHelp()
                 },
                 modifier = Modifier.testTag(SettingsTags.HELP),
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.game_open)) },
+                onClick = {
+                    expanded = false
+                    onOpenGame()
+                },
+                modifier = Modifier.testTag(SettingsTags.GAME),
             )
         }
     }
