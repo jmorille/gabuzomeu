@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -31,9 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.ttbox.gabuzomeu.R
@@ -99,8 +98,12 @@ fun ShadokQuizScreen(onClose: () -> Unit, modifier: Modifier = Modifier) {
     ) { insets ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(insets)
+                // Défilant : quatre boutons, une question et un verdict ne tiennent pas
+                // toujours d'un seul écran — police système agrandie, petit appareil, ou
+                // paysage. Sans cela, la dernière réponse serait hors d'atteinte.
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -218,17 +221,13 @@ private fun ChoiceButton(game: QuizGame, index: Int, choice: Int, onChoose: (Int
         // Verrouillé une fois répondu : recliquer changerait le score sans changer la question.
         enabled = !revealed,
         colors = colors,
+        // Pas de `clearAndSetSemantics` ici, contrairement aux touches du pavé : il effacerait
+        // aussi l'état **désactivé** du bouton, que TalkBack a besoin d'annoncer après une
+        // réponse. La description vient donc des enfants — le chiffre pour un nombre, et les
+        // noms Shadok pour des glyphes, puisque `ShadokGlyphText` porte déjà la sienne.
         modifier = Modifier
             .fillMaxWidth()
-            .clearAndSetSemantics {
-                // Les noms, jamais les formes — et le repère dans le même bloc, puisque
-                // clearAndSetSemantics efface la sémantique des descendants.
-                contentDescription = when (question.direction) {
-                    QuizDirection.READ_SHADOK -> "$choice"
-                    QuizDirection.WRITE_SHADOK -> ShadokQuiz.labelsOf(choice)
-                }
-                testTag = GameTags.choice(index)
-            },
+            .testTag(GameTags.choice(index)),
     ) {
         when (question.direction) {
             // Le sens s'inverse : on lit des glyphes pour répondre un nombre, et l'inverse.

@@ -10,7 +10,6 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
@@ -21,6 +20,7 @@ import eu.ttbox.gabuzomeu.data.DisplaySettings
 import eu.ttbox.gabuzomeu.ui.ActionTags
 import eu.ttbox.gabuzomeu.ui.DisplayTags
 import eu.ttbox.gabuzomeu.ui.KeypadTags
+import eu.ttbox.gabuzomeu.ui.NotationTags
 import eu.ttbox.gabuzomeu.ui.SettingsTags
 import eu.ttbox.gabuzomeu.ui.calculator.components.ValueWriting
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
@@ -267,11 +267,7 @@ class CalculatorScreenTest {
         var requested: NumberNotation? = null
         setScreen(CalculatorUiState(), callbacks = Callbacks(onNotationChange = { requested = it }))
 
-        // Le sélecteur affiche des libellés traduits : on résout la ressource.
-        val shadokLabel = composeTestRule.activity.getString(
-            eu.ttbox.gabuzomeu.R.string.mode_shadok,
-        )
-        composeTestRule.onNodeWithText(shadokLabel).performClick()
+        composeTestRule.onNodeWithTag(NotationTags.of(NumberNotation.SHADOK)).performClick()
 
         assertEquals(NumberNotation.SHADOK, requested)
     }

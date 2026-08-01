@@ -1,5 +1,6 @@
 package eu.ttbox.gabuzomeu.ui
 
+import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.ui.calculator.KeyAction
 import eu.ttbox.gabuzomeu.ui.calculator.components.ValueWriting
 
@@ -74,6 +75,18 @@ object HelpTags {
 
     /** Le lien sortant vers la vidéo de l'INA. */
     const val VIDEO = "help-video"
+}
+
+/**
+ * Le sélecteur décimal / Shadok.
+ *
+ * Il n'avait pas de repère : les tests le cherchaient par son libellé. Ça a tenu jusqu'au jour
+ * où le menu a gagné un item nommé « Décimal », et où deux nœuds portaient le même texte —
+ * échec net, et pour une raison qui n'avait rien à voir avec ce qui était testé. Un repère ne
+ * peut pas devenir ambigu comme un mot.
+ */
+object NotationTags {
+    fun of(notation: NumberNotation): String = "notation-${notation.name.lowercase()}"
 }
 
 object KeypadTags {

@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import eu.ttbox.gabuzomeu.ui.HelpTags
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
 import org.junit.Rule
@@ -39,7 +40,9 @@ class ShadokHelpScreenTest {
         setScreen()
 
         composeTestRule.onNodeWithTag(HelpTags.SCREEN).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(HelpTags.VIDEO).assertIsDisplayed()
+        // Le lien est en pied de page : sur un écran de téléphone il est hors champ au
+        // départ, et « affiché » n'a de sens qu'après y avoir défilé.
+        composeTestRule.onNodeWithTag(HelpTags.VIDEO).performScrollTo().assertIsDisplayed()
     }
 
     @Test

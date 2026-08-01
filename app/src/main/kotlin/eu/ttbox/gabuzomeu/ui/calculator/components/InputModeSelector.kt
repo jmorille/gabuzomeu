@@ -8,10 +8,12 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.ttbox.gabuzomeu.R
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
+import eu.ttbox.gabuzomeu.ui.NotationTags
 
 /**
  * Choix du mode de saisie : décimal ou Shadok.
@@ -38,6 +40,9 @@ fun InputModeSelector(
                 selected = option == notation,
                 onClick = { onNotationChange(option) },
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                // Un repère, et non le libellé : « Décimal » nomme aussi un réglage du menu,
+                // et deux nœuds au même texte rendaient la recherche par mot ambiguë.
+                modifier = Modifier.testTag(NotationTags.of(option)),
             ) {
                 Text(text = stringResource(option.labelRes()))
             }

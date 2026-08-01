@@ -3,11 +3,12 @@ package eu.ttbox.gabuzomeu
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
 import eu.ttbox.gabuzomeu.ui.DisplayTags
 import eu.ttbox.gabuzomeu.ui.KeypadTags
+import eu.ttbox.gabuzomeu.ui.NotationTags
 import eu.ttbox.gabuzomeu.ui.SettingsTags
 import eu.ttbox.gabuzomeu.ui.calculator.KeyAction
 import org.junit.Rule
@@ -43,8 +44,10 @@ class MainActivityTest {
     private fun startFresh(decimalKeypad: Boolean = true) {
         composeTestRule.waitForIdle()
         if (decimalKeypad) {
-            val label = composeTestRule.activity.getString(R.string.mode_decimal)
-            composeTestRule.onNodeWithText(label).performClick()
+            // Par son repère, et non par son libellé : « Décimal » nomme aussi un réglage du
+            // menu, qui reste ouvert après un choix de mode. Deux nœuds au même texte, et
+            // l'échec tombait sur une recherche ambiguë plutôt que sur ce qui était testé.
+            composeTestRule.onNodeWithTag(NotationTags.of(NumberNotation.DECIMAL)).performClick()
         }
         composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Clear)).performClick()
     }
@@ -57,6 +60,16 @@ class MainActivityTest {
     private fun press(vararg actions: KeyAction) = actions.forEach { action ->
         composeTestRule.onNodeWithTag(KeypadTags.of(action)).performClick()
     }
+
+    /**
+     * Un nœud de l'afficheur, cherché dans l'arbre **non fusionné**.
+     *
+     * L'afficheur est copiable, donc enveloppé d'un `combinedClickable` — et un modificateur
+     * cliquable fusionne la sémantique de ses descendants, ce qui retire leurs `testTag` de
+     * l'arbre fusionné. Chercher sans fusion vaut dans les deux cas.
+     */
+    private fun displayNode(tag: String) =
+        composeTestRule.onNodeWithTag(tag, useUnmergedTree = true)
 
     @Test
     fun uneMultiplicationClassiqueTraverseToutLeCircuit() {
@@ -72,8 +85,7 @@ class MainActivityTest {
         )
 
         // 42 en base 4 s'ecrit 222. La ligne de glyphes s'annonce par ses noms.
-        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS)
-            .assertContentDescriptionEquals("ZoZoZo")
+        displayNode(DisplayTags.GLYPHS).assertContentDescriptionEquals("ZoZoZo")
     }
 
     @Test
@@ -89,8 +101,7 @@ class MainActivityTest {
             KeyAction.Op(Operator.TIMES),
         )
 
-        composeTestRule.onNodeWithTag(DisplayTags.GLYPHS)
-            .assertContentDescriptionEquals("ZoZoZo")
+        displayNode(DisplayTags.GLYPHS).assertContentDescriptionEquals("ZoZoZo")
     }
 
     /**
@@ -111,6 +122,6 @@ class MainActivityTest {
         )
 
         // 1/3 = 0.111... en base 4 : un developpement infini, donc tronque.
-        composeTestRule.onNodeWithTag(DisplayTags.DECIMAL).assertExists()
+        displayNode(DisplayTags.DECIMAL).assertExists()
     }
 }

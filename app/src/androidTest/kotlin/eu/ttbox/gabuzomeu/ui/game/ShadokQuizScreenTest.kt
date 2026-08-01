@@ -39,8 +39,10 @@ class ShadokQuizScreenTest {
         composeTestRule.onNodeWithTag(GameTags.SCREEN).assertIsDisplayed()
         composeTestRule.onNodeWithTag(GameTags.QUESTION).assertIsDisplayed()
         composeTestRule.onNodeWithTag(GameTags.SCORE).assertIsDisplayed()
+        // Présence, pas visibilité : l'écran défile, et la dernière réponse peut être sous le
+        // pli sur un petit émulateur. Ce qui est vérifié ici, c'est qu'il y en a bien quatre.
         repeat(ShadokQuiz.CHOICE_COUNT) { index ->
-            composeTestRule.onNodeWithTag(GameTags.choice(index)).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(GameTags.choice(index)).assertExists()
         }
     }
 
