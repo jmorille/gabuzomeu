@@ -46,6 +46,12 @@ class CalculatorPreferences(context: Context) : SessionStore {
                 entry = preferences[KEY_RPN_ENTRY].orEmpty(),
                 entryNegative = preferences[KEY_RPN_NEGATIVE] == true,
             ),
+            simple = StoredSimple(
+                entry = preferences[KEY_SIMPLE_ENTRY].orEmpty(),
+                accumulator = preferences[KEY_SIMPLE_ACCUMULATOR].orEmpty(),
+                pending = preferences[KEY_SIMPLE_PENDING].orEmpty(),
+                entryNegative = preferences[KEY_SIMPLE_NEGATIVE] == true,
+            ),
         )
     }
 
@@ -65,6 +71,10 @@ class CalculatorPreferences(context: Context) : SessionStore {
             preferences[KEY_RPN_STACK] = session.rpn.stack
             preferences[KEY_RPN_ENTRY] = session.rpn.entry
             preferences[KEY_RPN_NEGATIVE] = session.rpn.entryNegative
+            preferences[KEY_SIMPLE_ENTRY] = session.simple.entry
+            preferences[KEY_SIMPLE_ACCUMULATOR] = session.simple.accumulator
+            preferences[KEY_SIMPLE_PENDING] = session.simple.pending
+            preferences[KEY_SIMPLE_NEGATIVE] = session.simple.entryNegative
         }
     }
 
@@ -82,6 +92,10 @@ class CalculatorPreferences(context: Context) : SessionStore {
         val KEY_RPN_STACK = stringPreferencesKey("rpn-stack")
         val KEY_RPN_ENTRY = stringPreferencesKey("rpn-entry")
         val KEY_RPN_NEGATIVE = booleanPreferencesKey("rpn-entry-negative")
+        val KEY_SIMPLE_ENTRY = stringPreferencesKey("simple-entry")
+        val KEY_SIMPLE_ACCUMULATOR = stringPreferencesKey("simple-accumulator")
+        val KEY_SIMPLE_PENDING = stringPreferencesKey("simple-pending")
+        val KEY_SIMPLE_NEGATIVE = booleanPreferencesKey("simple-entry-negative")
         val KEY_SHOW_LABELS = booleanPreferencesKey("show-shadok-labels")
         val KEY_SHOW_DECIMAL = booleanPreferencesKey("show-decimal")
     }

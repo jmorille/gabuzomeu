@@ -6,6 +6,7 @@ import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
 import eu.ttbox.gabuzomeu.core.shadok.ShadokDigit
 import eu.ttbox.gabuzomeu.ui.calculator.KeyAction
+import eu.ttbox.gabuzomeu.ui.theme.KeyPalette
 
 /** Rôle visuel d'une touche ; détermine sa couleur dans le thème Material. */
 enum class KeyKind { DIGIT, OPERATOR, FUNCTION, EQUALS }
@@ -25,6 +26,19 @@ data class KeySpec(
     val glyph: ShadokDigit? = null,
     val contentDescriptionRes: Int? = null,
     val weight: Float = 1f,
+    /**
+     * Le nom et la valeur écrits sous le glyphe — « Ga (0) ». Pavé Simple uniquement.
+     *
+     * C'est ce qui fait de ce pavé un pavé qui s'explique : on y apprend la base 4 en
+     * regardant les touches. Ailleurs, la glose serait du bruit sur une touche qu'on
+     * connaît déjà.
+     */
+    val subLabel: ShadokDigit? = null,
+    /**
+     * La palette de l'affiche des Shadoks. `null` : la touche prend les couleurs de son
+     * [kind], comme partout ailleurs.
+     */
+    val palette: KeyPalette? = null,
 )
 
 /**
@@ -36,6 +50,9 @@ data class KeySpec(
  * `values-sw600dp`…) et la variante tablette avait **oublié les touches Shadok**, rendant
  * la fonctionnalité inaccessible sur grand écran.
  *
+ * Décrits en données, six pavés ne coûtent pas plus cher que deux : le mode Simple n'a
+ * demandé que deux listes de plus.
+ *
  * Les pavés NPI n'ont ni parenthèses ni « = » : en postfixe, l'ordre de frappe est l'ordre
  * de calcul, il n'y a rien à grouper ni à déclencher. À leur place, le jeu des HP —
  * `ENTER` pour empiler, `x↔y` et `x↓` pour rattraper un ordre erroné, et `±` sans lequel
@@ -45,6 +62,11 @@ object KeypadLayout {
 
     fun forMode(mode: CalculationMode, notation: NumberNotation): List<List<KeySpec>> =
         when (mode) {
+            CalculationMode.SIMPLE -> when (notation) {
+                NumberNotation.DECIMAL -> simpleDecimal
+                NumberNotation.SHADOK -> simpleShadok
+            }
+
             CalculationMode.CLASSIC -> when (notation) {
                 NumberNotation.DECIMAL -> classicDecimal
                 NumberNotation.SHADOK -> classicShadok
@@ -191,5 +213,74 @@ object KeypadLayout {
         listOf(shadokDigit(ShadokDigit.GA), shadokDigit(ShadokDigit.BU), divide, times),
         listOf(shadokDigit(ShadokDigit.ZO), shadokDigit(ShadokDigit.MEU), minus, plus),
         listOf(negate, separator, enter.copy(weight = 2f)),
+    )
+
+    // ------------------------------------------------------ touches du mode Simple
+
+    /**
+     * POMPER : effacer tout, dans les mots de l'affiche.
+     *
+     * Le libellé visible est le mot Shadok — non traduisible, comme « ENTER ↵ » ou « x↔y »,
+     * d'où un littéral et non une ressource. La description d'accessibilité, elle, reste
+     * `key_clear` : une plaisanterie ne doit pas rendre une touche inintelligible à qui
+     * l'écoute plutôt que de la voir.
+     */
+    private val pomper = KeySpec(
+        action = KeyAction.Clear,
+        kind = KeyKind.FUNCTION,
+        text = "POMPER",
+        contentDescriptionRes = R.string.key_clear,
+        palette = KeyPalette.POMPER,
+    )
+
+    private val egal = KeySpec(
+        action = KeyAction.Evaluate,
+        kind = KeyKind.EQUALS,
+        text = "ÉGAL",
+        contentDescriptionRes = R.string.key_equals,
+        palette = KeyPalette.EGAL,
+    )
+
+    private val simpleDelete = functionRow[1]
+
+    /** Un chiffre Shadok glosé de son nom et de sa valeur, et teinté de sa couleur. */
+    private fun simpleDigit(digit: ShadokDigit, palette: KeyPalette) = KeySpec(
+        action = KeyAction.Digit(digit.glyph),
+        kind = KeyKind.DIGIT,
+        glyph = digit,
+        subLabel = digit,
+        palette = palette,
+    )
+
+    /**
+     * Le pavé de l'affiche : quatre chiffres, quatre opérateurs, POMPER, ⌫ et ÉGAL.
+     *
+     * Ni parenthèses — il n'y a pas d'expression à grouper — ni séparateur décimal : une
+     * fraction s'obtient par une division, `Bu ÷ ⅃ =` donnant `Ga,⅃`. Le ⌫ ne figure pas
+     * sur l'affiche ; sans lui, une faute de frappe obligerait à tout pomper.
+     */
+    private val simpleShadok: List<List<KeySpec>> = listOf(
+        listOf(
+            simpleDigit(ShadokDigit.GA, KeyPalette.GA),
+            simpleDigit(ShadokDigit.BU, KeyPalette.BU),
+            simpleDigit(ShadokDigit.ZO, KeyPalette.ZO),
+            simpleDigit(ShadokDigit.MEU, KeyPalette.MEU),
+        ),
+        listOf(plus, minus, times, divide),
+        listOf(pomper, simpleDelete, egal),
+    )
+
+    /**
+     * Le même mode, écrit en décimal.
+     *
+     * Dix chiffres au lieu de quatre, donc la disposition familière du pavé classique —
+     * moins les parenthèses et le séparateur, que ce mode n'a pas.
+     */
+    private val simpleDecimal: List<List<KeySpec>> = listOf(
+        listOf(pomper.copy(weight = 2f), simpleDelete.copy(weight = 2f)),
+        listOf(digit('7'), digit('8'), digit('9'), divide),
+        listOf(digit('4'), digit('5'), digit('6'), times),
+        listOf(digit('1'), digit('2'), digit('3'), minus),
+        listOf(digit('0').copy(weight = 2f), egal, plus),
     )
 }

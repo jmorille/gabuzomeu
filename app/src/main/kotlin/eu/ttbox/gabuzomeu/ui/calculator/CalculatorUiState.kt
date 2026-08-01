@@ -3,6 +3,7 @@ package eu.ttbox.gabuzomeu.ui.calculator
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.EvalError
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
+import eu.ttbox.gabuzomeu.core.eval.Operator
 import eu.ttbox.gabuzomeu.data.DisplaySettings
 
 /**
@@ -52,14 +53,23 @@ data class CalculatorUiState(
     /** Les niveaux sous X, du fond de pile vers X. Vide hors NPI. */
     val stack: List<StackLevel> = emptyList(),
     /**
-     * NPI : une frappe est en cours, donc X **n'est pas encore dans la pile**.
+     * Une frappe est en cours : la grande valeur est encore **sous le doigt**, pas validée.
      *
-     * C'est ce que l'afficheur ne savait pas dire. Sans ce drapeau, `6` tapé et `6` empilé
-     * produisent exactement la même image : le premier ENTER ne se voyait pas, on appuyait
-     * une seconde fois, et la duplication du sommet — convention HP — laissait une valeur
-     * parasite au fond de la pile.
+     * En NPI, cela veut dire « pas encore dans la pile » ; en mode Simple, « pas encore prise
+     * comme opérande ». Sans ce drapeau, `6` tapé et `6` validé produisent exactement la même
+     * image — c'est ainsi que le premier ENTER de la NPI ne se voyait pas : on appuyait une
+     * seconde fois, et la duplication du sommet, convention HP, laissait une valeur parasite
+     * au fond de la pile. Le mode classique, lui, affiche l'expression entière et n'a donc
+     * jamais eu la question.
      */
     val entering: Boolean = false,
+    /**
+     * Mode Simple : l'opération qui **attend son second opérande**.
+     *
+     * Le même piège que ci-dessus, sous un autre jour : après `Bu +`, l'afficheur montre
+     * toujours `Bu`. Sans ce champ, rien à l'écran ne distinguerait les deux états.
+     */
+    val pending: Operator? = null,
     val error: EvalError? = null,
     /** L'affichage montre le résultat d'un « = » et non une saisie en cours. */
     val showingResult: Boolean = false,

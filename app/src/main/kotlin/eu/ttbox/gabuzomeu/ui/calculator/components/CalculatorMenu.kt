@@ -157,11 +157,13 @@ private fun SettingToggle(
 }
 
 private fun CalculationMode.labelRes(): Int = when (this) {
+    CalculationMode.SIMPLE -> R.string.mode_simple
     CalculationMode.CLASSIC -> R.string.mode_classic
     CalculationMode.RPN -> R.string.mode_rpn
 }
 
 private fun CalculationMode.testTag(): String = when (this) {
+    CalculationMode.SIMPLE -> SettingsTags.MODE_SIMPLE
     CalculationMode.CLASSIC -> SettingsTags.MODE_CLASSIC
     CalculationMode.RPN -> SettingsTags.MODE_RPN
 }

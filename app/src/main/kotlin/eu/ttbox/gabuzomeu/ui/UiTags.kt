@@ -45,6 +45,15 @@ object DisplayTags {
     /** Un niveau de pile, repéré par son rang depuis le fond. */
     fun stackLevel(level: Int): String = "display-stack-$level"
 
+    /**
+     * Mode Simple : l'opération qui attend son second opérande.
+     *
+     * Présent **seulement** quand une opération est en attente. C'est ce repère, et lui seul,
+     * qui distingue « j'ai tapé Bu » de « Bu, plus… » — deux états que la grande valeur, à
+     * elle seule, dessine de la même façon.
+     */
+    const val PENDING = "display-pending"
+
     /** La zone qui ouvre le menu copier/coller à l'appui long : X, ou l'expression. */
     const val ACTIONS = "display-actions"
 
@@ -63,6 +72,7 @@ object ActionTags {
 
 object SettingsTags {
     const val MENU_BUTTON = "settings-menu"
+    const val MODE_SIMPLE = "mode-simple"
     const val MODE_CLASSIC = "mode-classic"
     const val MODE_RPN = "mode-rpn"
     const val TOGGLE_LABELS = "toggle-shadok-labels"

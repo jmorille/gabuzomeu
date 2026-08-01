@@ -16,6 +16,17 @@ Shadok — glyphes et noms prononcés.
 
 Ainsi 6 s'écrit `12` en base 4, donc **`BuZo`** — ou `_⅃`.
 
+Trois modes de calcul, par difficulté croissante :
+
+| Mode | Ce que c'est | `Bu + Zo × Meu =` |
+|---|---|---|
+| **Simple** | La machine de l'affiche : quatre chiffres, POMPER, ÉGAL. Exécution immédiate, sans priorité. | 9 |
+| **Classique** | Notation infixe, avec parenthèses et priorité des opérateurs. | 7 |
+| **Polonaise inverse** | La pile des HP : `ENTER`, `x↔y`, `x↓`. | — |
+
+Les deux premiers ne diffèrent pas par le nombre de touches mais par la machine : en
+exécution immédiate, chaque opérateur résout le précédent au lieu de l'accumuler.
+
 La leçon d'origine, celle qui a inspiré cette application, est en ligne :
 [« Comment compter comme les Shadoks ? »](https://www.youtube.com/watch?v=lP9PaDs2xgQ),
 chaîne Archive INA. L'application y mène depuis son écran « Comprendre les Shadoks ».

@@ -681,6 +681,168 @@ class CalculatorViewModelTest {
         }
     }
 
+    // ---------------------------------------------------------------- mode Simple
+
+    @Test
+    fun `en mode Simple les operations se resolvent au fil de la frappe`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+
+        // La meme frappe qu'en mode classique, ou elle donne 7 : c'est la difference entre
+        // les deux machines, et c'est le routage vers le bon moteur qui la produit.
+        model.onKey(KeyAction.Digit('1'))
+        model.onKey(KeyAction.Op(Operator.PLUS))
+        model.onKey(KeyAction.Digit('2'))
+        model.onKey(KeyAction.Op(Operator.TIMES))
+        model.onKey(KeyAction.Digit('3'))
+        model.onKey(KeyAction.Evaluate)
+
+        assertEquals("9", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `en mode Simple l'operation en attente est publiee`() = runTest {
+        // Sans ce champ, « Bu » et « Bu + » dessineraient exactement la meme image : c'est
+        // le defaut corrige pour la NPI, transpose a l'execution immediate.
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+
+        model.onKey(KeyAction.Digit('6'))
+        assertNull(model.uiState.value.pending, "rien n'attend encore")
+
+        model.onKey(KeyAction.Op(Operator.PLUS))
+        assertEquals(Operator.PLUS, model.uiState.value.pending)
+        assertEquals("6", model.uiState.value.decimal, "la valeur, elle, n'a pas bouge")
+
+        model.onKey(KeyAction.Digit('1'))
+        model.onKey(KeyAction.Evaluate)
+        assertNull(model.uiState.value.pending, "le = a resolu l'attente")
+        assertEquals("7", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `en mode Simple la division par zero laisse tout en place`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+
+        model.onKey(KeyAction.Digit('6'))
+        model.onKey(KeyAction.Op(Operator.DIVIDE))
+        model.onKey(KeyAction.Digit('0'))
+        model.onKey(KeyAction.Evaluate)
+
+        assertEquals(EvalError.DIVISION_BY_ZERO, model.uiState.value.error)
+        assertEquals("0", model.uiState.value.decimal, "la frappe est intacte")
+        assertEquals(Operator.DIVIDE, model.uiState.value.pending)
+    }
+
+    @Test
+    fun `l'operation en attente n'existe pas hors du mode Simple`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+        model.onKey(KeyAction.Digit('6'))
+        model.onKey(KeyAction.Op(Operator.PLUS))
+
+        model.onModeChange(CalculationMode.CLASSIC)
+
+        assertNull(model.uiState.value.pending)
+    }
+
+    @Test
+    fun `les trois modes gardent chacun leur etat`() = runTest {
+        val model = viewModel()
+
+        model.onKey(KeyAction.Digit('4'))
+        model.onKey(KeyAction.Op(Operator.PLUS))
+
+        model.onModeChange(CalculationMode.RPN)
+        model.onKey(KeyAction.Digit('5'))
+        model.onKey(KeyAction.Enter)
+
+        model.onModeChange(CalculationMode.SIMPLE)
+        model.onKey(KeyAction.Digit('6'))
+        model.onKey(KeyAction.Op(Operator.TIMES))
+
+        // Chacun est retrouve exactement ou on l'avait laisse.
+        model.onModeChange(CalculationMode.CLASSIC)
+        assertEquals("4+", model.uiState.value.decimal)
+
+        model.onModeChange(CalculationMode.RPN)
+        assertEquals("5", model.uiState.value.decimal)
+
+        model.onModeChange(CalculationMode.SIMPLE)
+        assertEquals("6", model.uiState.value.decimal)
+        assertEquals(Operator.TIMES, model.uiState.value.pending)
+    }
+
+    @Test
+    fun `changer de notation convertit aussi la frappe du mode Simple`() = runTest {
+        // L'oublier laisserait le pave Shadok face a une frappe decimale, donc un pave qui
+        // refuse ses propres glyphes.
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+        model.onKey(KeyAction.Digit('6'))
+
+        model.onNotationChange(NumberNotation.SHADOK)
+
+        assertEquals("_⅃", model.uiState.value.glyphs)
+    }
+
+    @Test
+    fun `un collage en mode Simple demarre une frappe`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+        model.onKey(KeyAction.Digit('6'))
+        model.onKey(KeyAction.Op(Operator.PLUS))
+
+        model.onPaste("0.25")
+
+        assertEquals("0.25", model.uiState.value.decimal)
+        assertEquals(Operator.PLUS, model.uiState.value.pending, "l'attente est preservee")
+    }
+
+    @Test
+    fun `un nombre negatif colle en mode Simple garde son signe`() = runTest {
+        // Le pave n'a pas de ±, mais perdre le signe en silence serait pire qu'un etat de
+        // plus a afficher.
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+        model.onKey(KeyAction.Digit('2'))
+        model.onKey(KeyAction.Op(Operator.PLUS))
+
+        model.onPaste("−6")
+        assertEquals("−6", model.uiState.value.decimal, "le signe se voit pendant la frappe")
+
+        model.onKey(KeyAction.Evaluate)
+
+        // Le resultat vient de Rational.toDecimalString, qui ecrit le moins ASCII, la ou une
+        // frappe porte le vrai signe moins U+2212. Ecart d'ecriture deja present en NPI
+        // entre la frappe et la pile ; il n'appartient pas a ce mode de le corriger.
+        assertEquals("-4", model.uiState.value.decimal)
+    }
+
+    @Test
+    fun `l'etat du mode Simple survit a un aller-retour de persistance`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.SIMPLE)
+        model.onKey(KeyAction.Digit('1'))
+        model.onKey(KeyAction.Op(Operator.DIVIDE))
+        model.onKey(KeyAction.Digit('3'))
+        model.onKey(KeyAction.Evaluate)
+        model.onKey(KeyAction.Op(Operator.TIMES))
+        advanceUntilIdle()
+
+        // L'accumulateur est ecrit en fraction : c'est ce qui le rend exact au retour.
+        assertEquals("1/3", store.saved.value.simple.accumulator)
+        assertEquals("×", store.saved.value.simple.pending)
+
+        val restored = viewModel()
+        advanceUntilIdle()
+
+        restored.onKey(KeyAction.Digit('3'))
+        restored.onKey(KeyAction.Evaluate)
+        assertEquals("1", restored.uiState.value.decimal, "trois tiers font exactement un")
+    }
+
     private class FakeSessionStore : SessionStore {
         val saved = MutableStateFlow(StoredSession())
         val savedSettings = MutableStateFlow(DisplaySettings())

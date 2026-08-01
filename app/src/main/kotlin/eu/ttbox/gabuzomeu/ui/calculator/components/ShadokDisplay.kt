@@ -66,20 +66,19 @@ fun ShadokDisplay(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (state.mode == CalculationMode.RPN) {
-            RpnDisplay(state, onPaste, onCopied)
-        } else {
-            // Un résultat est une valeur : on le lit par sa tête. Une expression en cours de
-            // frappe se suit au contraire par sa queue, là où arrive le chiffre tapé.
-            val scrollToEnd = !state.showingResult
-            ValueActions(state, onPaste, onCopied) {
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    GlyphLine(state, scrollToEnd = scrollToEnd)
-                    if (state.settings.showShadokLabels) LabelLine(state, scrollToEnd)
-                    if (state.settings.showDecimal) DecimalLine(state, scrollToEnd)
+        // Un `when` et non une cascade de `if` : au quatrième mode de calcul, ce sera le
+        // compilateur qui rappellera qu'il lui faut un afficheur.
+        when (state.mode) {
+            CalculationMode.RPN -> RpnDisplay(state, onPaste, onCopied)
+
+            CalculationMode.SIMPLE -> SimpleDisplay(state, onPaste, onCopied)
+
+            CalculationMode.CLASSIC -> {
+                // Un résultat est une valeur : on le lit par sa tête. Une expression en cours
+                // de frappe se suit au contraire par sa queue, là où arrive le chiffre tapé.
+                val scrollToEnd = !state.showingResult
+                ValueActions(state, onPaste, onCopied) {
+                    ValueLines(state, scrollToEnd)
                 }
             }
         }
@@ -91,6 +90,24 @@ fun ShadokDisplay(
                 color = MaterialTheme.colorScheme.error,
             )
         }
+    }
+}
+
+/**
+ * Les trois écritures d'une valeur, empilées : glyphes, noms, décimal.
+ *
+ * Partagée par le mode classique et le mode Simple — dans les deux cas, la grande valeur est
+ * une valeur unique. Seule la NPI a besoin d'autre chose, ayant une pile à montrer sous elle.
+ */
+@Composable
+internal fun ValueLines(state: CalculatorUiState, scrollToEnd: Boolean) {
+    Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        GlyphLine(state, scrollToEnd = scrollToEnd)
+        if (state.settings.showShadokLabels) LabelLine(state, scrollToEnd)
+        if (state.settings.showDecimal) DecimalLine(state, scrollToEnd)
     }
 }
 
@@ -180,7 +197,7 @@ internal fun LabelLine(
 
 /** Ligne secondaire : la traduction décimale. */
 @Composable
-private fun DecimalLine(state: CalculatorUiState, scrollToEnd: Boolean) {
+internal fun DecimalLine(state: CalculatorUiState, scrollToEnd: Boolean) {
     val color = MaterialTheme.colorScheme.onSurfaceVariant
     DisplayLine(
         approximate = state.decimalApproximate,

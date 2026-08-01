@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -22,6 +23,7 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.ttbox.gabuzomeu.R
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.ui.KeypadTags
@@ -90,11 +92,28 @@ private fun KeyButton(key: KeySpec, onKey: (KeyAction) -> Unit, modifier: Modifi
 
     val content: @Composable () -> Unit = {
         if (key.glyph != null) {
-            Icon(
-                imageVector = ShadokGlyphs.of(key.glyph),
-                contentDescription = null,
-                modifier = Modifier.size(GLYPH_KEY_SIZE),
-            )
+            // La glose « Ga (0) » sous le glyphe : c'est elle qui fait du pavé Simple un
+            // pavé qui s'explique. Elle n'est pas répétée à TalkBack — le
+            // clearAndSetSemantics ci-dessus annonce déjà « Ga », et « Ga Ga 0 » serait
+            // une lecture pénible pour rien.
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = ShadokGlyphs.of(key.glyph),
+                    contentDescription = null,
+                    modifier = Modifier.size(GLYPH_KEY_SIZE),
+                )
+                key.subLabel?.let { digit ->
+                    Text(
+                        text = stringResource(R.string.key_digit_gloss, digit.label, digit.value),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = MIN_GLOSS_FONT_SIZE,
+                            maxFontSize = MaterialTheme.typography.labelSmall.fontSize,
+                        ),
+                    )
+                }
+            }
         } else {
             Text(
                 text = key.text.orEmpty(),
@@ -122,7 +141,9 @@ private fun KeyButton(key: KeySpec, onKey: (KeyAction) -> Unit, modifier: Modifi
     Button(
         onClick = { onKey(key.action) },
         modifier = modifier.then(semantics),
-        colors = key.kind.colors(),
+        // La palette de l'affiche l'emporte là où elle est posée — le pavé Simple, et lui
+        // seul. Partout ailleurs, les rôles Material du thème, couleur dynamique comprise.
+        colors = key.palette?.colors() ?: key.kind.colors(),
         contentPadding = ButtonDefaults.TextButtonContentPadding,
     ) { content() }
 }
@@ -164,3 +185,11 @@ private val GLYPH_KEY_SIZE = 30.dp
 
 /** Plancher du repli typographique : en dessous, une touche cesse d'être lisible. */
 private val MIN_KEY_FONT_SIZE = 12.sp
+
+/**
+ * Plancher de la glose « Ga (0) ».
+ *
+ * Plus bas que celui des libellés : la glose est une annotation, elle a le droit d'être
+ * petite. En dessous de 8 sp, en revanche, elle ne s'adresse plus à personne.
+ */
+private val MIN_GLOSS_FONT_SIZE = 8.sp

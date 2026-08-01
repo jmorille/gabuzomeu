@@ -47,19 +47,10 @@ object Evaluator {
 
         is Expr.Negate -> -compute(expression.operand)
 
-        is Expr.Binary -> {
-            val left = compute(expression.left)
-            val right = compute(expression.right)
-            when (expression.operator) {
-                Operator.PLUS -> left + right
-
-                Operator.MINUS -> left - right
-
-                Operator.TIMES -> left * right
-
-                // Rational.div lève ArithmeticException, rattrapée plus haut.
-                Operator.DIVIDE -> left / right
-            }
-        }
+        // Une division par zéro y lève ArithmeticException, rattrapée plus haut.
+        is Expr.Binary -> expression.operator.applyTo(
+            left = compute(expression.left),
+            right = compute(expression.right),
+        )
     }
 }

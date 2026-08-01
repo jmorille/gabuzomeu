@@ -22,12 +22,14 @@ import eu.ttbox.gabuzomeu.core.eval.PastedNumber
 import eu.ttbox.gabuzomeu.core.eval.Rendered
 import eu.ttbox.gabuzomeu.core.eval.RpnOutcome
 import eu.ttbox.gabuzomeu.core.eval.RpnSession
+import eu.ttbox.gabuzomeu.core.eval.SimpleSession
 import eu.ttbox.gabuzomeu.core.shadok.ShadokFormatter
 import eu.ttbox.gabuzomeu.data.CalculatorPreferences
 import eu.ttbox.gabuzomeu.data.DisplaySettings
 import eu.ttbox.gabuzomeu.data.SessionStore
 import eu.ttbox.gabuzomeu.data.StoredRpn
 import eu.ttbox.gabuzomeu.data.StoredSession
+import eu.ttbox.gabuzomeu.data.StoredSimple
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,11 +77,14 @@ class CalculatorViewModel(
 
     private var mode = CalculationMode.CLASSIC
 
-    /** Mode infixe. Conservé même quand la NPI est affichée : basculer ne détruit rien. */
+    /** Mode infixe. Conservé même quand un autre mode est affiché : basculer ne détruit rien. */
     private var buffer = ExpressionBuffer()
 
     /** Mode NPI. Conservé de même, avec sa pile et sa frappe en cours. */
     private var rpn = RpnSession()
+
+    /** Mode Simple. Conservé de même, avec son accumulateur et son opération en attente. */
+    private var simple = SimpleSession()
 
     private var showingResult = false
     private var error: EvalError? = null
@@ -131,7 +136,16 @@ class CalculatorViewModel(
         error = null
 
         when (mode) {
+            // Le routage du mode Simple est une fonction pure, dans SimpleKeys.kt : la
+            // session étant immuable, il n'y a qu'à retenir ce qu'elle rend.
+            CalculationMode.SIMPLE -> {
+                val outcome = simple.handle(action)
+                simple = outcome.session
+                error = outcome.error
+            }
+
             CalculationMode.CLASSIC -> onClassicKey(action)
+
             CalculationMode.RPN -> onRpnKey(action)
         }
 
@@ -153,11 +167,26 @@ class CalculatorViewModel(
         error = null
 
         when (mode) {
+            CalculationMode.SIMPLE -> pasteIntoSimple(pasted)
             CalculationMode.CLASSIC -> pasteIntoBuffer(pasted)
             CalculationMode.RPN -> pasteIntoRpn(pasted)
         }
 
         publish()
+    }
+
+    /** Le collage démarre une frappe, comme si les chiffres avaient été tapés. */
+    private fun pasteIntoSimple(pasted: PastedNumber) {
+        pasted.keys.forEach { key ->
+            simple = if (key == ShadokFormatter.SEPARATOR) {
+                simple.appendSeparator()
+            } else {
+                simple.appendDigit(key)
+            }
+        }
+        // Après les chiffres, comme en NPI : `negate` porte le signe de la frappe en cours.
+        // Le pavé n'a pas de ±, mais un nombre collé négatif ne doit pas perdre son signe.
+        if (pasted.negative) simple = simple.negate()
     }
 
     private fun pasteIntoBuffer(pasted: PastedNumber) {
@@ -193,18 +222,20 @@ class CalculatorViewModel(
         }
 
     fun onNotationChange(notation: NumberNotation) {
-        // Les deux modes suivent : le sélecteur décimal/Shadok est un axe unique, il ne
-        // doit pas laisser derrière lui un mode inactif écrit dans l'autre notation.
+        // Les trois modes suivent : le sélecteur décimal/Shadok est un axe unique, il ne
+        // doit pas laisser derrière lui un mode inactif écrit dans l'autre notation — un
+        // pavé Shadok face à une frappe décimale refuserait ses propres glyphes.
         buffer = buffer.withNotation(notation)
         rpn = rpn.withNotation(notation)
+        simple = simple.withNotation(notation)
         publish()
     }
 
     /**
-     * Bascule entre calculatrice classique et NPI.
+     * Bascule d'un mode de calcul à l'autre.
      *
-     * L'état de l'autre mode reste en place : revenir retrouve exactement l'expression, ou
-     * la pile, qu'on y avait laissée.
+     * L'état des deux autres reste en place : revenir retrouve exactement l'expression, la
+     * pile ou le calcul en cours qu'on y avait laissé.
      */
     fun onModeChange(target: CalculationMode) {
         if (target == mode) return
@@ -356,17 +387,30 @@ class CalculatorViewModel(
             decimalApproximate = when (mode) {
                 // En infixe, une saisie décimale est rendue verbatim, donc toujours
                 // exacte : seule l'évaluation peut produire un arrondi, et elle renseigne
-                // le champ. En NPI, X peut être une valeur calculée qui traîne sur la pile.
+                // le champ. Dans les deux autres modes, la grande valeur peut être une
+                // valeur calculée — le sommet de pile, ou l'accumulateur.
                 CalculationMode.CLASSIC -> decimalApproximate
 
-                CalculationMode.RPN -> lines.decimal.approximate
+                CalculationMode.SIMPLE, CalculationMode.RPN -> lines.decimal.approximate
             },
             stack = stackLevels(),
-            // Hors NPI la notion n'existe pas : une expression infixe n'est jamais « en
-            // attente d'empilement ».
-            entering = mode == CalculationMode.RPN && rpn.entering,
+            // En infixe la notion n'existe pas : l'expression entière est à l'écran, donc
+            // rien n'y est « en attente de validation ».
+            entering = when (mode) {
+                CalculationMode.SIMPLE -> simple.entering
+                CalculationMode.RPN -> rpn.entering
+                CalculationMode.CLASSIC -> false
+            },
+            pending = if (mode == CalculationMode.SIMPLE) simple.pending else null,
             error = error,
-            showingResult = showingResult,
+            showingResult = when (mode) {
+                CalculationMode.SIMPLE -> simple.showingResult
+
+                CalculationMode.CLASSIC -> showingResult
+
+                // En NPI il n'y a pas de « = » : la pile ne montre jamais un résultat figé.
+                CalculationMode.RPN -> false
+            },
             settings = settings,
         )
 
@@ -377,6 +421,13 @@ class CalculatorViewModel(
 
     /** Les quatre projections de la ligne principale, selon le mode affiché. */
     private fun renderLines(): Lines = when (mode) {
+        CalculationMode.SIMPLE -> Lines(
+            decimal = simple.renderValue(ExpressionDisplay.DECIMAL),
+            glyphs = simple.renderValue(ExpressionDisplay.SHADOK_GLYPHS),
+            labels = simple.renderValue(ExpressionDisplay.SHADOK_LABELS),
+            base4 = simple.renderValue(ExpressionDisplay.SHADOK_BASE4),
+        )
+
         CalculationMode.CLASSIC -> Lines(
             decimal = buffer.render(ExpressionDisplay.DECIMAL),
             glyphs = buffer.render(ExpressionDisplay.SHADOK_GLYPHS),
@@ -415,9 +466,9 @@ class CalculatorViewModel(
 
     // ------------------------------------------------------------------ persistance
 
-    /** Rien n'a encore été saisi, dans aucun des deux modes. */
+    /** Rien n'a encore été saisi, dans aucun des trois modes. */
     private val untouched: Boolean
-        get() = buffer.isEmpty && rpn.stack.isEmpty && !rpn.entering
+        get() = buffer.isEmpty && rpn.stack.isEmpty && !rpn.entering && simple.isPristine
 
     private fun storedSession(): StoredSession = StoredSession(
         keys = buffer.replayKeys(),
@@ -428,6 +479,12 @@ class CalculatorViewModel(
             entry = rpn.entryKeys(),
             entryNegative = rpn.entryNegative,
         ),
+        simple = StoredSimple(
+            entry = simple.entryKeys(),
+            accumulator = simple.accumulatorKeys(),
+            pending = simple.pendingKeys(),
+            entryNegative = simple.entryNegative,
+        ),
     )
 
     private fun restore(session: StoredSession) {
@@ -436,6 +493,13 @@ class CalculatorViewModel(
             stackKeys = session.rpn.stack,
             entryKeys = session.rpn.entry,
             entryNegative = session.rpn.entryNegative,
+            notation = session.notation,
+        )
+        simple = SimpleSession.restore(
+            entryKeys = session.simple.entry,
+            accumulatorKeys = session.simple.accumulator,
+            pendingKeys = session.simple.pending,
+            entryNegative = session.simple.entryNegative,
             notation = session.notation,
         )
         mode = session.mode
@@ -452,6 +516,10 @@ class CalculatorViewModel(
         savedStateHandle[STATE_RPN_STACK] = session.rpn.stack
         savedStateHandle[STATE_RPN_ENTRY] = session.rpn.entry
         savedStateHandle[STATE_RPN_NEGATIVE] = session.rpn.entryNegative
+        savedStateHandle[STATE_SIMPLE_ENTRY] = session.simple.entry
+        savedStateHandle[STATE_SIMPLE_ACCUMULATOR] = session.simple.accumulator
+        savedStateHandle[STATE_SIMPLE_PENDING] = session.simple.pending
+        savedStateHandle[STATE_SIMPLE_NEGATIVE] = session.simple.entryNegative
     }
 
     /** L'état sauvé par le système, ou `null` s'il s'agit d'un lancement à froid. */
@@ -465,6 +533,12 @@ class CalculatorViewModel(
                 stack = savedStateHandle.get<String>(STATE_RPN_STACK).orEmpty(),
                 entry = savedStateHandle.get<String>(STATE_RPN_ENTRY).orEmpty(),
                 entryNegative = savedStateHandle.get<Boolean>(STATE_RPN_NEGATIVE) == true,
+            ),
+            simple = StoredSimple(
+                entry = savedStateHandle.get<String>(STATE_SIMPLE_ENTRY).orEmpty(),
+                accumulator = savedStateHandle.get<String>(STATE_SIMPLE_ACCUMULATOR).orEmpty(),
+                pending = savedStateHandle.get<String>(STATE_SIMPLE_PENDING).orEmpty(),
+                entryNegative = savedStateHandle.get<Boolean>(STATE_SIMPLE_NEGATIVE) == true,
             ),
         )
     }
@@ -491,6 +565,10 @@ class CalculatorViewModel(
         private const val STATE_RPN_STACK = "rpn-stack"
         private const val STATE_RPN_ENTRY = "rpn-entry"
         private const val STATE_RPN_NEGATIVE = "rpn-entry-negative"
+        private const val STATE_SIMPLE_ENTRY = "simple-entry"
+        private const val STATE_SIMPLE_ACCUMULATOR = "simple-accumulator"
+        private const val STATE_SIMPLE_PENDING = "simple-pending"
+        private const val STATE_SIMPLE_NEGATIVE = "simple-entry-negative"
         private const val PERSIST_DEBOUNCE_MS = 300L
 
         /**

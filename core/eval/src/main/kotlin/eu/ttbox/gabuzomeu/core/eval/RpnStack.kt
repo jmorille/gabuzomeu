@@ -57,20 +57,14 @@ data class RpnStack(val values: List<Rational> = emptyList()) {
      * `10 ENTER 3 −` vaut donc 7 et non −7, comme sur n'importe quelle HP.
      *
      * @return `null` si la pile compte moins de deux valeurs.
-     * @throws ArithmeticException sur une division par zéro — levée par [Rational.div] et
+     * @throws ArithmeticException sur une division par zéro — levée par [Operator.applyTo] et
      *   rattrapée par [RpnSession], qui rend alors la pile intacte.
      */
     fun apply(operator: Operator): RpnStack? {
         if (depth < BINARY_ARITY) return null
         val right = values[depth - 1]
         val left = values[depth - 2]
-        val result = when (operator) {
-            Operator.PLUS -> left + right
-            Operator.MINUS -> left - right
-            Operator.TIMES -> left * right
-            Operator.DIVIDE -> left / right
-        }
-        return RpnStack(values.dropLast(BINARY_ARITY) + result)
+        return RpnStack(values.dropLast(BINARY_ARITY) + operator.applyTo(left, right))
     }
 
     /**

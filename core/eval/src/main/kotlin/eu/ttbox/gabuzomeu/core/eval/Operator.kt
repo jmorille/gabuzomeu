@@ -1,5 +1,7 @@
 package eu.ttbox.gabuzomeu.core.eval
 
+import eu.ttbox.gabuzomeu.core.shadok.Rational
+
 /**
  * Les quatre opérateurs de la calculatrice.
  *
@@ -23,6 +25,23 @@ enum class Operator(val symbol: Char) {
     TIMES('×'),
     DIVIDE('÷'),
     ;
+
+    /**
+     * Le calcul lui-même — **le seul endroit où il est écrit**.
+     *
+     * Les trois modes de calcul y passent : [RpnStack.apply] pour la NPI, [SimpleSession]
+     * pour l'exécution immédiate, [Evaluator] pour l'infixe. Un `when` par mode aurait été
+     * trois occasions d'écrire `left − right` dans le mauvais sens.
+     *
+     * @throws ArithmeticException sur une division par zéro. Les appelants la rattrapent et
+     *   rendent leur état intact : une erreur ne doit rien détruire.
+     */
+    fun applyTo(left: Rational, right: Rational): Rational = when (this) {
+        PLUS -> left + right
+        MINUS -> left - right
+        TIMES -> left * right
+        DIVIDE -> left / right
+    }
 
     companion object {
         private val bySymbol: Map<Char, Operator> = buildMap {

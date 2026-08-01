@@ -17,6 +17,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
+import eu.ttbox.gabuzomeu.R
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
 import eu.ttbox.gabuzomeu.core.eval.Operator
@@ -299,6 +300,11 @@ class CalculatorScreenTest {
 
     private val rpn = CalculatorUiState(mode = CalculationMode.RPN)
 
+    private val simpleShadok = CalculatorUiState(
+        mode = CalculationMode.SIMPLE,
+        notation = NumberNotation.SHADOK,
+    )
+
     @Test
     fun leMenuPermetDeChoisirLaNotationPolonaiseInverse() {
         var requested: CalculationMode? = null
@@ -350,6 +356,125 @@ class CalculatorScreenTest {
         ).forEach { absent ->
             composeTestRule.onNodeWithTag(KeypadTags.of(absent)).assertDoesNotExist()
         }
+    }
+
+    // ------------------------------------------------------------------ mode Simple
+
+    /**
+     * Le pavé de l'affiche : quatre chiffres, quatre opérateurs, POMPER, ⌫ et ÉGAL.
+     *
+     * Ce qu'il n'a pas compte autant que ce qu'il a : ni parenthèses, ni séparateur, ni
+     * touches de pile. Une touche sans effet serait pire qu'absente.
+     */
+    @Test
+    fun lePaveSimpleShadokSeLimiteAuxTouchesDeLAffiche() {
+        setScreen(simpleShadok)
+
+        ShadokDigit.entries.forEach { digit ->
+            composeTestRule.onNodeWithContentDescription(digit.label).assertIsDisplayed()
+        }
+        listOf(KeyAction.Clear, KeyAction.Delete, KeyAction.Evaluate).forEach { key ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(key)).assertIsDisplayed()
+        }
+        listOf(
+            KeyAction.LeftParen,
+            KeyAction.RightParen,
+            KeyAction.Separator,
+            KeyAction.Enter,
+            KeyAction.Swap,
+            KeyAction.Drop,
+            KeyAction.Negate,
+        ).forEach { absent ->
+            composeTestRule.onNodeWithTag(KeypadTags.of(absent)).assertDoesNotExist()
+        }
+    }
+
+    @Test
+    fun lePaveSimpleEmetLesBonnesActions() {
+        val pressed = mutableListOf<KeyAction>()
+        setScreen(simpleShadok, callbacks = Callbacks(onKey = { pressed += it }))
+
+        val bu = KeyAction.Digit(ShadokDigit.BU.glyph)
+        val zo = KeyAction.Digit(ShadokDigit.ZO.glyph)
+        composeTestRule.onNodeWithTag(KeypadTags.of(bu)).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Op(Operator.PLUS))).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(zo)).performClick()
+        composeTestRule.onNodeWithTag(KeypadTags.of(KeyAction.Evaluate)).performClick()
+
+        assertEquals(listOf(bu, KeyAction.Op(Operator.PLUS), zo, KeyAction.Evaluate), pressed)
+    }
+
+    /**
+     * Le point de conception du mode : appuyer sur un opérateur doit **se voir**.
+     *
+     * La grande valeur, elle, ne bouge pas — après `Bu +`, l'écran montre toujours `Bu`.
+     * Sans ce repère, les deux états produiraient exactement la même image, et l'appui
+     * semblerait n'avoir rien fait. C'est le défaut corrigé pour la NPI en 2.0.0-RC5.
+     */
+    @Test
+    fun uneOperationEnAttenteSeVoitEtDisparaitAuResultat() {
+        var state by mutableStateOf(simpleShadok.copy(glyphs = "_", labels = "Bu", decimal = "1"))
+        composeTestRule.setContent {
+            GabuzomeuTheme(dynamicColor = false) {
+                CalculatorScreen(
+                    state = state,
+                    widthSizeClass = WindowWidthSizeClass.Compact,
+                    onKey = {},
+                    onNotationChange = {},
+                    onModeChange = {},
+                    onSettingsChange = {},
+                )
+            }
+        }
+
+        displayNode(DisplayTags.PENDING).assertDoesNotExist()
+
+        state = state.copy(pending = Operator.PLUS)
+        composeTestRule.waitForIdle()
+
+        // Annoncé par le nom de l'opérateur, jamais par la forme du symbole. L'attendu est
+        // lu dans les ressources : l'assertion vaut donc aussi sur l'émulateur `en-US`.
+        val name = composeTestRule.activity.getString(R.string.key_plus)
+        displayNode(DisplayTags.PENDING)
+            .assertIsDisplayed()
+            .assertContentDescriptionEquals(
+                composeTestRule.activity.getString(R.string.display_pending, name),
+            )
+
+        state = state.copy(pending = null, glyphs = "⅃", labels = "Zo", decimal = "2")
+        composeTestRule.waitForIdle()
+
+        displayNode(DisplayTags.PENDING).assertDoesNotExist()
+    }
+
+    @Test
+    fun leModeSimpleMontreLaValeurDansLesTroisEcritures() {
+        setScreen(simpleShadok.copy(glyphs = "_⅃", labels = "BuZo", decimal = "6"))
+
+        displayNode(DisplayTags.GLYPHS).assertIsDisplayed().assertContentDescriptionEquals("BuZo")
+        displayNode(DisplayTags.LABELS).assertIsDisplayed()
+        displayNode(DisplayTags.DECIMAL).assertIsDisplayed()
+        // Pas de pile : ce mode n'en a pas.
+        displayNode(DisplayTags.STACK).assertDoesNotExist()
+    }
+
+    @Test
+    fun leMenuOffreLesTroisModes() {
+        val requested = mutableListOf<CalculationMode>()
+        setScreen(CalculatorUiState(), callbacks = Callbacks(onModeChange = { requested += it }))
+
+        composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
+        listOf(
+            SettingsTags.MODE_SIMPLE,
+            SettingsTags.MODE_CLASSIC,
+            SettingsTags.MODE_RPN,
+        ).forEach { tag ->
+            composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+        }
+
+        composeTestRule.onNodeWithTag(SettingsTags.MODE_SIMPLE).performClick()
+
+        assertEquals(listOf(CalculationMode.SIMPLE), requested)
     }
 
     @Test

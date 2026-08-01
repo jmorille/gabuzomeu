@@ -18,17 +18,32 @@ data class StoredRpn(
 )
 
 /**
+ * L'état de la calculatrice en mode Simple, sous sa forme stockable.
+ *
+ * L'accumulateur est écrit en **fraction** (`"1/3"`) pour la même raison que la pile NPI :
+ * un tiers obtenu par division se retrouve exact au redémarrage, et non arrondi à vingt
+ * décimales. L'opération en attente est réduite à son symbole.
+ */
+data class StoredSimple(
+    val entry: String = "",
+    val accumulator: String = "",
+    val pending: String = "",
+    val entryNegative: Boolean = false,
+)
+
+/**
  * La dernière session, telle que restaurée au lancement.
  *
- * Les deux modes de calcul sont conservés **côte à côte** : basculer de la calculatrice
+ * Les trois modes de calcul sont conservés **côte à côte** : basculer de la calculatrice
  * classique vers la NPI ne détruit rien, et revenir retrouve l'expression laissée en
- * chemin. [mode] dit seulement lequel des deux est affiché.
+ * chemin. [mode] dit seulement lequel des trois est affiché.
  */
 data class StoredSession(
     val keys: String = "",
     val notation: NumberNotation = NumberNotation.DECIMAL,
     val mode: CalculationMode = CalculationMode.CLASSIC,
     val rpn: StoredRpn = StoredRpn(),
+    val simple: StoredSimple = StoredSimple(),
 )
 
 /**
@@ -52,7 +67,7 @@ interface SessionStore {
     val settings: Flow<DisplaySettings>
 
     /**
-     * Écrit la session entière — les deux modes d'un coup.
+     * Écrit la session entière — les trois modes d'un coup.
      *
      * Une seule méthode plutôt qu'une par morceau d'état : l'anti-rebond du ViewModel
      * n'a ainsi qu'un flux à regrouper, et il est impossible d'écrire un mode en oubliant
