@@ -24,6 +24,24 @@ object DisplayTags {
     /** La zone de pile NPI, présente seulement dans ce mode. */
     const val STACK = "display-stack"
 
+    /**
+     * Le rang de la grande valeur — présent **seulement** quand elle est dans la pile.
+     *
+     * Une frappe en cours n'a pas de rang : c'est donc ce repère, et lui seul, qui distingue
+     * « j'ai tapé 6 » de « 6 est empilé ». Les deux états ont longtemps été indiscernables à
+     * l'écran, et c'est ce que ce repère permet enfin de tester.
+     */
+    const val X_LEVEL = "display-x-level"
+
+    /**
+     * Le trait qui marque la frontière de la pile.
+     *
+     * Repéré parce qu'il ne doit **pas** bouger : c'est au nombre de le franchir. Le trait
+     * ne tient en place que si la zone de frappe vide occupe exactement la hauteur d'une
+     * valeur, ce qu'aucune relecture ne garantit — seule une mesure le fait.
+     */
+    const val STACK_LIMIT = "display-stack-limit"
+
     /** Un niveau de pile, repéré par son rang depuis le fond. */
     fun stackLevel(level: Int): String = "display-stack-$level"
 

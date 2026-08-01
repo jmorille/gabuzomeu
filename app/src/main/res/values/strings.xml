@@ -45,8 +45,10 @@
     <string name="key_negate">Changer de signe</string>
 
     <string name="display_empty">Aucune expression</string>
-    <!-- %1$d : le rang du niveau depuis le fond de pile. %2$s : sa valeur en Shadok. -->
+    <!-- %1$d : le rang du niveau, 1 étant le sommet. %2$s : sa valeur en Shadok. -->
     <string name="display_stack_level">Pile, niveau %1$d : %2$s</string>
+    <!-- Le rang affiché en tête de ligne. %1$d : le rang, 1 étant le sommet de la pile. -->
+    <string name="display_stack_rank">%1$d :</string>
 
     <!-- Réglages d'affichage -->
     <string name="settings_open">Réglages d\'affichage</string>

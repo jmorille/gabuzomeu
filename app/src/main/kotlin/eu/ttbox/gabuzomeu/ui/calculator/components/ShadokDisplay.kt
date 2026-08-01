@@ -67,29 +67,19 @@ fun ShadokDisplay(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (state.mode == CalculationMode.RPN) {
-            RpnStackArea(
-                levels = state.stack,
-                showDecimal = state.settings.showDecimal,
-                notation = state.notation,
-                onCopied = onCopied,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-            )
-            HorizontalDivider()
-            // X reprend la disposition des niveaux de pile — décimal à gauche, Shadok à
-            // droite — pour que l'œil lise la colonne des décimales d'un seul trait, du
-            // fond de pile jusqu'au calcul en cours.
-            ValueActions(state, onPaste, onCopied) { XValue(state) }
+            RpnDisplay(state, onPaste, onCopied)
         } else {
+            // Un résultat est une valeur : on le lit par sa tête. Une expression en cours de
+            // frappe se suit au contraire par sa queue, là où arrive le chiffre tapé.
+            val scrollToEnd = !state.showingResult
             ValueActions(state, onPaste, onCopied) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    GlyphLine(state)
-                    if (state.settings.showShadokLabels) LabelLine(state)
-                    if (state.settings.showDecimal) DecimalLine(state)
+                    GlyphLine(state, scrollToEnd = scrollToEnd)
+                    if (state.settings.showShadokLabels) LabelLine(state, scrollToEnd)
+                    if (state.settings.showDecimal) DecimalLine(state, scrollToEnd)
                 }
             }
         }
@@ -111,7 +101,7 @@ fun ShadokDisplay(
  * entière — dans les deux cas, ce que l'utilisateur désigne quand il appuie sur l'afficheur.
  */
 @Composable
-private fun ValueActions(
+internal fun ValueActions(
     state: CalculatorUiState,
     onPaste: (String) -> Unit,
     onCopied: () -> Unit,
@@ -129,76 +119,18 @@ private fun ValueActions(
 }
 
 /**
- * Le registre X en NPI : décimal et glyphes **sur la même ligne**, les noms en dessous.
+ * Ligne principale : les glyphes Shadok, l'identité de l'application.
  *
- * La première ligne reprend exactement le partage des niveaux de pile — décimal à gauche,
- * Shadok à droite, mêmes moitiés — si bien que les deux colonnes se lisent d'un seul trait
- * du fond de pile jusqu'au calcul en cours. Les noms prononcés viennent ensuite, sur toute
- * la largeur : ce sont eux qui s'allongent le plus (`MeuZoGa` pour trois chiffres).
- *
- * En mode classique l'afficheur reste empilé : il n'y a pas de pile au-dessus avec laquelle
- * s'aligner, et une expression entière a besoin de toute la largeur.
+ * @param scrollToEnd un nombre plus large que l'écran montre sa queue plutôt que sa tête.
+ *   C'est ce qu'il faut pendant la frappe — on veut voir le chiffre qu'on vient de taper —
+ *   et l'inverse de ce qu'il faut pour une valeur, dont les rangs de tête disent la valeur.
  */
 @Composable
-private fun XValue(state: CalculatorUiState) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(VALUE_COLUMN_SPACING),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (state.settings.showDecimal) {
-                XDecimal(state, modifier = Modifier.weight(1f))
-            }
-            GlyphLine(state, modifier = Modifier.weight(1f))
-        }
-        // Le « ≈ » du Shadok est déjà porté par la ligne de glyphes : le répéter sur les
-        // noms le ferait paraître deux fois pour une seule et même valeur.
-        if (state.settings.showShadokLabels) LabelLine(state, showApproximation = false)
-    }
-}
-
-/** Le décimal de X, aligné à gauche et son marqueur `≈` ancré hors du défilement. */
-@Composable
-private fun XDecimal(state: CalculatorUiState, modifier: Modifier = Modifier) {
-    val color = MaterialTheme.colorScheme.onSurfaceVariant
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        if (state.decimalApproximate) {
-            Text(
-                text = ShadokFormatter.APPROXIMATION.toString(),
-                style = DisplayTypography.decimal,
-                color = color,
-                modifier = Modifier.padding(end = 4.dp),
-            )
-        }
-        AnimatedContent(
-            targetState = state.decimal,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            label = "decimal-x",
-            modifier = Modifier.weight(1f),
-        ) { text ->
-            Text(
-                text = text,
-                style = DisplayTypography.decimal,
-                color = color,
-                maxLines = 1,
-                textAlign = TextAlign.Start,
-                modifier = Modifier
-                    .testTag(DisplayTags.DECIMAL)
-                    .fillMaxWidth()
-                    .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
-            )
-        }
-    }
-}
-
-/** Ligne principale : les glyphes Shadok, l'identité de l'application. */
-@Composable
-private fun GlyphLine(state: CalculatorUiState, modifier: Modifier = Modifier) {
+internal fun GlyphLine(
+    state: CalculatorUiState,
+    scrollToEnd: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val color = MaterialTheme.colorScheme.onSurface
     DisplayLine(
         approximate = state.shadokApproximate,
@@ -215,14 +147,18 @@ private fun GlyphLine(state: CalculatorUiState, modifier: Modifier = Modifier) {
             operatorColor = MaterialTheme.colorScheme.tertiary,
             modifier = lineModifier
                 .testTag(DisplayTags.GLYPHS)
-                .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
+                .horizontalScroll(rememberScrollState(), reverseScrolling = scrollToEnd),
         )
     }
 }
 
 /** Deuxième ligne : les noms prononcés — « quand il y a encore un shadok de plus… ». */
 @Composable
-private fun LabelLine(state: CalculatorUiState, showApproximation: Boolean = true) {
+internal fun LabelLine(
+    state: CalculatorUiState,
+    scrollToEnd: Boolean,
+    showApproximation: Boolean = true,
+) {
     val color = MaterialTheme.colorScheme.primary
     DisplayLine(
         approximate = state.shadokApproximate && showApproximation,
@@ -237,14 +173,14 @@ private fun LabelLine(state: CalculatorUiState, showApproximation: Boolean = tru
             modifier = lineModifier
                 .testTag(DisplayTags.LABELS)
                 .fillMaxWidth()
-                .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
+                .horizontalScroll(rememberScrollState(), reverseScrolling = scrollToEnd),
         )
     }
 }
 
 /** Ligne secondaire : la traduction décimale. */
 @Composable
-private fun DecimalLine(state: CalculatorUiState) {
+private fun DecimalLine(state: CalculatorUiState, scrollToEnd: Boolean) {
     val color = MaterialTheme.colorScheme.onSurfaceVariant
     DisplayLine(
         approximate = state.decimalApproximate,
@@ -266,7 +202,7 @@ private fun DecimalLine(state: CalculatorUiState) {
                 modifier = Modifier
                     .testTag(DisplayTags.DECIMAL)
                     .fillMaxWidth()
-                    .horizontalScroll(state = rememberScrollState(), reverseScrolling = true),
+                    .horizontalScroll(rememberScrollState(), reverseScrolling = scrollToEnd),
             )
         }
     }
@@ -275,10 +211,10 @@ private fun DecimalLine(state: CalculatorUiState) {
 /**
  * Une ligne d'affichage, avec son marqueur d'approximation **hors** de la zone défilante.
  *
- * C'est le point important : les lignes défilent vers leur fin (`reverseScrolling`) pour
- * montrer les derniers chiffres saisis. Un `≈` placé en tête du texte lui-même sortirait
- * donc de l'écran dès que l'expression dépasse la largeur — et un marqueur invisible ne
- * sert à rien. Ancré ici dans un `Row`, il reste toujours visible.
+ * C'est le point important : une ligne trop longue en cache forcément une partie, tête ou
+ * queue selon le sens de défilement. Un `≈` placé dans le texte lui-même disparaîtrait donc
+ * avec elle — et un marqueur invisible ne sert à rien. Ancré ici dans un `Row`, il reste
+ * visible quelle que soit la longueur du nombre et quel que soit le bout qu'on regarde.
  */
 @Composable
 private fun DisplayLine(

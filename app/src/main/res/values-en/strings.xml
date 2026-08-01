@@ -27,6 +27,8 @@
 
     <string name="display_empty">No expression</string>
     <string name="display_stack_level">Stack, level %1$d: %2$s</string>
+    <!-- Pas d'espace avant les deux-points, contrairement au français. -->
+    <string name="display_stack_rank">%1$d:</string>
 
     <string name="settings_open">Display settings</string>
     <string name="settings_display">Display</string>

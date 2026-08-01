@@ -51,6 +51,15 @@ data class CalculatorUiState(
     val decimalApproximate: Boolean = false,
     /** Les niveaux sous X, du fond de pile vers X. Vide hors NPI. */
     val stack: List<StackLevel> = emptyList(),
+    /**
+     * NPI : une frappe est en cours, donc X **n'est pas encore dans la pile**.
+     *
+     * C'est ce que l'afficheur ne savait pas dire. Sans ce drapeau, `6` tapé et `6` empilé
+     * produisent exactement la même image : le premier ENTER ne se voyait pas, on appuyait
+     * une seconde fois, et la duplication du sommet — convention HP — laissait une valeur
+     * parasite au fond de la pile.
+     */
+    val entering: Boolean = false,
     val error: EvalError? = null,
     /** L'affichage montre le résultat d'un « = » et non une saisie en cours. */
     val showingResult: Boolean = false,

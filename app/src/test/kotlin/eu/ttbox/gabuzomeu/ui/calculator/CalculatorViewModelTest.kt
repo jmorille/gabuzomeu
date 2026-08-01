@@ -351,6 +351,41 @@ class CalculatorViewModelTest {
         assertEquals("Zo", state.stack.single().labels)
     }
 
+    /**
+     * Un seul ENTER empile — le moteur n'a jamais fait autrement. Ce que l'état publie en
+     * plus, c'est de quel côté du séparateur la valeur se trouve : sans ce drapeau,
+     * l'afficheur dessinait « 6 tapé » et « 6 empilé » de la même façon, on appuyait deux
+     * fois, et la duplication du sommet laissait un doublon dans la pile.
+     */
+    @Test
+    fun `l'etat dit si la valeur est encore sous le doigt ou deja empilee`() = runTest {
+        val model = viewModel()
+        model.onModeChange(CalculationMode.RPN)
+
+        model.onKey(KeyAction.Digit('6'))
+        assertTrue(model.uiState.value.entering, "6 est une frappe, pas un niveau de pile")
+
+        model.onKey(KeyAction.Enter)
+
+        val state = model.uiState.value
+        assertFalse(state.entering, "un seul ENTER, et la valeur est empilee")
+        assertEquals("6", state.decimal, "elle reste la grande valeur : elle est le sommet")
+
+        // Le second appui duplique le sommet — convention HP, et le piege que l'afficheur
+        // tendait a qui ne voyait pas le premier ENTER.
+        model.onKey(KeyAction.Enter)
+        assertEquals(listOf("6"), model.uiState.value.stack.map { it.decimal })
+    }
+
+    @Test
+    fun `la notion de frappe en cours n'existe pas en mode classique`() = runTest {
+        val model = viewModel()
+
+        model.onKey(KeyAction.Digit('6'))
+
+        assertFalse(model.uiState.value.entering, "une expression infixe ne s'empile pas")
+    }
+
     @Test
     fun `en NPI un operateur sur une pile trop courte remonte une erreur`() = runTest {
         val model = viewModel()

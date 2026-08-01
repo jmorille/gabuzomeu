@@ -362,6 +362,9 @@ class CalculatorViewModel(
                 CalculationMode.RPN -> lines.decimal.approximate
             },
             stack = stackLevels(),
+            // Hors NPI la notion n'existe pas : une expression infixe n'est jamais « en
+            // attente d'empilement ».
+            entering = mode == CalculationMode.RPN && rpn.entering,
             error = error,
             showingResult = showingResult,
             settings = settings,

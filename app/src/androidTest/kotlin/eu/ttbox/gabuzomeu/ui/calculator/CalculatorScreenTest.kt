@@ -2,10 +2,14 @@ package eu.ttbox.gabuzomeu.ui.calculator
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -26,7 +30,9 @@ import eu.ttbox.gabuzomeu.ui.calculator.components.ValueWriting
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.abs
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Tests instrumentés de l'écran.
@@ -436,6 +442,98 @@ class CalculatorScreenTest {
             .assertContentDescriptionContains("Zo", substring = true)
     }
 
+    /**
+     * Le défaut que ces deux tests verrouillent.
+     *
+     * `6` tapé et `6` empilé se dessinaient **exactement pareil** : le grand affichage
+     * montrait « la frappe, ou à défaut le sommet ». Rien ne bougeant au premier ENTER, on
+     * appuyait une seconde fois — et la duplication du sommet, convention HP, laissait un
+     * doublon au fond de la pile pour tout le calcul suivant.
+     *
+     * Le rang est ce qui distingue les deux états : une frappe n'en a pas.
+     */
+    @Test
+    fun uneFrappeEnCoursNaPasDeRang() {
+        setScreen(
+            rpn.copy(
+                glyphs = "_⅃",
+                labels = "BuZo",
+                decimal = "6",
+                entering = true,
+                // Pendant une frappe, la pile entière est dans la liste : son sommet aussi.
+                stack = listOf(StackLevel(glyphs = "⅃", labels = "Zo", decimal = "2")),
+            ),
+        )
+
+        displayNode(DisplayTags.X_LEVEL).assertDoesNotExist()
+        displayNode(DisplayTags.stackLevel(0)).assertIsDisplayed()
+    }
+
+    @Test
+    fun uneValeurEmpileePorteSonRang() {
+        setScreen(rpn.copy(glyphs = "_⅃", labels = "BuZo", decimal = "6", entering = false))
+
+        displayNode(DisplayTags.X_LEVEL).assertIsDisplayed()
+        // Elle est le sommet : plus rien ne reste dans la liste au-dessus du séparateur.
+        displayNode(DisplayTags.stackLevel(0)).assertDoesNotExist()
+    }
+
+    /**
+     * La mesure de ce qu'ENTER doit produire : **le nombre franchit le trait, et le trait
+     * ne bouge pas.**
+     *
+     * Les deux moitiés comptent. Un trait qui sauterait en même temps que le nombre ne
+     * montrerait plus rien : l'image entière glisserait, et l'œil ne verrait qu'un
+     * tressautement. Le trait ne tient en place que parce que la zone de frappe reste
+     * dessinée, vide, à la hauteur exacte d'une valeur — une hauteur en `dp` codée en dur
+     * s'en écarterait dès que l'utilisateur grossit la police du système. Seule une mesure
+     * l'atteste, et c'est pourquoi ce test existe.
+     */
+    @Test
+    fun enterFaitFranchirLeTraitAuNombreSansDeplacerLeTrait() {
+        val typing = rpn.copy(
+            glyphs = "_⅃",
+            labels = "BuZo",
+            decimal = "6",
+            entering = true,
+            stack = listOf(StackLevel(glyphs = "⅃", labels = "Zo", decimal = "2")),
+        )
+        // Un état mutable : ENTER ne change que ce drapeau, et il faut mesurer la même
+        // instance d'écran avant et après pour que les positions soient comparables.
+        var state by mutableStateOf(typing)
+        composeTestRule.setContent {
+            GabuzomeuTheme(dynamicColor = false) {
+                CalculatorScreen(
+                    state = state,
+                    widthSizeClass = WindowWidthSizeClass.Compact,
+                    onKey = {},
+                    onNotationChange = {},
+                    onModeChange = {},
+                    onSettingsChange = {},
+                )
+            }
+        }
+
+        val limitWhileTyping = displayNode(DisplayTags.STACK_LIMIT).getUnclippedBoundsInRoot().top
+        val valueWhileTyping = displayNode(DisplayTags.GLYPHS).getUnclippedBoundsInRoot().top
+
+        // ENTER : la frappe devient le sommet de la pile.
+        state = state.copy(entering = false)
+        composeTestRule.waitForIdle()
+
+        val limitOnceStacked = displayNode(DisplayTags.STACK_LIMIT).getUnclippedBoundsInRoot().top
+        val valueOnceStacked = displayNode(DisplayTags.GLYPHS).getUnclippedBoundsInRoot().top
+
+        assertTrue(
+            abs((limitOnceStacked - limitWhileTyping).value) < HALF_PIXEL,
+            "le trait doit rester où il est : $limitWhileTyping puis $limitOnceStacked",
+        )
+        assertTrue(
+            valueOnceStacked < valueWhileTyping,
+            "le nombre doit passer au-dessus du trait : $valueWhileTyping puis $valueOnceStacked",
+        )
+    }
+
     @Test
     fun laPileNExistePasEnModeClassique() {
         setScreen(CalculatorUiState(glyphs = "_⅃", labels = "BuZo", decimal = "6"))
@@ -510,5 +608,13 @@ class CalculatorScreenTest {
         composeTestRule.onNodeWithTag(SettingsTags.HELP).performClick()
 
         assertEquals(true, opened)
+    }
+
+    /**
+     * Tolérance sur une position mesurée en `dp` : une position « identique » peut différer
+     * d'un arrondi de sous-pixel selon la densité de l'écran, jamais davantage.
+     */
+    private companion object {
+        const val HALF_PIXEL = 0.5f
     }
 }
