@@ -73,6 +73,14 @@ private const val TOP_LEVEL = 1
  *
  * Un seul bloc est grand à la fois — la frappe tant qu'on tape, le sommet sinon : c'est
  * toujours la valeur sur laquelle la prochaine touche agira.
+ *
+ * Ce qui bouge est le trait, pas le nombre, et ce n'est pas le premier choix. Garder le trait
+ * fixe demandait de dessiner sous lui une zone de frappe vide de la hauteur d'une valeur —
+ * un bloc entier de gagné par le nombre, mais perdu par la pile. Sur un écran de 360 × 640,
+ * l'afficheur n'a que 227 dp : deux blocs et un trait n'y tiennent pas, et **la pile
+ * disparaissait purement et simplement**. Le nombre reste donc à sa place et c'est la
+ * frontière qui passe de l'autre côté de lui — le rapport des deux change à l'identique,
+ * pour rien.
  */
 @Composable
 internal fun ColumnScope.RpnDisplay(
@@ -101,12 +109,9 @@ internal fun ColumnScope.RpnDisplay(
 
     HorizontalDivider(modifier = Modifier.testTag(DisplayTags.STACK_LIMIT))
 
-    if (onStack) {
-        // La zone de frappe reste dessinée, vide : sans elle le séparateur remonterait d'un
-        // bloc à chaque ENTER. C'est au nombre de franchir le trait, pas au trait de sauter
-        // par-dessus le nombre.
-        EmptyEntry(state.settings)
-    } else {
+    // Rien sous le trait quand rien n'est tapé : la place revient à la pile, qui montre un
+    // niveau de plus. C'est le trait qui aura remonté d'un bloc.
+    if (!onStack) {
         ValueActions(state, onPaste, onCopied) { XValue(state, level = null) }
     }
 }
@@ -184,26 +189,6 @@ private fun XDecimal(state: CalculatorUiState, modifier: Modifier = Modifier) {
                     // de taper. Une valeur, elle, se lit par sa tête.
                     .horizontalScroll(rememberScrollState(), reverseScrolling = state.entering),
             )
-        }
-    }
-}
-
-/**
- * La zone de frappe quand rien n'est tapé : rien à voir, mais la hauteur d'une valeur.
- *
- * Deux lignes vides aux styles exacts de la vraie zone, plutôt qu'une hauteur en `dp` :
- * l'utilisateur peut grossir la police du système, et une hauteur codée en dur laisserait
- * alors le séparateur sauter d'un ENTER à l'autre.
- */
-@Composable
-private fun EmptyEntry(settings: DisplaySettings) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(text = "", style = DisplayTypography.glyphs)
-        if (settings.showShadokLabels) {
-            Text(text = "", style = DisplayTypography.labels)
         }
     }
 }

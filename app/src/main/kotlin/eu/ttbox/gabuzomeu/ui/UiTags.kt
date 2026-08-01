@@ -36,9 +36,9 @@ object DisplayTags {
     /**
      * Le trait qui marque la frontière de la pile.
      *
-     * Repéré parce qu'il ne doit **pas** bouger : c'est au nombre de le franchir. Le trait
-     * ne tient en place que si la zone de frappe vide occupe exactement la hauteur d'une
-     * valeur, ce qu'aucune relecture ne garantit — seule une mesure le fait.
+     * Repéré pour que les tests puissent vérifier **de quel côté** se trouve la grande
+     * valeur : dessous elle est encore sous le doigt, dessus elle est empilée. C'est tout
+     * ce qu'ENTER change à l'écran, et rien d'autre ne le dit.
      */
     const val STACK_LIMIT = "display-stack-limit"
 

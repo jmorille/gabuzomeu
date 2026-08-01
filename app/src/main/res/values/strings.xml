@@ -21,9 +21,9 @@
 
     <!-- Modes de calcul : axe indépendant de la notation ci-dessus -->
     <string name="settings_mode">Mode de calcul</string>
-    <string name="mode_classic">Calculatrice classique</string>
-    <!-- « Polonaise inverse » et non « Notation polonaise inverse » : le menu annonce déjà
-         « Mode de calcul », donc le mot « Notation » n'ajoutait rien et allongeait la ligne. -->
+    <!-- Les deux items sont réduits à ce qui les distingue : le menu annonce déjà « Mode de
+         calcul », donc ni « Calculatrice » ni « Notation » n'ajoutaient rien à leur ligne. -->
+    <string name="mode_classic">Classique</string>
     <string name="mode_rpn">Polonaise inverse</string>
 
     <!-- Descriptions d'accessibilité des touches -->

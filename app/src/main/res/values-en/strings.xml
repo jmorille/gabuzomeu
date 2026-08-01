@@ -6,7 +6,7 @@
     <string name="mode_shadok">Shadok</string>
 
     <string name="settings_mode">Calculation mode</string>
-    <string name="mode_classic">Classic calculator</string>
+    <string name="mode_classic">Classic</string>
     <string name="mode_rpn">Reverse Polish</string>
 
     <string name="key_clear">Clear all</string>

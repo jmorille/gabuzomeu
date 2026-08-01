@@ -15,6 +15,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import eu.ttbox.gabuzomeu.core.eval.CalculationMode
 import eu.ttbox.gabuzomeu.core.eval.NumberNotation
@@ -30,7 +31,6 @@ import eu.ttbox.gabuzomeu.ui.calculator.components.ValueWriting
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
 import org.junit.Rule
 import org.junit.Test
-import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -408,14 +408,21 @@ class CalculatorScreenTest {
         )
 
         displayNode(DisplayTags.STACK).assertIsDisplayed()
-        // L'indice 0 est le niveau immediatement sous X, donc le dernier de la liste.
+        // L'indice 0 est le niveau immediatement sous le sommet, donc le dernier de la liste.
         displayNode(DisplayTags.stackLevel(0))
             .assertIsDisplayed()
             .assertContentDescriptionContains("BuMeu", substring = true)
+        // Sur un ecran court, le niveau le plus profond sort du cadre : depuis que la zone
+        // de frappe reste dessinee sous le trait — le prix d'un trait qui ne bouge pas — la
+        // liste dispose d'un bloc de moins. La garantie n'est donc pas qu'un niveau donne
+        // soit visible, mais qu'aucun ne soit perdu : la pile defile sans limite de
+        // profondeur. C'est l'emulateur de la CI, plus court que le telephone, qui a
+        // rappele la nuance.
         displayNode(DisplayTags.stackLevel(1))
+            .performScrollTo()
             .assertIsDisplayed()
             .assertContentDescriptionContains("Zo", substring = true)
-        // Et X reste la ligne principale.
+        // Et le sommet reste la ligne principale.
         displayNode(DisplayTags.GLYPHS).assertContentDescriptionEquals("BuZo")
     }
 
@@ -479,18 +486,18 @@ class CalculatorScreenTest {
     }
 
     /**
-     * La mesure de ce qu'ENTER doit produire : **le nombre franchit le trait, et le trait
-     * ne bouge pas.**
+     * La mesure de ce qu'ENTER produit : **la grande valeur change de côté du trait.**
      *
-     * Les deux moitiés comptent. Un trait qui sauterait en même temps que le nombre ne
-     * montrerait plus rien : l'image entière glisserait, et l'œil ne verrait qu'un
-     * tressautement. Le trait ne tient en place que parce que la zone de frappe reste
-     * dessinée, vide, à la hauteur exacte d'une valeur — une hauteur en `dp` codée en dur
-     * s'en écarterait dès que l'utilisateur grossit la police du système. Seule une mesure
-     * l'atteste, et c'est pourquoi ce test existe.
+     * C'est le seul invariant qui tienne à toutes les tailles d'écran, et c'est bien lui
+     * qui porte le sens : sous le trait, le nombre est encore sous le doigt ; au-dessus, il
+     * est dans la pile. Une première version exigeait en plus que le trait ne bouge pas,
+     * le nombre montant seul — il fallait pour cela réserver sous le trait une zone de
+     * frappe vide de la hauteur d'une valeur, et sur un écran de 360 × 640 la pile n'avait
+     * alors plus de place du tout. Le rapport des deux change de la même façon dans les
+     * deux cas ; c'est donc lui, et lui seul, qu'on vérifie.
      */
     @Test
-    fun enterFaitFranchirLeTraitAuNombreSansDeplacerLeTrait() {
+    fun enterFaitPasserLaValeurDeLAutreCoteDuTrait() {
         val typing = rpn.copy(
             glyphs = "_⅃",
             labels = "BuZo",
@@ -516,6 +523,10 @@ class CalculatorScreenTest {
 
         val limitWhileTyping = displayNode(DisplayTags.STACK_LIMIT).getUnclippedBoundsInRoot().top
         val valueWhileTyping = displayNode(DisplayTags.GLYPHS).getUnclippedBoundsInRoot().top
+        assertTrue(
+            limitWhileTyping < valueWhileTyping,
+            "la frappe est sous le trait : $limitWhileTyping puis $valueWhileTyping",
+        )
 
         // ENTER : la frappe devient le sommet de la pile.
         state = state.copy(entering = false)
@@ -523,14 +534,9 @@ class CalculatorScreenTest {
 
         val limitOnceStacked = displayNode(DisplayTags.STACK_LIMIT).getUnclippedBoundsInRoot().top
         val valueOnceStacked = displayNode(DisplayTags.GLYPHS).getUnclippedBoundsInRoot().top
-
         assertTrue(
-            abs((limitOnceStacked - limitWhileTyping).value) < HALF_PIXEL,
-            "le trait doit rester où il est : $limitWhileTyping puis $limitOnceStacked",
-        )
-        assertTrue(
-            valueOnceStacked < valueWhileTyping,
-            "le nombre doit passer au-dessus du trait : $valueWhileTyping puis $valueOnceStacked",
+            valueOnceStacked < limitOnceStacked,
+            "la valeur empilée est au-dessus du trait : $valueOnceStacked puis $limitOnceStacked",
         )
     }
 
@@ -608,13 +614,5 @@ class CalculatorScreenTest {
         composeTestRule.onNodeWithTag(SettingsTags.HELP).performClick()
 
         assertEquals(true, opened)
-    }
-
-    /**
-     * Tolérance sur une position mesurée en `dp` : une position « identique » peut différer
-     * d'un arrondi de sous-pixel selon la densité de l'écran, jamais davantage.
-     */
-    private companion object {
-        const val HALF_PIXEL = 0.5f
     }
 }
