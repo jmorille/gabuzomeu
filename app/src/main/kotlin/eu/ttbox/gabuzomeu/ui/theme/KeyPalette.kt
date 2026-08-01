@@ -24,12 +24,16 @@ import androidx.compose.ui.graphics.luminance
  *   et jusqu'en couleur dynamique, et qui dit « destructif » avant d'être lu. Le rouge
  *   **plein** et non `errorContainer` : à l'essai, le conteneur pâle était indiscernable du
  *   `tertiaryContainer` de la touche ⌫ voisine, et la touche qui efface tout se confondait
- *   avec celle qui efface un chiffre. Seul POMPER a besoin d'un vert de marque, Material
- *   n'ayant pas de rôle vert.
+ *   avec celle qui efface un chiffre.
  *
  * Les teintes sombres ne sont pas les claires éclaircies au hasard : ce sont les mêmes
  * tons, remontés en luminosité jusqu'à repasser le seuil de 4.5:1 sur le fond de touche
  * sombre.
+ *
+ * La touche de calcul, elle, n'est **pas** ici : elle garde les rôles Material du thème,
+ * exactement comme dans les pavés Classique et NPI. Un vert de marque lui avait été donné,
+ * d'après l'affiche ; il est parti avec l'idée qu'un même geste doit garder la même
+ * apparence d'un mode à l'autre.
  */
 enum class KeyPalette {
     GA,
@@ -39,15 +43,6 @@ enum class KeyPalette {
 
     /** Effacer tout — le rouge, parce que c'est la touche qui détruit. */
     CLEAR,
-
-    /**
-     * POMPER, c'est-à-dire « = » — le vert de l'affiche.
-     *
-     * La devise des Shadoks porte sur l'effort qu'on fournit pour que quelque chose se
-     * passe, pas sur l'effacement : c'est donc la touche qui déclenche le calcul qui la
-     * mérite. Le C, lui, reste le C.
-     */
-    POMPER,
     ;
 
     /**
@@ -66,11 +61,6 @@ enum class KeyPalette {
                 contentColor = MaterialTheme.colorScheme.onError,
             )
 
-            POMPER -> ButtonDefaults.buttonColors(
-                containerColor = if (dark) PomperContainerDark else PomperContainerLight,
-                contentColor = if (dark) PomperContentDark else PomperContentLight,
-            )
-
             // Les chiffres : fond du thème, teinte sur le glyphe et son nom.
             else -> ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -84,7 +74,7 @@ enum class KeyPalette {
         BU -> if (dark) BuDark else BuLight
         ZO -> if (dark) ZoDark else ZoLight
         MEU -> if (dark) MeuDark else MeuLight
-        CLEAR, POMPER -> Color.Unspecified
+        CLEAR -> Color.Unspecified
     }
 }
 
@@ -112,8 +102,3 @@ private val ZoDark = Color(0xFF7FDCA4)
 
 private val MeuLight = Color(0xFF6B34AC)
 private val MeuDark = Color(0xFFD3B4FF)
-
-private val PomperContainerLight = Color(0xFF1E9E58)
-private val PomperContentLight = Color(0xFFFFFFFF)
-private val PomperContainerDark = Color(0xFF0C4F2B)
-private val PomperContentDark = Color(0xFFA9F0C6)

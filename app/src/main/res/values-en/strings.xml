@@ -93,7 +93,6 @@
     <string name="display_actions">Copy, paste or share</string>
     <string name="copy_glyphs">Copy glyphs</string>
     <string name="copy_labels">Copy names</string>
-    <string name="copy_base4">Copy base 4</string>
     <string name="copy_decimal">Copy decimal</string>
     <string name="copy_done">Copied</string>
     <string name="paste">Paste</string>

@@ -35,11 +35,17 @@ import eu.ttbox.gabuzomeu.ui.calculator.StackLevel
 import eu.ttbox.gabuzomeu.ui.shadok.ShadokGlyphText
 import kotlinx.coroutines.launch
 
-/** Une des quatre écritures d'une valeur, telle qu'on peut la copier. */
+/**
+ * Une écriture d'une valeur, telle qu'on peut la **copier**.
+ *
+ * La base 4 n'y figure pas : les trois écritures proposées sont celles que l'afficheur montre,
+ * et `12` pour 6 était le seul item du menu qui n'apparaissait nulle part à l'écran. Elle
+ * continue de voyager dans « Partager… », qui donne les quatre d'un coup — c'est là qu'elle
+ * sert, puisqu'elle se relit sans police particulière.
+ */
 enum class ValueWriting {
     GLYPHS,
     LABELS,
-    BASE4,
     DECIMAL,
 }
 
@@ -48,6 +54,9 @@ enum class ValueWriting {
  *
  * Le même type sert à X et à un niveau de pile : ce qui se copie ne dépend pas de l'endroit
  * d'où on le copie.
+ *
+ * Quatre écritures pour trois items de copie : [base4] n'est pas copiable seule, mais reste
+ * nécessaire au partage.
  */
 data class CopyableValue(
     val glyphs: String,
@@ -59,7 +68,6 @@ data class CopyableValue(
     fun textFor(writing: ValueWriting): String = when (writing) {
         ValueWriting.GLYPHS -> glyphs
         ValueWriting.LABELS -> labels
-        ValueWriting.BASE4 -> base4
         ValueWriting.DECIMAL -> decimal
     }
 
@@ -152,7 +160,7 @@ private fun ActionsMenu(
     }
 }
 
-/** Les quatre écritures, chacune avec l'aperçu de ce qu'elle copiera. */
+/** Les écritures copiables, chacune avec l'aperçu de ce qu'elle copiera. */
 @Composable
 private fun CopyItems(value: CopyableValue, onDismiss: () -> Unit, onCopied: () -> Unit) {
     val clipboard = LocalClipboard.current
@@ -238,13 +246,12 @@ private fun ShareItem(value: CopyableValue, onDismiss: () -> Unit) {
 }
 
 /**
- * L'aperçu de ce que l'item copiera — le menu s'explique ainsi tout seul, et « base 4 »
- * cesse d'être une abstraction.
+ * L'aperçu de ce que l'item copiera — le menu s'explique ainsi tout seul.
  *
  * Les glyphes passent par [ShadokGlyphText] et non par un `Text` : `⅃` (U+2143) n'est pas
  * garanti dans les polices système, et l'aperçu s'afficherait en tofu là où l'afficheur, lui,
- * dessine ses vecteurs. C'est aussi la raison d'être de l'écriture en base 4 : elle, elle se
- * colle partout.
+ * dessine ses vecteurs. C'est aussi pourquoi « Partager… » joint la base 4 au message : elle,
+ * elle se relit partout.
  */
 @Composable
 private fun WritingPreview(writing: ValueWriting, text: String) {
@@ -270,7 +277,6 @@ private fun WritingPreview(writing: ValueWriting, text: String) {
 private fun ValueWriting.labelRes(): Int = when (this) {
     ValueWriting.GLYPHS -> R.string.copy_glyphs
     ValueWriting.LABELS -> R.string.copy_labels
-    ValueWriting.BASE4 -> R.string.copy_base4
     ValueWriting.DECIMAL -> R.string.copy_decimal
 }
 

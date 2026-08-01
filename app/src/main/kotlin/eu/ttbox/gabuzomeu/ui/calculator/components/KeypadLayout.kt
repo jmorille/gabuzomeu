@@ -237,14 +237,6 @@ object KeypadLayout {
 
     // ------------------------------------------------------ touches du mode Simple
 
-    /**
-     * La touche de calcul du pavé classique, habillée du vert de l'affiche.
-     *
-     * Dérivée d'[equals] et non réécrite : c'est **la même touche**, au libellé près de
-     * rien. Seul le vert change, et il ne change qu'ici — voir [KeyPalette].
-     */
-    private val pomper = equals.copy(palette = KeyPalette.POMPER)
-
     /** Le C des autres pavés, en rouge : ici, il est voisin du ⌫ et doit s'en distinguer. */
     private val simpleClear = functionRow[0].copy(palette = KeyPalette.CLEAR)
 
@@ -274,7 +266,11 @@ object KeypadLayout {
             simpleDigit(ShadokDigit.MEU, KeyPalette.MEU),
         ),
         listOf(plus, minus, times, divide),
-        listOf(simpleClear, simpleDelete, pomper),
+        // La touche de calcul est celle du pavé classique, à l'identique — même libellé,
+        // mêmes couleurs. C'est le même geste dans les deux modes ; rien ne justifie qu'il
+        // change d'apparence en changeant de mode, alors que la mémoire gestuelle, elle, ne
+        // change pas.
+        listOf(simpleClear, simpleDelete, equals),
     )
 
     /**
@@ -288,6 +284,6 @@ object KeypadLayout {
         listOf(digit('7'), digit('8'), digit('9'), divide),
         listOf(digit('4'), digit('5'), digit('6'), times),
         listOf(digit('1'), digit('2'), digit('3'), minus),
-        listOf(digit('0').copy(weight = 2f), pomper, plus),
+        listOf(digit('0').copy(weight = 2f), equals, plus),
     )
 }

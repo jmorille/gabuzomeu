@@ -142,7 +142,6 @@
     <string name="display_actions">Copier, coller ou partager</string>
     <string name="copy_glyphs">Copier les glyphes</string>
     <string name="copy_labels">Copier les noms</string>
-    <string name="copy_base4">Copier la base 4</string>
     <string name="copy_decimal">Copier le décimal</string>
     <string name="copy_done">Copié</string>
     <string name="paste">Coller</string>

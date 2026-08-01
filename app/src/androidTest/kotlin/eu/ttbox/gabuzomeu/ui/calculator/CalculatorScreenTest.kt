@@ -677,7 +677,7 @@ class CalculatorScreenTest {
     private val six = CalculatorUiState(glyphs = "_⅃", labels = "BuZo", base4 = "12", decimal = "6")
 
     @Test
-    fun unAppuiLongSurLAfficheurOuvreLesQuatreEcritures() {
+    fun unAppuiLongSurLAfficheurOuvreLesEcrituresCopiables() {
         setScreen(six)
 
         composeTestRule.onNodeWithTag(DisplayTags.ACTIONS).performTouchInput { longClick() }
@@ -687,6 +687,15 @@ class CalculatorScreenTest {
         ValueWriting.entries.forEach { writing ->
             composeTestRule.onNodeWithTag(ActionTags.copy(writing)).assertIsDisplayed()
         }
+        // Les écritures copiables sont celles que l'afficheur montre : la base 4 n'est pas
+        // proposée seule, elle ne voyage que dans « Partager… ».
+        assertEquals(
+            listOf(ValueWriting.GLYPHS, ValueWriting.LABELS, ValueWriting.DECIMAL),
+            ValueWriting.entries,
+        )
+        // Le repère de l'item retiré, écrit en dur : l'énumération ne peut plus le nommer, et
+        // c'est la seule façon de vérifier qu'il a bien disparu du menu.
+        composeTestRule.onNodeWithTag("action-copy-base4").assertDoesNotExist()
         composeTestRule.onNodeWithTag(ActionTags.SHARE).assertIsDisplayed()
         composeTestRule.onNodeWithTag(ActionTags.PASTE).assertIsDisplayed()
     }
@@ -726,7 +735,7 @@ class CalculatorScreenTest {
             .performTouchInput { longClick() }
 
         // On ne colle pas au milieu d'une pile : l'item n'existe pas, il n'est pas grisé.
-        composeTestRule.onNodeWithTag(ActionTags.copy(ValueWriting.BASE4)).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(ActionTags.copy(ValueWriting.LABELS)).assertIsDisplayed()
         composeTestRule.onNodeWithTag(ActionTags.PASTE).assertDoesNotExist()
     }
 
