@@ -19,7 +19,8 @@ enum class CalculationMode {
      * Chaque opérateur résout le précédent au lieu de l'accumuler — il n'y a donc **ni
      * priorité ni parenthèses**, et `Bu + Zo × Meu =` vaut 9 là où [CLASSIC] donne 7. Ce
      * n'est pas une version bridée du mode classique mais une autre machine, celle que
-     * dessine l'affiche des Shadoks : quatre chiffres, quatre opérateurs, POMPER et ÉGAL.
+     * dessine l'affiche des Shadoks : quatre chiffres, quatre opérateurs, et POMPER pour
+     * lancer le calcul.
      *
      * Modélisée par [SimpleSession].
      */

@@ -20,7 +20,7 @@ Trois modes de calcul, par difficulté croissante :
 
 | Mode | Ce que c'est | `Bu + Zo × Meu =` |
 |---|---|---|
-| **Simple** | La machine de l'affiche : quatre chiffres, POMPER, ÉGAL. Exécution immédiate, sans priorité. | 9 |
+| **Simple** | La machine de l'affiche : quatre chiffres, et POMPER pour lancer le calcul. Exécution immédiate, sans priorité. | 9 |
 | **Classique** | Notation infixe, avec parenthèses et priorité des opérateurs. | 7 |
 | **Polonaise inverse** | La pile des HP : `ENTER`, `x↔y`, `x↓`. | — |
 

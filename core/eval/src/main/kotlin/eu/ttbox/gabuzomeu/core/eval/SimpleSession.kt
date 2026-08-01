@@ -105,7 +105,7 @@ data class SimpleSession(
     }
 
     /**
-     * ÉGAL : résout l'opération en attente et fige le résultat.
+     * POMPER, c'est-à-dire « = » : résout l'opération en attente et fige le résultat.
      *
      * Nommée `evaluate` et non `equals` : une méthode sans paramètre nommée `equals` sur une
      * `data class` cohabiterait avec l'`equals(Any?)` généré, et la confusion à la lecture

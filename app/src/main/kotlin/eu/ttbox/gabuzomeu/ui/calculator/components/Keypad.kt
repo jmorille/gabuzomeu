@@ -127,7 +127,7 @@ private fun KeyButton(key: KeySpec, onKey: (KeyAction) -> Unit, modifier: Modifi
                     DisplayTypography.key
                 },
                 maxLines = 1,
-                // La touche s'adapte au libellé plutôt que de le rogner : « ENTER ↵ » ne
+                // La touche s'adapte au libellé plutôt que de le rogner : « POMPER ↵ » ne
                 // tient pas à la taille nominale sur une touche étroite, et le repli
                 // protège tous les libellés quand la police du système est agrandie.
                 autoSize = TextAutoSize.StepBased(

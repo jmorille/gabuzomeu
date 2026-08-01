@@ -361,7 +361,7 @@ class CalculatorScreenTest {
     // ------------------------------------------------------------------ mode Simple
 
     /**
-     * Le pavé de l'affiche : quatre chiffres, quatre opérateurs, POMPER, ⌫ et ÉGAL.
+     * Le pavé de l'affiche : quatre chiffres, quatre opérateurs, C, ⌫ et POMPER.
      *
      * Ce qu'il n'a pas compte autant que ce qu'il a : ni parenthèses, ni séparateur, ni
      * touches de pile. Une touche sans effet serait pire qu'absente.

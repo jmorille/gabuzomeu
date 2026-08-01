@@ -140,10 +140,19 @@ object KeypadLayout {
 
     // -------------------------------------------------------------- touches NPI
 
+    /**
+     * POMPER ↵ : empiler, dans les mots des Shadoks.
+     *
+     * Le même verbe qu'en mode Simple, et pour la même raison — c'est la touche par laquelle
+     * on fait avancer la machine. Le mot anglais « ENTER » n'était de toute façon pas plus
+     * parlant que « DROP », remplacé pour ce motif par `x↓`. Le `↵` reste : c'est lui qui dit
+     * *où* ça pompe, à savoir vers la pile, là où le pavé Simple pompe vers un résultat.
+     * La description d'accessibilité, elle, garde `key_enter` — « Empiler ».
+     */
     private val enter = KeySpec(
         action = KeyAction.Enter,
         kind = KeyKind.EQUALS,
-        text = "ENTER ↵",
+        text = "POMPER ↵",
         contentDescriptionRes = R.string.key_enter,
     )
 
@@ -203,7 +212,7 @@ object KeypadLayout {
         listOf(digit('4'), digit('5'), digit('6'), times),
         listOf(digit('1'), digit('2'), digit('3'), minus),
         listOf(negate, digit('0'), separator, plus),
-        // ENTER sur toute la largeur : c'est la touche la plus frappée en NPI, et elle
+        // POMPER sur toute la largeur : c'est la touche la plus frappée en NPI, et elle
         // hérite de la place qu'occupait « = ».
         listOf(enter),
     )
@@ -218,28 +227,25 @@ object KeypadLayout {
     // ------------------------------------------------------ touches du mode Simple
 
     /**
-     * POMPER : effacer tout, dans les mots de l'affiche.
+     * POMPER, c'est-à-dire « = » : la touche qui fait tourner la machine.
      *
-     * Le libellé visible est le mot Shadok — non traduisible, comme « ENTER ↵ » ou « x↔y »,
-     * d'où un littéral et non une ressource. La description d'accessibilité, elle, reste
-     * `key_clear` : une plaisanterie ne doit pas rendre une touche inintelligible à qui
-     * l'écoute plutôt que de la voir.
+     * « Il vaut mieux pomper même s'il ne se passe rien… » — la devise porte sur l'effort
+     * qu'on fournit pour qu'il se passe quelque chose, donc sur le calcul, pas sur
+     * l'effacement. Le libellé visible est le mot Shadok, non traduisible comme « x↔y » ou
+     * « x↓ », d'où un littéral et non une ressource. La description d'accessibilité, en
+     * revanche, reste `key_equals` : une plaisanterie ne doit pas rendre une touche
+     * inintelligible à qui l'écoute plutôt que de la voir.
      */
     private val pomper = KeySpec(
-        action = KeyAction.Clear,
-        kind = KeyKind.FUNCTION,
+        action = KeyAction.Evaluate,
+        kind = KeyKind.EQUALS,
         text = "POMPER",
-        contentDescriptionRes = R.string.key_clear,
+        contentDescriptionRes = R.string.key_equals,
         palette = KeyPalette.POMPER,
     )
 
-    private val egal = KeySpec(
-        action = KeyAction.Evaluate,
-        kind = KeyKind.EQUALS,
-        text = "ÉGAL",
-        contentDescriptionRes = R.string.key_equals,
-        palette = KeyPalette.EGAL,
-    )
+    /** Le C des autres pavés, en rouge : ici, il est voisin du ⌫ et doit s'en distinguer. */
+    private val simpleClear = functionRow[0].copy(palette = KeyPalette.CLEAR)
 
     private val simpleDelete = functionRow[1]
 
@@ -253,11 +259,11 @@ object KeypadLayout {
     )
 
     /**
-     * Le pavé de l'affiche : quatre chiffres, quatre opérateurs, POMPER, ⌫ et ÉGAL.
+     * Le pavé de l'affiche : quatre chiffres, quatre opérateurs, C, ⌫ et POMPER.
      *
      * Ni parenthèses — il n'y a pas d'expression à grouper — ni séparateur décimal : une
      * fraction s'obtient par une division, `Bu ÷ ⅃ =` donnant `Ga,⅃`. Le ⌫ ne figure pas
-     * sur l'affiche ; sans lui, une faute de frappe obligerait à tout pomper.
+     * sur l'affiche ; sans lui, une faute de frappe obligerait à tout effacer.
      */
     private val simpleShadok: List<List<KeySpec>> = listOf(
         listOf(
@@ -267,7 +273,7 @@ object KeypadLayout {
             simpleDigit(ShadokDigit.MEU, KeyPalette.MEU),
         ),
         listOf(plus, minus, times, divide),
-        listOf(pomper, simpleDelete, egal),
+        listOf(simpleClear, simpleDelete, pomper),
     )
 
     /**
@@ -277,10 +283,10 @@ object KeypadLayout {
      * moins les parenthèses et le séparateur, que ce mode n'a pas.
      */
     private val simpleDecimal: List<List<KeySpec>> = listOf(
-        listOf(pomper.copy(weight = 2f), simpleDelete.copy(weight = 2f)),
+        listOf(simpleClear.copy(weight = 2f), simpleDelete.copy(weight = 2f)),
         listOf(digit('7'), digit('8'), digit('9'), divide),
         listOf(digit('4'), digit('5'), digit('6'), times),
         listOf(digit('1'), digit('2'), digit('3'), minus),
-        listOf(digit('0').copy(weight = 2f), egal, plus),
+        listOf(digit('0').copy(weight = 2f), pomper, plus),
     )
 }

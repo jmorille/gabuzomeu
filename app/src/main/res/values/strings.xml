@@ -42,8 +42,8 @@
 
     <!-- Le nom et la valeur sous le glyphe d'une touche du pavé Simple. %1$s : le nom Shadok,
          %2$d : sa valeur décimale. C'est ce qui fait de ce pavé un pavé qui s'explique.
-         « POMPER » et « ÉGAL » ne sont pas ici : comme « ENTER ↵ » ou « x↔y », ce sont des
-         libellés de touche non traduisibles, écrits dans KeypadLayout. -->
+         « POMPER » n'est pas ici : comme « ENTER ↵ » ou « x↔y », c'est un libellé de touche
+         non traduisible, écrit dans KeypadLayout. -->
     <string name="key_digit_gloss">%1$s (%2$d)</string>
 
     <!-- Touches propres à la notation polonaise inverse -->
@@ -57,7 +57,8 @@
          les descriptions de touches ci-dessus. -->
     <string name="display_pending">%1$s, en attente</string>
     <!-- La devise des Shadoks, affichée sous l'afficheur tant que rien n'est tapé. Elle
-         explique la touche POMPER, et disparaît au premier chiffre. -->
+         explique la touche POMPER — celle qui lance le calcul — et disparaît au premier
+         chiffre. -->
     <string name="simple_quote">Il vaut mieux pomper même s\'il ne se passe rien que de risquer qu\'il se passe quelque chose de pire en ne pompant pas.</string>
     <!-- %1$d : le rang du niveau, 1 étant le sommet. %2$s : sa valeur en Shadok. -->
     <string name="display_stack_level">Pile, niveau %1$d : %2$s</string>

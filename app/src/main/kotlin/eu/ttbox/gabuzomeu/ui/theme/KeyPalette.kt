@@ -20,11 +20,11 @@ import androidx.compose.ui.graphics.luminance
  * - **la teinte est sur le texte, pas sur le fond.** Les touches y sont blanches et les
  *   lettres colorées. C'est aussi ce qui expose le moins au risque de contraste : le fond
  *   reste celui du thème, et une seule couleur est à contrôler par touche ;
- * - **POMPER emprunte le rouge de Material** (`error`), qui existe déjà dans les deux thèmes
+ * - **le C emprunte le rouge de Material** (`error`), qui existe déjà dans les deux thèmes
  *   et jusqu'en couleur dynamique, et qui dit « destructif » avant d'être lu. Le rouge
  *   **plein** et non `errorContainer` : à l'essai, le conteneur pâle était indiscernable du
  *   `tertiaryContainer` de la touche ⌫ voisine, et la touche qui efface tout se confondait
- *   avec celle qui efface un chiffre. Seul ÉGAL a besoin d'un vert de marque, Material
+ *   avec celle qui efface un chiffre. Seul POMPER a besoin d'un vert de marque, Material
  *   n'ayant pas de rôle vert.
  *
  * Les teintes sombres ne sont pas les claires éclaircies au hasard : ce sont les mêmes
@@ -37,11 +37,17 @@ enum class KeyPalette {
     ZO,
     MEU,
 
-    /** Effacer tout — le rouge de l'affiche. */
-    POMPER,
+    /** Effacer tout — le rouge, parce que c'est la touche qui détruit. */
+    CLEAR,
 
-    /** Le résultat — le vert de l'affiche. */
-    EGAL,
+    /**
+     * POMPER, c'est-à-dire « = » — le vert de l'affiche.
+     *
+     * La devise des Shadoks porte sur l'effort qu'on fournit pour que quelque chose se
+     * passe, pas sur l'effacement : c'est donc la touche qui déclenche le calcul qui la
+     * mérite. Le C, lui, reste le C.
+     */
+    POMPER,
     ;
 
     /**
@@ -55,14 +61,14 @@ enum class KeyPalette {
     fun colors(): ButtonColors {
         val dark = MaterialTheme.colorScheme.isDark
         return when (this) {
-            POMPER -> ButtonDefaults.buttonColors(
+            CLEAR -> ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.error,
                 contentColor = MaterialTheme.colorScheme.onError,
             )
 
-            EGAL -> ButtonDefaults.buttonColors(
-                containerColor = if (dark) EgalContainerDark else EgalContainerLight,
-                contentColor = if (dark) EgalContentDark else EgalContentLight,
+            POMPER -> ButtonDefaults.buttonColors(
+                containerColor = if (dark) PomperContainerDark else PomperContainerLight,
+                contentColor = if (dark) PomperContentDark else PomperContentLight,
             )
 
             // Les chiffres : fond du thème, teinte sur le glyphe et son nom.
@@ -78,7 +84,7 @@ enum class KeyPalette {
         BU -> if (dark) BuDark else BuLight
         ZO -> if (dark) ZoDark else ZoLight
         MEU -> if (dark) MeuDark else MeuLight
-        POMPER, EGAL -> Color.Unspecified
+        CLEAR, POMPER -> Color.Unspecified
     }
 }
 
@@ -107,7 +113,7 @@ private val ZoDark = Color(0xFF7FDCA4)
 private val MeuLight = Color(0xFF6B34AC)
 private val MeuDark = Color(0xFFD3B4FF)
 
-private val EgalContainerLight = Color(0xFF1E9E58)
-private val EgalContentLight = Color(0xFFFFFFFF)
-private val EgalContainerDark = Color(0xFF0C4F2B)
-private val EgalContentDark = Color(0xFFA9F0C6)
+private val PomperContainerLight = Color(0xFF1E9E58)
+private val PomperContentLight = Color(0xFFFFFFFF)
+private val PomperContainerDark = Color(0xFF0C4F2B)
+private val PomperContentDark = Color(0xFFA9F0C6)
