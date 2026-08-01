@@ -18,14 +18,18 @@ Ainsi 6 s'écrit `12` en base 4, donc **`BuZo`** — ou `_⅃`.
 
 Trois modes de calcul, par difficulté croissante :
 
-| Mode | Ce que c'est | `Bu + Zo × Meu =` |
+| Mode | Ce que c'est | `Bu + Zo × Meu` puis `POMPER ↵` |
 |---|---|---|
-| **Simple** | La machine de l'affiche : quatre chiffres, et POMPER pour lancer le calcul. Exécution immédiate, sans priorité. | 9 |
+| **Simple** | La machine de l'affiche : quatre chiffres, quatre opérateurs. Exécution immédiate, sans priorité. | 9 |
 | **Classique** | Notation infixe, avec parenthèses et priorité des opérateurs. | 7 |
-| **Polonaise inverse** | La pile des HP : `ENTER`, `x↔y`, `x↓`. | — |
+| **Polonaise inverse** | La pile des HP : `x↔y`, `x↓`, `±`. | — |
 
 Les deux premiers ne diffèrent pas par le nombre de touches mais par la machine : en
 exécution immédiate, chaque opérateur résout le précédent au lieu de l'accumuler.
+
+**`POMPER ↵`** est la touche qui fait avancer la machine, et elle porte le même nom dans les
+trois modes — « il vaut mieux pomper même s'il ne se passe rien ». Ce qu'elle *fait* diffère,
+évaluer ou empiler, et c'est sa description d'accessibilité qui le dit.
 
 La leçon d'origine, celle qui a inspiré cette application, est en ligne :
 [« Comment compter comme les Shadoks ? »](https://www.youtube.com/watch?v=lP9PaDs2xgQ),

@@ -53,10 +53,14 @@ data class KeySpec(
  * Décrits en données, six pavés ne coûtent pas plus cher que deux : le mode Simple n'a
  * demandé que deux listes de plus.
  *
- * Les pavés NPI n'ont ni parenthèses ni « = » : en postfixe, l'ordre de frappe est l'ordre
- * de calcul, il n'y a rien à grouper ni à déclencher. À leur place, le jeu des HP —
- * `ENTER` pour empiler, `x↔y` et `x↓` pour rattraper un ordre erroné, et `±` sans lequel
- * un opérande négatif serait insaisissable, faute de moins préfixe.
+ * Les pavés NPI n'ont ni parenthèses ni évaluation : en postfixe, l'ordre de frappe est
+ * l'ordre de calcul, il n'y a rien à grouper ni à déclencher. À leur place, le jeu des HP —
+ * empiler, `x↔y` et `x↓` pour rattraper un ordre erroné, et `±` sans lequel un opérande
+ * négatif serait insaisissable, faute de moins préfixe.
+ *
+ * Les trois modes portent en revanche **le même libellé** sur la touche qui fait avancer la
+ * machine, [POMPER] : l'action derrière diffère — évaluer ici, empiler là — mais le geste est
+ * le même, et c'était trois mots pour le dire.
  */
 object KeypadLayout {
 
@@ -131,28 +135,35 @@ object KeypadLayout {
         contentDescriptionRes = R.string.key_separator,
     )
 
+    /**
+     * Le libellé de la touche qui fait avancer la machine, **dans les trois modes**.
+     *
+     * « Il vaut mieux pomper même s'il ne se passe rien… » — la devise porte sur l'effort
+     * qu'on fournit pour qu'il se passe quelque chose, et c'est exactement ce que fait cette
+     * touche : `=` en infixe, `=` en exécution immédiate, `ENTER` en NPI. Trois noms pour un
+     * seul geste, dont deux mots anglais — c'est déjà pour ce motif que « DROP » était devenu
+     * `x↓`. Un seul mot, donc, et le même partout.
+     *
+     * Non traduisible, comme `x↔y` : d'où un littéral et non une ressource. Ce que la touche
+     * *fait* est dit par sa description d'accessibilité, qui reste propre à chaque mode —
+     * « Égale » ou « Empiler ».
+     */
+    private const val POMPER = "POMPER ↵"
+
     private val equals = KeySpec(
         action = KeyAction.Evaluate,
         kind = KeyKind.EQUALS,
-        text = "=",
+        text = POMPER,
         contentDescriptionRes = R.string.key_equals,
     )
 
     // -------------------------------------------------------------- touches NPI
 
-    /**
-     * POMPER ↵ : empiler, dans les mots des Shadoks.
-     *
-     * Le même verbe qu'en mode Simple, et pour la même raison — c'est la touche par laquelle
-     * on fait avancer la machine. Le mot anglais « ENTER » n'était de toute façon pas plus
-     * parlant que « DROP », remplacé pour ce motif par `x↓`. Le `↵` reste : c'est lui qui dit
-     * *où* ça pompe, à savoir vers la pile, là où le pavé Simple pompe vers un résultat.
-     * La description d'accessibilité, elle, garde `key_enter` — « Empiler ».
-     */
+    /** La même touche, vers la pile : le `↵` de [POMPER] dit précisément *où* ça pompe. */
     private val enter = KeySpec(
         action = KeyAction.Enter,
         kind = KeyKind.EQUALS,
-        text = "POMPER ↵",
+        text = POMPER,
         contentDescriptionRes = R.string.key_enter,
     )
 
@@ -213,7 +224,7 @@ object KeypadLayout {
         listOf(digit('1'), digit('2'), digit('3'), minus),
         listOf(negate, digit('0'), separator, plus),
         // POMPER sur toute la largeur : c'est la touche la plus frappée en NPI, et elle
-        // hérite de la place qu'occupait « = ».
+        // hérite de la place que l'évaluation occupe dans le pavé classique.
         listOf(enter),
     )
 
@@ -227,22 +238,12 @@ object KeypadLayout {
     // ------------------------------------------------------ touches du mode Simple
 
     /**
-     * POMPER, c'est-à-dire « = » : la touche qui fait tourner la machine.
+     * La touche de calcul du pavé classique, habillée du vert de l'affiche.
      *
-     * « Il vaut mieux pomper même s'il ne se passe rien… » — la devise porte sur l'effort
-     * qu'on fournit pour qu'il se passe quelque chose, donc sur le calcul, pas sur
-     * l'effacement. Le libellé visible est le mot Shadok, non traduisible comme « x↔y » ou
-     * « x↓ », d'où un littéral et non une ressource. La description d'accessibilité, en
-     * revanche, reste `key_equals` : une plaisanterie ne doit pas rendre une touche
-     * inintelligible à qui l'écoute plutôt que de la voir.
+     * Dérivée d'[equals] et non réécrite : c'est **la même touche**, au libellé près de
+     * rien. Seul le vert change, et il ne change qu'ici — voir [KeyPalette].
      */
-    private val pomper = KeySpec(
-        action = KeyAction.Evaluate,
-        kind = KeyKind.EQUALS,
-        text = "POMPER",
-        contentDescriptionRes = R.string.key_equals,
-        palette = KeyPalette.POMPER,
-    )
+    private val pomper = equals.copy(palette = KeyPalette.POMPER)
 
     /** Le C des autres pavés, en rouge : ici, il est voisin du ⌫ et doit s'en distinguer. */
     private val simpleClear = functionRow[0].copy(palette = KeyPalette.CLEAR)
