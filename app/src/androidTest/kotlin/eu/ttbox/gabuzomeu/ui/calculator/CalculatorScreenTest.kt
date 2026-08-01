@@ -70,6 +70,7 @@ class CalculatorScreenTest {
         val onModeChange: (CalculationMode) -> Unit = {},
         val onSettingsChange: (DisplaySettings) -> Unit = {},
         val onPaste: (String) -> Unit = {},
+        val onOpenHelp: () -> Unit = {},
     )
 
     /**
@@ -99,6 +100,7 @@ class CalculatorScreenTest {
                     onModeChange = callbacks.onModeChange,
                     onSettingsChange = callbacks.onSettingsChange,
                     onPaste = callbacks.onPaste,
+                    onOpenHelp = callbacks.onOpenHelp,
                 )
             }
         }
@@ -501,5 +503,16 @@ class CalculatorScreenTest {
         // On ne colle pas au milieu d'une pile : l'item n'existe pas, il n'est pas grisé.
         composeTestRule.onNodeWithTag(ActionTags.copy(ValueWriting.BASE4)).assertIsDisplayed()
         composeTestRule.onNodeWithTag(ActionTags.PASTE).assertDoesNotExist()
+    }
+
+    @Test
+    fun leMenuMeneALAide() {
+        var opened = false
+        setScreen(CalculatorUiState(), callbacks = Callbacks(onOpenHelp = { opened = true }))
+
+        composeTestRule.onNodeWithTag(SettingsTags.MENU_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(SettingsTags.HELP).performClick()
+
+        assertEquals(true, opened)
     }
 }

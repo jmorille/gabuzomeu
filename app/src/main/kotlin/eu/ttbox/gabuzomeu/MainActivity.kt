@@ -7,10 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ttbox.gabuzomeu.ui.calculator.CalculatorScreen
 import eu.ttbox.gabuzomeu.ui.calculator.CalculatorViewModel
+import eu.ttbox.gabuzomeu.ui.help.ShadokHelpScreen
 import eu.ttbox.gabuzomeu.ui.theme.GabuzomeuTheme
 
 /**
@@ -37,15 +41,25 @@ class MainActivity : ComponentActivity() {
                 )
                 val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-                CalculatorScreen(
-                    state = state,
-                    widthSizeClass = calculateWindowSizeClass(this).widthSizeClass,
-                    onKey = viewModel::onKey,
-                    onNotationChange = viewModel::onNotationChange,
-                    onModeChange = viewModel::onModeChange,
-                    onSettingsChange = viewModel::onSettingsChange,
-                    onPaste = viewModel::onPaste,
-                )
+                // Deux écrans ne justifient pas une bibliothèque de navigation, ni une seconde
+                // activité. `rememberSaveable` suffit : l'aide survit à la rotation, et
+                // `BackHandler` — posé dans l'écran d'aide — rend le retour matériel naturel.
+                var showHelp by rememberSaveable { mutableStateOf(false) }
+
+                if (showHelp) {
+                    ShadokHelpScreen(onClose = { showHelp = false })
+                } else {
+                    CalculatorScreen(
+                        state = state,
+                        widthSizeClass = calculateWindowSizeClass(this).widthSizeClass,
+                        onKey = viewModel::onKey,
+                        onNotationChange = viewModel::onNotationChange,
+                        onModeChange = viewModel::onModeChange,
+                        onSettingsChange = viewModel::onSettingsChange,
+                        onPaste = viewModel::onPaste,
+                        onOpenHelp = { showHelp = true },
+                    )
+                }
             }
         }
     }

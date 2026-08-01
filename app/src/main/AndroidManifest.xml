@@ -39,6 +39,24 @@
                 <category android:name="android.intent.category.APP_CALCULATOR" />
             </intent-filter>
         </activity>
+
+        <!--
+            L'heure Shadok dans les réglages rapides. Contrairement aux widgets, elle ne coûte
+            aucun réveil : le système ne l'interroge que panneau ouvert.
+
+            La permission est celle que le système exige de qui expose une tuile ; elle protège
+            le service, elle n'en demande aucune à l'utilisateur.
+        -->
+        <service
+            android:name=".tile.ShadokClockTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_monochrome"
+            android:label="@string/tile_clock_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

@@ -48,6 +48,18 @@ object SettingsTags {
     const val MODE_RPN = "mode-rpn"
     const val TOGGLE_LABELS = "toggle-shadok-labels"
     const val TOGGLE_DECIMAL = "toggle-decimal"
+
+    /** L'entrée qui mène à « Comprendre les Shadoks ». */
+    const val HELP = "settings-help"
+}
+
+/** L'écran d'apprentissage. */
+object HelpTags {
+    const val SCREEN = "help-screen"
+    const val CLOSE = "help-close"
+
+    /** Le lien sortant vers la vidéo de l'INA. */
+    const val VIDEO = "help-video"
 }
 
 object KeypadTags {

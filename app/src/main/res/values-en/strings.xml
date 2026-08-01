@@ -32,6 +32,28 @@
     <string name="settings_show_shadok_labels">Show Shadok names</string>
     <string name="settings_show_decimal">Show decimal</string>
 
+    <string name="tile_clock_label">Shadok time</string>
+
+    <string name="help_open">Understanding the Shadoks</string>
+    <string name="help_title">Counting like the Shadoks</string>
+    <string name="help_close">Back to the calculator</string>
+    <string name="help_quote">When there are no Shadoks, you say GA. When there is one Shadok more, you say BU. When there is yet one more, you say ZO. And when there is another one still, you say MEU.</string>
+    <string name="help_radix">With only four words at their disposal, the Shadoks count in base 4: after MEU you must start over and add a place, just as we go from 9 to 10.</string>
+    <string name="help_digits_title">The four digits</string>
+    <string name="help_digit_value">is %1$d</string>
+    <string name="help_reading_title">Reading a number</string>
+    <string name="help_reading_body">Each place is worth four times the previous one. So BuZo reads 1 × 4 + 2 = 6. MeuMeu is 3 × 4 + 3 = 15, and the next number needs a third place: BuGaGa, that is 16.</string>
+    <string name="help_table_title">The first numbers</string>
+    <string name="help_table_base4">Base 4</string>
+    <string name="help_table_name">Name</string>
+    <string name="help_fractions_title">After the point</string>
+    <string name="help_fractions_body">The following places are worth a quarter, a sixteenth, and so on: Ga.Zo is 2 ÷ 4, that is one half. Since 4 = 2², a fraction is written exactly only when its denominator is a power of two. A third never terminates: the calculator marks it with ≈ rather than passing a rounding off as an exact value.</string>
+    <string name="help_clock_title">The time on the widgets</string>
+    <string name="help_clock_body">Hours and minutes are each converted as a whole number, not digit by digit: 14:35 gives MeuZo:ZoGaMeu, because 14 is written 32 and 35 is written 203.</string>
+    <string name="help_source_title">Where it comes from</string>
+    <string name="help_source_body">The original lesson, the one that inspired this application, is online on the Archive INA channel. The link opens YouTube.</string>
+    <string name="help_source_link">Archive INA — Comment compter comme les Shadoks ?</string>
+
     <string name="display_actions">Copy, paste or share</string>
     <string name="copy_glyphs">Copy glyphs</string>
     <string name="copy_labels">Copy names</string>

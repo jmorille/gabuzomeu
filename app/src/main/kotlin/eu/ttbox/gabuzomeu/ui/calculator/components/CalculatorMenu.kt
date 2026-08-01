@@ -45,6 +45,7 @@ fun CalculatorMenu(
     onModeChange: (CalculationMode) -> Unit,
     onSettingsChange: (DisplaySettings) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenHelp: () -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -83,6 +84,20 @@ fun CalculatorMenu(
                 checked = settings.showDecimal,
                 testTag = SettingsTags.TOGGLE_DECIMAL,
                 onCheckedChange = { onSettingsChange(settings.copy(showDecimal = it)) },
+            )
+
+            HorizontalDivider()
+
+            // En pied de menu, et non en tête : on vient ici pour calculer, la leçon n'est
+            // qu'occasionnelle. Mais elle doit être trouvable, sinon « ◿⅃ » ne veut rien dire
+            // pour qui ouvre l'application la première fois.
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.help_open)) },
+                onClick = {
+                    expanded = false
+                    onOpenHelp()
+                },
+                modifier = Modifier.testTag(SettingsTags.HELP),
             )
         }
     }

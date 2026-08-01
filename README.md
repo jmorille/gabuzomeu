@@ -16,6 +16,10 @@ Shadok — glyphes et noms prononcés.
 
 Ainsi 6 s'écrit `12` en base 4, donc **`BuZo`** — ou `_⅃`.
 
+La leçon d'origine, celle qui a inspiré cette application, est en ligne :
+[« Comment compter comme les Shadoks ? »](https://www.youtube.com/watch?v=lP9PaDs2xgQ),
+chaîne Archive INA. L'application y mène depuis son écran « Comprendre les Shadoks ».
+
 Voir [`docs/shadok-reference.md`](docs/shadok-reference.md) pour la table de référence
 complète, les règles de saisie et la convention du widget.
 
@@ -47,9 +51,9 @@ complète, les règles de saisie et la convention du widget.
 
 ```
 :core:shadok   Kotlin pur — chiffres Shadok, Rational, conversion base 4, horloge
-:core:eval     Kotlin pur — lexique, analyse, évaluation exacte d'expressions
-:app           Compose Material 3, ViewModel, DataStore
-:widget        Glance AppWidget — l'horloge Shadok
+:core:eval     Kotlin pur — lexique, analyse, évaluation exacte, lecture du presse-papiers
+:app           Compose Material 3, ViewModel, DataStore, tuile Réglages rapides
+:widget        Glance AppWidget — les trois horloges Shadok
 ```
 
 ```

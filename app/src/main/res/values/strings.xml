@@ -53,6 +53,32 @@
     <string name="settings_show_shadok_labels">Afficher les noms Shadok</string>
     <string name="settings_show_decimal">Afficher le décimal</string>
 
+    <!-- Tuile des réglages rapides : ce nom apparaît dans la liste des tuiles à ajouter -->
+    <string name="tile_clock_label">Heure Shadok</string>
+
+    <!-- « Comprendre les Shadoks » : la leçon, tirée de docs/shadok-reference.md -->
+    <string name="help_open">Comprendre les Shadoks</string>
+    <string name="help_title">Compter comme les Shadoks</string>
+    <string name="help_close">Revenir à la calculatrice</string>
+    <string name="help_quote">Quand il n\'y a pas de Shadoks, on dit GA. Quand il y a un shadok de plus, on dit BU. Quand il y a encore un shadok de plus, on dit ZO. Et quand il y a encore un autre, on dit MEU.</string>
+    <string name="help_radix">Ne disposant que de quatre mots, les Shadoks comptent en base 4 : après MEU, il faut recommencer et ajouter un rang, comme nous passons de 9 à 10.</string>
+    <string name="help_digits_title">Les quatre chiffres</string>
+    <!-- %1$d la valeur décimale. Le chiffre en base 4 n'est PAS répété ici : pour un chiffre
+         seul il est égal à sa valeur, et « vaut 2, s'écrit 2 » se lisait comme une erreur. -->
+    <string name="help_digit_value">vaut %1$d</string>
+    <string name="help_reading_title">Lire un nombre</string>
+    <string name="help_reading_body">Chaque rang vaut quatre fois le précédent. BuZo se lit donc 1 × 4 + 2 = 6. MeuMeu vaut 3 × 4 + 3 = 15, et le nombre suivant demande un troisième rang : BuGaGa, soit 16.</string>
+    <string name="help_table_title">Les premiers nombres</string>
+    <string name="help_table_base4">Base 4</string>
+    <string name="help_table_name">Nom</string>
+    <string name="help_fractions_title">Après la virgule</string>
+    <string name="help_fractions_body">Les rangs suivants valent un quart, un seizième, et ainsi de suite : Ga.Zo vaut 2 ÷ 4, c\'est-à-dire un demi. Comme 4 = 2², une fraction ne s\'écrit exactement que si son dénominateur est une puissance de deux. Un tiers, lui, ne se termine jamais : la calculatrice le signale par ≈ au lieu de présenter un arrondi comme une valeur exacte.</string>
+    <string name="help_clock_title">L\'heure des widgets</string>
+    <string name="help_clock_body">Les heures et les minutes sont converties chacune comme un nombre entier, et non chiffre par chiffre : 14:35 donne MeuZo:ZoGaMeu, car 14 s\'écrit 32 et 35 s\'écrit 203.</string>
+    <string name="help_source_title">D\'où ça vient</string>
+    <string name="help_source_body">La leçon d\'origine, celle qui a inspiré cette application, est en ligne sur la chaîne Archive INA. Le lien ouvre YouTube.</string>
+    <string name="help_source_link">Archive INA — Comment compter comme les Shadoks ?</string>
+
     <!-- Presse-papiers : les quatre écritures d'une valeur, plus coller et partager -->
     <string name="display_actions">Copier, coller ou partager</string>
     <string name="copy_glyphs">Copier les glyphes</string>
