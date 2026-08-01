@@ -10,6 +10,25 @@ avant sa suppression. Il fixe le contrat que la nouvelle implémentation doit re
 
 Les Shadoks ne disposant que de quatre mots, ils comptent en **base 4**.
 
+## La leçon d'origine — les poubelles du professeur Shadoko
+
+Source : **« Comment compter comme les Shadoks ? »**, chaîne Archive INA
+(<https://www.youtube.com/watch?v=lP9PaDs2xgQ>). C'est la vidéo qui a inspiré l'application, et
+c'est son vocabulaire que reprend l'écran d'aide — parce qu'il rend la **retenue** évidente là où
+« ajouter un rang » n'apprend rien à qui ne sait pas déjà ce qu'est un rang :
+
+- au-delà de MEU il n'y a plus de mot. On jette les Shadoks dans une **poubelle** et on dit « BU
+  poubelle ». Pour ne pas confondre avec le BU du début, on précise qu'il n'y a pas de Shadok à
+  côté de la poubelle : `BuGa` = 4 ;
+- quand les poubelles deviennent trop nombreuses pour être comptées, elles vont dans une **grande
+  poubelle** : `BuGaGa` = 16 ;
+- puis dans une **super poubelle** : `BuGaGaGa` = 64.
+
+Une poubelle contient donc quatre unités du rang inférieur : c'est la base 4, énoncée sans le mot.
+
+La leçon s'arrête aux entiers. Les parties fractionnaires, l'heure des widgets et le marqueur
+d'approximation sont des extensions de cette application, signalées comme telles dans l'aide.
+
 ## Les quatre chiffres
 
 | Valeur | Nom | Glyphe | Point de code | Nom Unicode |

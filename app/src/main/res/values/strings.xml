@@ -60,28 +60,50 @@
     <!-- Tuile des réglages rapides : ce nom apparaît dans la liste des tuiles à ajouter -->
     <string name="tile_clock_label">Heure Shadok</string>
 
-    <!-- « Comprendre les Shadoks » : la leçon, tirée de docs/shadok-reference.md -->
+    <!-- « Comprendre les Shadoks » : la leçon du professeur Shadoko, dans ses propres termes
+         (docs/shadok-reference.md). Le vocabulaire est le sien — poubelle, grande poubelle,
+         super poubelle — parce que c'est lui qui rend le report évident, là où « ajouter un
+         rang » ne dit rien à personne. -->
     <string name="help_open">Comprendre les Shadoks</string>
     <string name="help_title">Compter comme les Shadoks</string>
     <string name="help_close">Revenir à la calculatrice</string>
-    <string name="help_quote">Quand il n\'y a pas de Shadoks, on dit GA. Quand il y a un shadok de plus, on dit BU. Quand il y a encore un shadok de plus, on dit ZO. Et quand il y a encore un autre, on dit MEU.</string>
-    <string name="help_radix">Ne disposant que de quatre mots, les Shadoks comptent en base 4 : après MEU, il faut recommencer et ajouter un rang, comme nous passons de 9 à 10.</string>
-    <string name="help_digits_title">Les quatre chiffres</string>
+
+    <!-- Le lien sortant, en tête d'écran : la vidéo est la leçon, cette page n'en est que la
+         transcription. -->
+    <string name="help_video_title">Voir la leçon en vidéo</string>
+    <string name="help_video_channel">Archive INA — « Comment compter comme les Shadoks ? »</string>
+    <string name="help_video_hint">Ouvre YouTube</string>
+
+    <string name="help_problem_title">Quatre mots, et pas un de plus</string>
+    <string name="help_problem_body">Le calcul avait toujours donné pas mal de fil à retordre aux Shadoks : ils n\'avaient que quatre mots, et ne pouvaient pas compter plus loin que quatre. Le professeur Shadoko a réformé tout ça.</string>
+
+    <string name="help_digits_title">On dit, et on écrit</string>
+    <string name="help_quote">Quand il n\'y a pas de Shadok, on dit GA. Quand il y a un Shadok de plus, on dit BU. Quand il y a encore un Shadok, on dit ZO. Et quand il y a encore un autre, on dit MEU.</string>
     <!-- %1$d la valeur décimale. Le chiffre en base 4 n'est PAS répété ici : pour un chiffre
          seul il est égal à sa valeur, et « vaut 2, s'écrit 2 » se lisait comme une erreur. -->
     <string name="help_digit_value">vaut %1$d</string>
-    <string name="help_reading_title">Lire un nombre</string>
-    <string name="help_reading_body">Chaque rang vaut quatre fois le précédent. BuZo se lit donc 1 × 4 + 2 = 6. MeuMeu vaut 3 × 4 + 3 = 15, et le nombre suivant demande un troisième rang : BuGaGa, soit 16.</string>
+
+    <string name="help_bin_title">La poubelle</string>
+    <string name="help_bin_body">Et si on met un Shadok en plus ? Il ne reste plus de mot pour le compter. Alors on jette les quatre premiers dans une poubelle, et on dit BU POUBELLE. Pour ne pas confondre avec le BU du début, on précise qu\'il n\'y a pas de Shadok à côté de la poubelle : BU GA. C\'est notre 4.</string>
+    <string name="help_bin_more">On continue de la même façon : une poubelle et un Shadok à côté, BU BU, 5. Une poubelle et deux Shadoks, BU ZO, 6. Deux poubelles et pas de Shadok, ZO GA, 8. Jusqu\'à trois poubelles et trois Shadoks — MEU MEU, 15 — où il n\'y a plus de place.</string>
+
+    <string name="help_bins_title">La grande poubelle, puis la super poubelle</string>
+    <string name="help_bins_body">Arrivé là, il y a trop de poubelles pour pouvoir les compter. On s\'en débarrasse en les jetant dans une grande poubelle, et on écrit BU GA GA : une grande poubelle, pas de petite poubelle, et pas de Shadok à côté. C\'est 16. Quand les grandes poubelles débordent à leur tour, elles vont dans une super poubelle : BU GA GA GA, 64.</string>
+    <string name="help_bins_rule">Chaque poubelle en contient quatre de la taille en dessous, et c\'est tout ce que veut dire « compter en base 4 ». Un rang vaut donc quatre fois le précédent : BuZo se lit 1 × 4 + 2 = 6, et MeuMeu 3 × 4 + 3 = 15.</string>
+
     <string name="help_table_title">Les premiers nombres</string>
+    <!-- Les deux colonnes reprennent les mots de la leçon : « on dit… et on écrit… » -->
+    <string name="help_table_glyphs">Écrit</string>
+    <string name="help_table_name">Dit</string>
     <string name="help_table_base4">Base 4</string>
-    <string name="help_table_name">Nom</string>
+
     <string name="help_fractions_title">Après la virgule</string>
-    <string name="help_fractions_body">Les rangs suivants valent un quart, un seizième, et ainsi de suite : Ga.Zo vaut 2 ÷ 4, c\'est-à-dire un demi. Comme 4 = 2², une fraction ne s\'écrit exactement que si son dénominateur est une puissance de deux. Un tiers, lui, ne se termine jamais : la calculatrice le signale par ≈ au lieu de présenter un arrondi comme une valeur exacte.</string>
+    <string name="help_fractions_body">La leçon s\'arrête aux entiers ; une calculatrice, non. À droite de la virgule, les rangs valent un quart, un seizième, et ainsi de suite : Ga.Zo vaut 2 ÷ 4, c\'est-à-dire un demi. Comme 4 = 2², une fraction ne s\'écrit exactement que si son dénominateur est une puissance de deux. Un tiers, lui, ne se termine jamais : la calculatrice le signale par ≈ au lieu de présenter un arrondi comme une valeur exacte.</string>
     <string name="help_clock_title">L\'heure des widgets</string>
     <string name="help_clock_body">Les heures et les minutes sont converties chacune comme un nombre entier, et non chiffre par chiffre : 14:35 donne MeuZo:ZoGaMeu, car 14 s\'écrit 32 et 35 s\'écrit 203.</string>
-    <string name="help_source_title">D\'où ça vient</string>
-    <string name="help_source_body">La leçon d\'origine, celle qui a inspiré cette application, est en ligne sur la chaîne Archive INA. Le lien ouvre YouTube.</string>
-    <string name="help_source_link">Archive INA — Comment compter comme les Shadoks ?</string>
+
+    <string name="help_ending_title">À la récréation</string>
+    <string name="help_ending_body">La réforme n\'a pas fait l\'unanimité. Le plombier trouvait qu\'on n\'apprenait que des bêtises aux enfants, et voulait faire brûler le professeur Shadoko. Il fut décidé, à l\'unanimité, qu\'on le laisserait parler — et qu\'on le brûlerait après, à la récréation.</string>
 
     <!-- Le jeu : reconnaître les nombres Shadok -->
     <string name="game_open">Jouer aux nombres</string>

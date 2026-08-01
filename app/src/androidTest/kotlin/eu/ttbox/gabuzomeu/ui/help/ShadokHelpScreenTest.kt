@@ -36,13 +36,23 @@ class ShadokHelpScreenTest {
     }
 
     @Test
-    fun lEcranSAfficheAvecSonLienSortant() {
+    fun leLienVersLaVideoEstVisibleSansDefiler() {
         setScreen()
 
         composeTestRule.onNodeWithTag(HelpTags.SCREEN).assertIsDisplayed()
-        // Le lien est en pied de page : sur un écran de téléphone il est hors champ au
-        // départ, et « affiché » n'a de sens qu'après y avoir défilé.
-        composeTestRule.onNodeWithTag(HelpTags.VIDEO).performScrollTo().assertIsDisplayed()
+        // **Sans `performScrollTo`**, et c'est tout l'objet de ce test : la vidéo est la leçon
+        // d'origine, cette page n'en est que la transcription. Reléguée en pied d'écran, il
+        // fallait défiler pour la découvrir. Elle doit être là à l'ouverture.
+        composeTestRule.onNodeWithTag(HelpTags.VIDEO).assertIsDisplayed()
+    }
+
+    @Test
+    fun laLeconEntiereEstAtteignableEnDefilant() {
+        setScreen()
+
+        // La fin de la leçon est plusieurs écrans plus bas : ce qui se vérifie ici, c'est que
+        // la colonne défile bien jusqu'au bout, et non que le texte est celui-ci ou celui-là.
+        composeTestRule.onNodeWithTag(HelpTags.ENDING).performScrollTo().assertIsDisplayed()
     }
 
     @Test

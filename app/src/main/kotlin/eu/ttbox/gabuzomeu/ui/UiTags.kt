@@ -73,8 +73,11 @@ object HelpTags {
     const val SCREEN = "help-screen"
     const val CLOSE = "help-close"
 
-    /** Le lien sortant vers la vidéo de l'INA. */
+    /** Le lien sortant vers la vidéo de l'INA, en tête d'écran. */
     const val VIDEO = "help-video"
+
+    /** Le dernier bloc de la leçon : ce qui prouve que l'écran défile jusqu'au bout. */
+    const val ENDING = "help-ending"
 }
 
 /**

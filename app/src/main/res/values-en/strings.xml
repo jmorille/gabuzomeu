@@ -39,22 +39,38 @@
     <string name="help_open">Understanding the Shadoks</string>
     <string name="help_title">Counting like the Shadoks</string>
     <string name="help_close">Back to the calculator</string>
-    <string name="help_quote">When there are no Shadoks, you say GA. When there is one Shadok more, you say BU. When there is yet one more, you say ZO. And when there is another one still, you say MEU.</string>
-    <string name="help_radix">With only four words at their disposal, the Shadoks count in base 4: after MEU you must start over and add a place, just as we go from 9 to 10.</string>
-    <string name="help_digits_title">The four digits</string>
+
+    <string name="help_video_title">Watch the lesson</string>
+    <string name="help_video_channel">Archive INA — “Comment compter comme les Shadoks ?”</string>
+    <string name="help_video_hint">Opens YouTube</string>
+
+    <string name="help_problem_title">Four words, and not one more</string>
+    <string name="help_problem_body">Arithmetic had always given the Shadoks a good deal of trouble: they had only four words, and could not count any further than four. Professor Shadoko reformed all that.</string>
+
+    <string name="help_digits_title">You say, and you write</string>
+    <string name="help_quote">When there is no Shadok, you say GA. When there is one Shadok more, you say BU. When there is yet one more, you say ZO. And when there is another one still, you say MEU.</string>
     <string name="help_digit_value">is %1$d</string>
-    <string name="help_reading_title">Reading a number</string>
-    <string name="help_reading_body">Each place is worth four times the previous one. So BuZo reads 1 × 4 + 2 = 6. MeuMeu is 3 × 4 + 3 = 15, and the next number needs a third place: BuGaGa, that is 16.</string>
+
+    <string name="help_bin_title">The bin</string>
+    <string name="help_bin_body">And what if you add one more Shadok? There is no word left to count it. So you throw the first four into a bin and say BU BIN. To avoid confusion with the BU you started with, you add that there is no Shadok beside the bin: BU GA. That is our 4.</string>
+    <string name="help_bin_more">It carries on the same way: one bin and one Shadok beside it, BU BU, 5. One bin and two Shadoks, BU ZO, 6. Two bins and no Shadok, ZO GA, 8. Up to three bins and three Shadoks — MEU MEU, 15 — where there is no room left.</string>
+
+    <string name="help_bins_title">The big bin, then the super bin</string>
+    <string name="help_bins_body">By then there are too many bins to be counted. You get rid of them by throwing them into a big bin, and you write BU GA GA: one big bin, no small bin, and no Shadok beside it. That is 16. When the big bins overflow in turn, they go into a super bin: BU GA GA GA, 64.</string>
+    <string name="help_bins_rule">Each bin holds four of the size below, and that is all “counting in base 4” means. A place is therefore worth four times the previous one: BuZo reads 1 × 4 + 2 = 6, and MeuMeu 3 × 4 + 3 = 15.</string>
+
     <string name="help_table_title">The first numbers</string>
+    <string name="help_table_glyphs">Written</string>
+    <string name="help_table_name">Said</string>
     <string name="help_table_base4">Base 4</string>
-    <string name="help_table_name">Name</string>
+
     <string name="help_fractions_title">After the point</string>
-    <string name="help_fractions_body">The following places are worth a quarter, a sixteenth, and so on: Ga.Zo is 2 ÷ 4, that is one half. Since 4 = 2², a fraction is written exactly only when its denominator is a power of two. A third never terminates: the calculator marks it with ≈ rather than passing a rounding off as an exact value.</string>
+    <string name="help_fractions_body">The lesson stops at whole numbers; a calculator does not. To the right of the point, the places are worth a quarter, a sixteenth, and so on: Ga.Zo is 2 ÷ 4, that is one half. Since 4 = 2², a fraction is written exactly only when its denominator is a power of two. A third never terminates: the calculator marks it with ≈ rather than passing a rounding off as an exact value.</string>
     <string name="help_clock_title">The time on the widgets</string>
     <string name="help_clock_body">Hours and minutes are each converted as a whole number, not digit by digit: 14:35 gives MeuZo:ZoGaMeu, because 14 is written 32 and 35 is written 203.</string>
-    <string name="help_source_title">Where it comes from</string>
-    <string name="help_source_body">The original lesson, the one that inspired this application, is online on the Archive INA channel. The link opens YouTube.</string>
-    <string name="help_source_link">Archive INA — Comment compter comme les Shadoks ?</string>
+
+    <string name="help_ending_title">After playtime</string>
+    <string name="help_ending_body">The reform was not to everyone\'s taste. The plumber held that the children were being taught nothing but nonsense, and wanted Professor Shadoko burned. It was decided unanimously that he would be allowed to finish — and burned afterwards, at playtime.</string>
 
     <string name="game_open">Play with numbers</string>
     <string name="game_title">Shadok numbers</string>
